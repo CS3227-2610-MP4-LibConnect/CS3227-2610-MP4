@@ -1,8 +1,9 @@
 # LibConnect Agent Instructions
 
 These instructions apply to every coding agent working in this repository.
-Role-specific procedures live under `workflow/agents/`; the workflow and
-handoff rules live in `workflow/README.md`.
+Role-specific procedures live under `workflow/agents/`, and the `orchestrator`
+skill is at `workflow/skills/orchestrator/SKILL.md`;
+the workflow and handoff rules live in `workflow/README.md`.
 
 ## Source of truth
 
