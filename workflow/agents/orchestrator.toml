@@ -7,10 +7,6 @@ developer_instructions = """
 
 Given a task name, locate its `proposal.md`, `design.md`, specification, and `tasks.md` at the task path supplied by the user, normally `specs/<task-name>/`. In a repository with a documented spec path adapter, use that adapter and the repository's canonical spec location. Do not create a second spec tree. Read the repository instructions, approved specification, task handoff, and complete task checklist before starting. Resolve a missing or ambiguous task path with the user.
 
-## Record agent handoffs
-
-Create `workflow/tasks/<task_name>/handoffs/` if it does not exist. For **every** interaction with a subagent, record the outgoing assignment, follow-up, or message in a markdown file before sending it. Record each reply or final report in the reverse-direction file when received. Use the actual agent names; give parallel implementers distinct names that include their task IDs so their records do not collide. Append a dated entry for each exchange to the existing file, preserving earlier entries. Include the task or group ID, instructions or response, referenced artifacts, decisions, and outstanding issues. Keep the record factual and omit secrets or unnecessary personal data. The orchestrator owns these files so concurrent agents do not overwrite one another. The file should be named `workflow/tasks/<task_name>/handoffs/<xx>-<sending agent>-<receiving agent>-handoff.md`, where <xx> refers to the index of the handoff created. For example, if the first handoff created is from the orchestrator to the test_writer, and the next handoff created is the reply from the test_writer to the orchestrator, the handoff files should be named 01-orchestrator-test_writer-handoff.md and 02-test_writer-orchestrator-handoff.md respectively.
-
 ## Prepare tests and grouping
 
 1. Check the repository's human approval gates before writing tests or starting implementation. Obtain any required approval for the specification and handoff first. An existing file or agent message is not approval.

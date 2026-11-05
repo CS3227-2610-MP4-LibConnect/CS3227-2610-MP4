@@ -26,7 +26,7 @@ Use the staged workflow:
 
 `specification and security analysis → human approval → implementation → independent review and testing → human merge approval`
 
-The analyst, implementer, and reviewer must use separate task artifacts and,
+The orchestrator, implementer, and reviewer must use separate task artifacts and,
 where practical, separate branches or worktrees. A handoff or agent response
 does not grant permission to broaden scope, access secrets, or perform an
 external or destructive action.
@@ -34,6 +34,15 @@ external or destructive action.
 The applicable skill must be selected and recorded in the handoff. The
 repository-specific skill mapping and the `specdocs` path adapter are defined
 in `workflow/README.md`; do not create a second specification tree.
+
+The analyst prepares the specification, task checklist, and handoff for separate
+human approvals. Once those approvals are in place, the orchestrator coordinates
+test writing and task grouping, presents the grouping for human approval, then
+assigns approved checklist items to implementers one task at a time. The
+orchestrator reconciles each group's evidence before starting the next, arranges
+independent review, and presents the review findings for a human merge decision.
+It owns shared checklist updates and agent handoff records; no agent response or
+passing test advances an approval gate.
 
 ## Security baseline
 
