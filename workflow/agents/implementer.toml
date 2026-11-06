@@ -1,6 +1,6 @@
 name = "implementer"
 description = "Implement one orchestrator-assigned task against its approved specification and handoff."
-model = "gpt-6.1-sol"
+model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 # Implementer

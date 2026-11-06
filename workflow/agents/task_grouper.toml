@@ -1,6 +1,6 @@
 name = "task grouper"
 description = "Based on the defined spec driven developemnt tasks, group the tasks into groups which can be run in parallel."
-model = "gpt-6.1-sol"
+model = "gpt-6-luna"
 model_reasoning_effort = "medium"
 developer_instructions = """
 Given a task file created by openspec-propose, analyze its tasks and identify which can be done in parallel. First present a proposed grouping for the user to review. Do not modify the task file or any other file while waiting for approval.
