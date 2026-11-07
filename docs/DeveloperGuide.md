@@ -143,3 +143,19 @@ node server/index.js
 Cloud Run supplies `PORT` and `K_SERVICE`. Use its service account identity for credentials; do not set `FIRESTORE_EMULATOR_HOST` or `GOOGLE_APPLICATION_CREDENTIALS` in production. The server rejects a local gcloud Application Default Credentials file and checks that the Cloud Run metadata project matches `LIBCONNECT_FIRESTORE_PROJECT_ID` before it starts accepting requests. Missing or inconsistent configuration stops startup rather than switching Firestore targets.
 
 Production deployment, service account permissions, and a live Firestore connection still need to be configured and verified. The repository contains no production project ID or credentials. Production mode is designed to fail on a developer laptop.
+
+<script type="module">
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+  const diagrams = [...document.querySelectorAll("pre > code.language-mermaid")];
+  const nodes = diagrams.map((code) => {
+    const node = document.createElement("div");
+    node.className = "mermaid";
+    node.textContent = code.textContent;
+    code.parentElement.replaceWith(node);
+    return node;
+  });
+
+  mermaid.initialize({ startOnLoad: false });
+  await mermaid.run({ nodes });
+</script>
