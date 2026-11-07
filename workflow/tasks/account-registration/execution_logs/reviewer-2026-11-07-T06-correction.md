@@ -1,0 +1,9 @@
+# Corrected T06 reviewer execution log — 2026-11-07
+
+- Re-read approved specification v0.4, checklist/handoff v0.3 context, revised `server/firestore-target.js`, revised `test/firestore-target.test.js`, updated `implementation-T06.md`, prior review and security findings, package scripts, and working-tree status. No implementation commit exists; `.env` was not read.
+- Verified code order: production rejects emulator and file credential settings; checks well-known ADC file presence and runtime metadata project before calling `applicationDefault()` and `initializeApp()`. Local mode returns before these production guards. Compared the ADC file location with the installed Google auth library's credential precedence without opening credential files.
+- From `src/libconnect-mp4`, `$env:CI='true'; npm test -- --watch=false --runInBand --runTestsByPath test/firestore-target.test.js`: exit 0; 21 tests passed.
+- From `src/libconnect-mp4`, `$env:CI='true'; npm test -- --watch=false --runInBand`: exit 0; 11 suites/157 tests passed, one opt-in emulator test skipped.
+- With `CI=true`, `RUN_FIRESTORE_EMULATOR_TESTS=1`, `LIBCONNECT_FIRESTORE_MODE=local-emulator`, `LIBCONNECT_FIRESTORE_PROJECT_ID=libconnect-mp4`, `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, ran `npm test -- --watch=false --runInBand --runTestsByPath test/firestore-mode.integration.test.js`: exit 1; test reached Member registration and received HTTP 429 from the emulator's persisted five-attempt source counter. No shared data was deleted or reset. Earlier initial-review opt-in run had passed.
+- From `src/libconnect-mp4`, `$env:CI='true'; npm run build`: exit 0; compiled successfully.
+- Updated only review and security reports and this log. No production code, test, checklist, approval, commit, cloud, metadata, or deployment action.

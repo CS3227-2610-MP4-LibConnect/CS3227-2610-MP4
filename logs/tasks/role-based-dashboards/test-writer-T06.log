@@ -1,0 +1,20 @@
+Task: role-based-dashboards T06 test writing
+Specification: workflow/specs/role-based-dashboards.md v0.2, human-approved 2026-11-07
+Changed files: src/libconnect-mp4/test/SharedTheme.test.tsx; workflow/tasks/role-based-dashboards/test-coverage-report.md; logs/tasks/role-based-dashboards/test-writer-T06.log
+
+Command:
+npm test -- --runInBand SharedTheme.test.tsx
+Working directory: src/libconnect-mp4
+
+Result: exit code 1. Test Suites: 1 failed, 1 total. Tests: 2 failed, 1 passed, 3 total. The semantic dashboard test passed. The two stylesheet contract tests failed because src/theme.css and src/DashboardViews.css do not exist yet. This is the expected pre-implementation red result. React Scripts also emitted Node's DEP0040 punycode deprecation warning.
+
+Revision:
+Updated SharedTheme.test.tsx so DashboardViews.css is optional. Dashboard token references, focus hooks, and responsive hooks may be provided by required theme.css alone, or supplemented by DashboardViews.css when present. The dashboard token contract checks that a class present in DashboardViews.tsx is referenced by the combined shared/optional styles, avoiding dependence on a particular class name.
+
+Revised command:
+npm test -- --runInBand SharedTheme.test.tsx
+Working directory: src/libconnect-mp4
+
+Revised result: exit code 1. Test Suites: 1 failed, 1 total. Tests: 2 failed, 1 passed, 3 total. The semantic dashboard test passed. Both stylesheet contract tests failed because the required src/theme.css does not exist yet; neither failed due to the absent optional src/DashboardViews.css. React Scripts emitted Node's DEP0040 punycode deprecation warning.
+
+No production source or package files were changed. No browser layout inspection was performed; Jest/jsdom cannot establish actual responsive overflow or visual focus rendering.

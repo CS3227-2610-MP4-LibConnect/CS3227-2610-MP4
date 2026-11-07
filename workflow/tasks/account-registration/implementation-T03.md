@@ -1,0 +1,15 @@
+# T03 implementation handoff
+
+Status: complete for the assigned Express API boundary; T04 persistence remains required before registration works end to end.
+
+Contract: `workflow/specs/account-registration.md` v0.2; `workflow/tasks/account-registration/tasks.md` v0.1; `handoff.md` v0.1. Human approvals for the specification, checklist/handoff, and implementation grouping were relayed by the orchestrator. The T03 checkbox remains owned by the orchestrator.
+
+Files changed for T03: `src/libconnect-mp4/server/index.js`, new `src/libconnect-mp4/server/auth/register.js`, new `src/libconnect-mp4/test/registration.endpoint.test.js`. The preexisting `/register` route change in `server/index.js` belongs to T01. No frontend, shared checklist, spec, handoff, dependencies, or deployment files were edited by T03.
+
+The route accepts only the approved account-specific JSON fields within the existing 8 KiB Express body parser. It enforces 200-byte name, 254-byte email, 1024-byte password, 64-byte librarian ID, and eight-character password minimum; trims display fields but passes the password unchanged. It derives canonical email, account status, and non-manager librarian privilege in trusted server code. A separate `registration-source` durable counter reserves five attempts per 15 minutes using the direct socket address, ignoring forwarded headers. It responds with generic `400`, `409`, `429`, or `503` errors, and only returns type/status after the persistence promise resolves. It creates no session.
+
+T04 interface: `createServerApp(db, buildDirectory, authStore, registrationPersistence)` accepts an object exposing `async createAccount(input)`. The validated input has `accountType`, `accountStatus`, trimmed `name`, trimmed original-case `email`, `canonicalEmail`, exact `password`, and for Librarian only trimmed `employeeId` and `isManager: false`. The adapter must generate IDs/timestamp, hash the exact password with approved Argon2id parameters, commit user and email key atomically, resolve only after commit, and throw an error with `code: 'ALREADY_EXISTS'` for canonical collisions. All other failures become generic `503`. The default adapter fails closed with `503`; T04 must wire real Firestore persistence. The pre-implementation `registration.api.test.js` persistence scenarios are therefore pending T04.
+
+Verification: `CI=true npm test -- --watch=false --runInBand --runTestsByPath test/registration.endpoint.test.js` passed 25/25 tests. `node --check` passed for `server/auth/register.js`, `server/index.js`, and `test/registration.endpoint.test.js`. `git diff --check` passed. Tests use a synthetic injectable adapter and do not exercise Firestore, Argon2id, or integration with login. No external service was contacted.
+
+Remaining risk: The production Firestore adapter and register-then-login checks belong to T04/T05. Direct-source limits rely on direct socket identity until an approved proxy policy exists. Independent review and human merge approval remain pending.

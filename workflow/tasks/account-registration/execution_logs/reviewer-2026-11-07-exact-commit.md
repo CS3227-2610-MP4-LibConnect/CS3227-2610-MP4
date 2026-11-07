@@ -1,0 +1,10 @@
+# Exact-commit reviewer execution log — 2026-11-07
+
+- Assignment: independently review human-approved account-registration commit `b02daecf58db8258f6c59a84473026fed97aea7f`, specification v0.5, checklist/handoff v0.4, and prior implementation/review evidence. Read reviewer role and repository instructions. No stage, commit, merge, production, or emulator opt-in action.
+- `git rev-parse HEAD`: exact commit hash above. `git status --short`: only unrelated modified `src/libconnect-mp4/.gitignore` and untracked `firebase-debug.log` / `firestore-debug.log`. Did not read or alter those logs or `.env`.
+- `git show --stat` / `git diff-tree --name-only`: 52 committed files, limited to registration application code/tests, docs, canonical spec, task evidence, and logs. No excluded environment, ignore, debug, package-lock, or credential path. `git diff --name-only HEAD --` on committed application/spec/evidence paths returned empty.
+- Scanned the exact commit diff in memory for PEM private-key blocks, inline credential JSON private keys, and AWS access-key shaped strings; printed only booleans, all false. This was a heuristic scan and did not print potential secret values.
+- `git diff --check b02daec^ b02daec`: reported Markdown two-space hard line breaks in planning/evidence files. No application source whitespace errors. Recorded as low formatting follow-up.
+- From `src/libconnect-mp4`, `$env:CI='true'; npm test -- --watch=false --runInBand`: exit 0; 11 suites, 230 tests passed, one opt-in emulator integration skipped. Node `punycode` deprecation warning.
+- From `src/libconnect-mp4`, `$env:CI='true'; npm run build`: exit 0; compiled successfully. Node `fs.F_OK` deprecation warning. Build output ignored.
+- Wrote this uncommitted exact-commit review and execution log only. An independent Git worktree would require writing read-only `.git` metadata, so exact Git objects plus clean committed source and direct local verification were used as compensating controls. Merge decision remains human-gated.
