@@ -77,21 +77,6 @@ it never reads its contents. Configure the deployment identity and
 Firestore permissions as a separately approved release step; this repository
 does not contain production credentials or a production project ID.
 
-To seed the production Firestore catalog from a trusted terminal with Google
-Cloud application default credentials authorized for the chosen project,
-run `node scripts/seed-production-books.js --dry-run` to inspect the fixture
-counts, then run `node scripts/seed-production-books.js --apply <production-project-id>`
-after the production write is approved. The apply command uses the explicit
-project argument and rejects any emulator host, local-emulator mode, or
-conflicting project environment setting. The server's Cloud Run connection
-policy is unchanged. The script creates only
-missing `books/{isbn}` and `bookCopies/{copyId}` documents, preserving existing
-records and copy statuses. A missing document is created with the same data as
-the local emulator seed; new copies start `AVAILABLE`. The dry run performs no
-Firestore connection or preflight read. On a developer machine without
-application default credentials, run `gcloud auth application-default login`
-using an identity authorized for the target project before applying the seed.
-
 ## Verification
 
 ```powershell
