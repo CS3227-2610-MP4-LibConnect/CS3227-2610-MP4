@@ -1,0 +1,51 @@
+# Account registration implementation checklist
+
+Task ID: `account-registration`  
+Checklist version: 0.4 (2026-11-07)  
+Checklist approval evidence: human replied "approve" to version 0.4 on 2026-11-07; no agent-set approval state  
+Prior approval evidence: human replied "approve" to version 0.3 on 2026-11-07; no agent-set approval state  
+Prior approval evidence: human replied "approved" to version 0.1 on 2026-11-06, including the self-entered employee-ID policy and proposed technical choices; no agent-set approval state  
+Specification: `workflow/specs/account-registration.md` version 0.5, human-approved on 2026-11-07; version 0.4 was human-approved on 2026-11-07
+
+The checklist follows human-approved specification R1–R9 and scenarios 1–18. The orchestrator owns grouping and checklist status. Existing checked T01–T06 entries retain their earlier review history; they do not establish R9. New T07 remains unchecked until its acceptance evidence is independently reviewed. No agent response or passing test approves this revision or starts new implementation.
+
+## Prerequisites and decisions
+
+- Human approved this checklist and `handoff.md` version 0.4 on 2026-11-07. The orchestrator presents its test/task grouping for separate human approval under `workflow/README.md` before dispatching implementation.
+- **Employee-ID policy requires a human decision before T04.** The approved specification allows the registrant to enter `employeeId` and relies on manager activation for assurance, but leaves uniqueness and roster validation unresolved. The proposed scope is self-entered employee ID, no roster integration, and no separate uniqueness index. If uniqueness or roster validation is required, revise the specification and this checklist before production code; roster access additionally requires external-service approval. The checklist/handoff approval should explicitly accept or change this proposal.
+- Proposed technical choices for checklist/handoff approval: `memberId = userId` using one server-generated ID; 8 KiB JSON body limit; `name` at most 200 UTF-8 bytes; `employeeId` at most 64 UTF-8 bytes; reuse login's 254-byte email and 1024-byte password bounds; shared registration limit of five attempts per 15 minutes per direct source, reserved before Argon2id work and returning generic `429` when exhausted. Do not trust forwarded headers without an approved proxy policy. These choices implement the approved contract without adding a product field.
+- The existing Express login app, Firestore Admin SDK, Argon2id, and test libraries are already present under `src/libconnect-mp4/`. Adding packages, editing CI/deployment configuration or Firestore Security Rules, live Firebase access, and deployment each require separate human approval if later needed. Local implementation must use synthetic test data or an approved emulator.
+- The user requires the Firestore emulator for local development and actual Firestore for deployed production. `firebase.json` lists emulator port 8080 and the local CLI project is `libconnect-mp4`; the previous server startup bound neither mode nor project, and `npm start` originally ran React without an API proxy. Treat project selection through ambient developer credentials as a concrete safety risk; do not inspect or print credential contents. Specification v0.4 and checklist/handoff v0.3 received their separate human approvals before T06 implementation. Any local script/config edit outside assigned source scope must be included in the orchestrator's approved grouping; CI/deployment and production access remain separately gated.
+- The new email-format rule adds syntax validation after the approved surrounding-whitespace trim: exactly one `@`, nonempty dot-separated local segments, at least two nonempty domain labels, and no internal whitespace or edge/adjacent dots. The client must reject invalid format with an accessible email error and zero requests; the server must enforce the same rule before account writes and return `400`. The stored email retains trimmed original case and the canonical key remains lowercase. The human approved spec v0.5 and checklist/handoff v0.4; T07 grouping still needs separate approval before implementation.
+
+## Ordered tasks
+
+## Group 1
+
+- [x] **T01 — Add registration navigation and route (R1).** Add a labelled Register action to the login page, render the registration page at `/register`, preserve the login route, and support direct `/register` navigation and refresh through the Express static-site fallback. Acceptance: navigation/component/server tests show Register, direct/refresh rendering, back-to-login, keyboard access, and unchanged login behavior. Do not add a routing dependency without separate approval.
+
+## Group 2 (parallel)
+
+- [x] **T02 — Build type-specific registration form and feedback (R2–R3).** Collect labelled name, email, password, confirmation, and librarian-only employee ID; display the selected type and pre-submit activation notice; never offer Manager or editable system fields. Validate required fields, confirmation, and approved bounds; submit only allowed fields, omit confirmation and stale employee ID, and prevent a second request while pending. Acceptance: component tests cover both types, switching, blank/mismatch/oversize feedback with no request, accessible errors, exact password transmission, and pending state.
+
+- [x] **T03 — Add bounded Express registration API (R4, R6–R7).** Implement `POST /api/auth/register` with server validation, allowed-field enforcement, approved technical bounds, and shared direct-source rate limit. Derive type/status/manager values in trusted server code; return generic `400`, `409`, `429`, `503` outcomes and minimal `201` only after persistence succeeds. Acceptance: endpoint tests cover malformed/oversized/unexpected/type-inapplicable requests, forged manager/status/IDs/hash/timestamp, both account types, limit threshold, no session, no writes on rejection, and redacted responses/logs.
+
+## Group 3
+
+- [x] **T04 — Persist compatible accounts atomically in Firebase Cloud Firestore (R5–R7).** Use server-side Admin SDK and the login contract's canonicalization and Argon2id parameters. Atomically create `users/{userId}` and `emailKeys/{sha256(canonicalEmail)}`, with server timestamp and generated ID; use the approved employee-ID policy. Commit before `201`; fail closed on collision, contention, or storage failure. Acceptance: adapter tests cover original/canonical email, unique-salted exact-password hash, active Member with `memberId`, inactive non-manager Librarian with `employeeId`, cross-type canonical collision, concurrent duplicate attempts, no orphan records, and no success before commit. T04 must not start until the employee-ID decision above is resolved.
+
+## Group 4
+
+- [x] **T05 — Complete success flow and integrated security verification (R1–R7).** After a valid `201` response, announce success in an accessible status region, show the five-second countdown and immediate login link, redirect to login, and retain a non-sensitive success notice there. On malformed success or failure, remain on registration with an error. Exercise React-to-Express and registration-to-login flows with synthetic users: active Member signs in, inactive Librarian is denied pending separately authorized activation. Run relevant frontend/backend tests and build checks; record exact commands, changed files, outcomes, deviations, and unresolved risks. Acceptance: all specification scenarios 1–12 have evidence, including no session from registration, no redirect on failure, no secret exposure, and explicit limits of synthetic/emulator coverage.
+
+## Group 5
+
+- [x] **T06 — Add and verify explicit Firestore modes (R8).** Require an explicit `local-emulator` or `production` mode before constructing the Admin SDK client. Local mode targets only the loopback emulator on port 8080 with project ID `libconnect-mp4`; document emulator, Express, and React startup. Production mode requires an explicit production project ID and deployment-runtime credentials, rejects emulator settings, and targets actual Firestore without changing account schema or authorization behavior. Both modes fail closed on missing/invalid/inconsistent config, never infer a project from local CLI or developer credentials, and never fall back between targets. Acceptance: emulator-backed register-then-login persists user/key records locally; negative local tests for missing emulator, non-loopback host, wrong project, and ambient cloud credentials show no cloud request; isolated production-config tests show valid runtime selection and rejection of emulator config or missing/mismatched project/credentials without live production writes; safe setup/failure documentation omits credential material. The human approved Group 5 before implementation; the orchestrator marked T06 complete after independent review.
+
+## Group 6
+
+- [x] **T07 — Enforce registration email format on client and server (R9).** Trim surrounding email whitespace, then validate before submission and independently at the Express endpoint: exactly one `@`, nonempty local segments separated by optional dots, at least two nonempty domain labels, no internal whitespace, and no leading/trailing/adjacent dots. Preserve trimmed original case in the user record and the existing lowercase canonical key; keep the login endpoint's canonicalization policy unchanged. Acceptance: component tests for both account types show accessible email-specific errors and zero requests for invalid forms; `a@b.c`, `a.b@sub.example.com`, and a surrounding-whitespace variant pass; endpoint tests reject direct invalid requests with `400` and zero user/email-key writes; tests cover extra/missing `@`, empty segments, edge/adjacent dots, and internal whitespace. The orchestrator must propose T07 grouping for human approval after revised planning approval.
+
+## Review and evidence gate
+
+An independent reviewer must inspect the exact revised implementation from a separate worktree or clean checkout where practical, rerun relevant checks including R9, and record `review-report.md` plus `security-review.md`. The orchestrator reconciles results and presents the review for a human merge decision. Do not mark T07 complete or merge solely because tests pass.

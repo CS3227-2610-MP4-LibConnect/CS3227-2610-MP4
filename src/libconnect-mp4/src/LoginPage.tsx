@@ -1,9 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './LoginPage.css';
 
 type AccountType = 'MEMBER' | 'LIBRARIAN';
+const REGISTRATION_NOTICE_KEY = 'libconnect.registrationNotice';
+
+function readRegistrationNotice(): AccountType | null {
+  try {
+    const value = window.sessionStorage.getItem(REGISTRATION_NOTICE_KEY);
+    return value === 'MEMBER' || value === 'LIBRARIAN' ? value : null;
+  } catch {
+    return null;
+  }
+}
 
 function LoginPage() {
+  const [registrationNotice] = useState(readRegistrationNotice);
+  useEffect(() => {
+    if (registrationNotice) {
+      try { window.sessionStorage.removeItem(REGISTRATION_NOTICE_KEY); } catch { /* Storage can be unavailable. */ }
+    }
+  }, [registrationNotice]);
   const [accountType, setAccountType] = useState<AccountType>('MEMBER');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState('');
@@ -87,6 +103,11 @@ function LoginPage() {
         <p className="eyebrow">LIBCONNECT</p>
         <h1 id="login-title">Welcome back</h1>
         <p className="login-intro">Sign in to continue to your library account.</p>
+        {registrationNotice && <p role="status" aria-live="polite">
+          {registrationNotice === 'MEMBER'
+            ? 'Member registration complete. You can now sign in.'
+            : 'Librarian registration complete. A manager librarian must activate your account before you can sign in.'}
+        </p>}
 
         <form className="login-form" noValidate onSubmit={submitLogin}>
           <fieldset className="account-type-fieldset">
@@ -153,7 +174,7 @@ function LoginPage() {
           </button>
         </form>
 
-        <p className="login-footer">Your library, all in one place.</p>
+        <p className="login-footer">New to LibConnect? <a href="/register">Register</a></p>
       </section>
     </main>
   );

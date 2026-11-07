@@ -40,11 +40,18 @@ test('serves the built frontend and the login API from one origin', async () => 
         return true;
       },
     };
-    const app = createServerApp(db, buildDirectory, authStore);
+    const registrationPersistence = {
+      async createAccount() { throw new Error('Registration is not exercised by this server smoke test.'); },
+    };
+    const app = createServerApp(db, buildDirectory, authStore, registrationPersistence);
 
     const page = await request(app).get('/');
     expect(page.status).toBe(200);
     expect(page.text).toContain('<title>LibConnect</title>');
+
+    const registrationPage = await request(app).get('/register');
+    expect(registrationPage.status).toBe(200);
+    expect(registrationPage.text).toContain('<title>LibConnect</title>');
 
     const login = await request(app).post('/api/auth/login').send({
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'MEMBER',
