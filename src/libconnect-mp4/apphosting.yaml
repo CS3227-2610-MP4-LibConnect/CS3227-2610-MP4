@@ -8,8 +8,8 @@ runConfig:
   # memoryMiB: 512
 
 scripts:
-buildCommand: npm run build
-runCommand: node server/index.js
+  buildCommand: npm run build
+  runCommand: node server/index.js
 
 # Environment variables and secrets.
 # env:
