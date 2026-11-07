@@ -144,6 +144,25 @@ Cloud Run supplies `PORT` and `K_SERVICE`. Use its service account identity for 
 
 Production deployment, service account permissions, and a live Firestore connection still need to be configured and verified. The repository contains no production project ID or credentials. Production mode is designed to fail on a developer laptop.
 
+## Agent development workflow
+
+The repository's [workflow guide](../workflow/README.md) defines the full agent handoff and evidence rules. Start from the current user request and the approved specification in `workflow/specs/`. The analyst prepares a dependency-ordered checklist and handoff under `workflow/tasks/<task-id>/`. A human approves the specification, then separately approves the checklist and handoff before implementation planning proceeds.
+
+The orchestrator proposes consecutive **batches of up to two checklist items** and asks a human to approve the batch plan and implementation dispatch. A batch means one or two adjacent, unfinished items in checklist order; it is not a parallel group. For example, `T01`, `T02`, `T03`, `T04` become `T01 + T02` and `T03 + T04` when their dependencies and approval boundaries permit those pairs. A final item can form a one-item batch. If another item follows a one-item batch, the assignment records why the pair was split.
+
+For each approved batch, the orchestrator assigns **one implementer** and **one different reviewer**. The implementer finishes and verifies the first item before starting the second. If an item is blocked or requires a new human decision, work stops at that boundary. The reviewer uses a separate worktree or clean checkout, checks each item's evidence and their combined behavior, and records a verdict for each item. The orchestrator reconciles the batch before starting the next one. A human makes the review and merge decision; neither an agent response nor a passing test grants approval.
+
+The orchestrator records each assignment in `workflow/tasks/<task-id>/assignment-batch-<n>.json`. It runs the validator from the repository root before dispatch and after review (replace the example task ID and batch number with the approved ones):
+
+```powershell
+node src/workflow/validate-assignment.mjs workflow/tasks/example-task/assignment-batch-1.json plan
+node src/workflow/validate-assignment.mjs workflow/tasks/example-task/assignment-batch-1.json complete
+```
+
+The `plan` check verifies ordering, batch size, assignment fields, and distinct implementer and reviewer identities. The `complete` check also verifies per-item evidence references and file presence. The validator does not run application tests, assess review findings, or grant approval. When changing the validator or manifest format, run `node --test workflow/validate-assignment.test.mjs`; its synthetic fixtures are in `workflow/test-fixtures/`.
+
+To keep agent prompts small, handoffs point to approved artifact paths and versions instead of copying whole documents. Reports summarize results and link to factual logs in `logs/tasks/<task-id>/`. Keep per-item checks, failures, risks, and approval evidence. The workflow does not require agents to report or record token usage.
+
 <script type="module">
   import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
 
