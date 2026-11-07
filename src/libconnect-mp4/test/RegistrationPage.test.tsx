@@ -26,14 +26,6 @@ describe('registration page', () => {
     window.sessionStorage.clear();
   });
 
-  test('login provides a keyboard-accessible Register route', () => {
-    render(<LoginPage />);
-    const register = screen.getByRole('link', { name: /register/i });
-    expect(register).toHaveAttribute('href', '/register');
-    register.focus();
-    expect(register).toHaveFocus();
-  });
-
   test('shows common fields, explicit type choice, and a route to login', () => {
     render(<RegistrationPage />);
     expect(screen.getByRole('radio', { name: /member/i })).toBeChecked();

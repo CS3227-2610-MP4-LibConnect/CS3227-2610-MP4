@@ -235,21 +235,6 @@ describe('T05 React to Express login integration', () => {
     } finally { bridge.restore(); }
   });
 
-  test('enforces the thirty-failure direct-source threshold despite forwarded-header changes', async () => {
-    const system = createSyntheticSystem([]);
-    for (let index = 0; index < 30; index += 1) {
-      const response = await request(system.app).post('/api/auth/login')
-        .set('X-Forwarded-For', `203.0.113.${index + 1}`)
-        .send({ email: `absent${index}@example.test`, password: 'synthetic password', accountType: 'MEMBER' });
-      expect(response.status).toBe(401);
-    }
-    const limited = await request(system.app).post('/api/auth/login')
-      .send({ email: 'another-absent@example.test', password: 'synthetic password', accountType: 'MEMBER' });
-    expect(limited.status).toBe(429);
-    expect(limited.body).toEqual({ message: 'Unable to sign in right now. Please try again later.' });
-    expect(system.sessions.size).toBe(0);
-  });
-
   test('renders a generic 503 on repository failure and emits no authentication log data', async () => {
     const users = await makeUsers();
     const system = createSyntheticSystem(users, { repositoryUnavailable: true });

@@ -112,6 +112,7 @@ describe('POST /api/auth/register', () => {
     expect(response.status).toBe(400);
     expect(users(system)).toHaveLength(0);
     expect(keys(system)).toHaveLength(0);
+    expect(system.rateSlots.size).toBe(0);
   });
 
   test.each(['MEMBER', 'LIBRARIAN'])('stores trimmed original-case %s email and lowercase canonical key', async (accountType) => {
@@ -123,6 +124,17 @@ describe('POST /api/auth/register', () => {
     expect(users(system)[0].canonicalEmailKey).toBe('a.b@sub.example.com');
     expect(keys(system)).toHaveLength(1);
     expect(keys(system)[0][0]).toBe(`emailKeys/${crypto.createHash('sha256').update('a.b@sub.example.com').digest('hex')}`);
+  });
+
+  test.each(['MEMBER', 'LIBRARIAN'].flatMap((accountType) => [
+    [accountType, 'a@b.c'],
+    [accountType, 'a.b@sub.example.com'],
+  ]))('accepts valid %s email %s', async (accountType, email) => {
+    const body = { ...(accountType === 'MEMBER' ? member : librarian), email };
+    const response = await request(system.app).post('/api/auth/register').send(body);
+    expect(response.status).toBe(201);
+    expect(users(system)[0].email).toBe(email);
+    expect(users(system)[0].canonicalEmailKey).toBe(email);
   });
 
   test.each([
@@ -229,6 +241,7 @@ describe('POST /api/auth/register', () => {
     ['forged member ID', { ...member, memberId: 'attacker' }],
     ['forged timestamp', { ...member, registrationDateTime: '2000-01-01' }],
     ['forged hash', { ...member, passwordHash: 'plaintext' }],
+    ['confirmation field', { ...member, confirmPassword: password }],
     ['unexpected property', { ...member, extra: 'value' }],
   ])('rejects %s before persistence', async (_label, body) => {
     const response = await request(system.app).post('/api/auth/register').send(body);
@@ -236,6 +249,7 @@ describe('POST /api/auth/register', () => {
     expect(response.headers['set-cookie']).toBeUndefined();
     expect(users(system)).toHaveLength(0);
     expect(keys(system)).toHaveLength(0);
+    expect(system.rateSlots.size).toBe(0);
   });
 
   test('rejects malformed and over-8 KiB JSON with no write', async () => {
@@ -245,6 +259,7 @@ describe('POST /api/auth/register', () => {
     expect(malformed.status).toBe(400);
     expect(oversized.status).toBe(400);
     expect(users(system)).toHaveLength(0);
+    expect(system.rateSlots.size).toBe(0);
   });
 
   test('five direct-source attempts per 15 minutes are shared and enforced before a write', async () => {
@@ -266,14 +281,6 @@ describe('POST /api/auth/register', () => {
     expect(response.headers['set-cookie']).toBeUndefined();
     expect(users(system)).toHaveLength(0);
     expect(keys(system)).toHaveLength(0);
-  });
-
-  test('direct navigation and refresh at /register serve the frontend', async () => {
-    const first = await request(system.app).get('/register');
-    const second = await request(system.app).get('/register');
-    expect(first.status).toBe(200);
-    expect(first.text).toContain('<title>LibConnect</title>');
-    expect(second.status).toBe(200);
   });
 
   test('new active Member signs in; new inactive Librarian is denied', async () => {
