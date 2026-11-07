@@ -1,0 +1,40 @@
+Task: role-based-dashboards T01 correction (finding F-01)
+Specification: workflow/specs/role-based-dashboards.md v0.1
+Date: 2026-11-07
+
+Command: npm test -- --watchAll=false --runInBand --testPathPattern=DashboardRoutes.integration.test.tsx
+Working directory: src/libconnect-mp4
+Result: PASS. 1 suite passed; 24 tests passed; 0 snapshots. Included the new out-of-order member-response and stale-401 regressions. Jest emitted Node's DEP0040 punycode deprecation warning.
+
+Command: npm run build
+Working directory: src/libconnect-mp4
+Result: PASS. Optimized production build compiled successfully. React Scripts emitted Node's DEP0176 fs.F_OK deprecation warning.
+
+Command: git diff --check
+Working directory: repository root
+Result: PASS (exit 0). Git printed line-ending normalization warnings for other working-tree files.
+
+Scope note: git status also showed other modified and untracked repository files outside this correction. They were not edited as part of this assignment. No secrets or private user data were added to this evidence.
+
+Append: approved F-02 correction
+Date: 2026-11-07
+Specification: workflow/specs/role-based-dashboards.md v0.1
+
+Implementation detail: effect cleanup invalidates the request generation when the guard truly unmounts. A lifecycle version defers that invalidation to a microtask and distinguishes React Strict Mode's immediate cleanup/setup replay. Existing request-generation and current-route checks remain active.
+
+Regression added: start a pending member session check, navigate to `/` (unmounting the guard), revisit `/member/dashboard` and verify MEMBER, then resolve the first visit with HTTP 401. Expected and observed: the route remains `/member/dashboard` and the member dashboard remains rendered.
+
+Command: npm test -- --watchAll=false --runInBand --testPathPattern=DashboardRoutes.integration.test.tsx
+Working directory: src/libconnect-mp4
+Result: PASS. 1 suite passed; 25 tests passed; 0 snapshots. Includes F-01 out-of-order response and stale-401 regressions plus the F-02 unmount/remount regression. Jest emitted Node's DEP0040 punycode deprecation warning.
+
+Command: npm run build
+Working directory: src/libconnect-mp4
+Result: PASS. Optimized production build compiled successfully. React Scripts emitted Node's DEP0176 fs.F_OK deprecation warning.
+
+Intermediate failed checks retained:
+- First cleanup attempt: focused suite failed, 13 of 25 tests. Strict Mode effect cleanup invalidated the setup request, leaving the guard checking or consuming subsequent mocked responses.
+- Second cleanup attempt with auto-check de-duplication reset in cleanup: focused suite failed, 13 of 25 tests for the same Strict Mode replay behavior.
+- Corrected cleanup defers invalidation and checks a lifecycle version; the final focused suite above passes.
+
+No changes were made to the specification, checklist, handoff, or review reports. Independent re-review remains pending. Initial browser-level refresh coverage gap from review-T01 remains outside this correction.

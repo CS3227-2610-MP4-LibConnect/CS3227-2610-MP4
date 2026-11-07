@@ -1,46 +1,79 @@
-# Getting Started with Create React App
+# LibConnect registration and login
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The Express server handles registration, login, sessions, and rate counters.
+It serves the built React frontend from the same origin. Firestore target mode
+must be selected before the server starts; there is no default or fallback.
 
-## Available Scripts
+## Local development with the Firestore emulator
 
-In the project directory, you can run:
+Install this directory's existing npm dependencies first. In one terminal,
+start the local Firestore emulator from this directory:
 
-### `npm start`
+```powershell
+firebase emulators:start --only firestore --project libconnect-mp4
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Wait until Firestore is listening on `127.0.0.1:8080`. In a second PowerShell
+terminal, from this same directory, start Express:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```powershell
+$env:LIBCONNECT_FIRESTORE_MODE = 'local-emulator'
+$env:LIBCONNECT_FIRESTORE_PROJECT_ID = 'libconnect-mp4'
+$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
+npm run build
+node server/index.js
+```
 
-### `npm test`
+In a third PowerShell terminal, start the React development server on port
+3001, leaving Express on port 3000:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```powershell
+$env:PORT = '3001'
+npm start
+```
 
-### `npm run build`
+Open `http://localhost:3001/` for login or `http://localhost:3001/register`
+for registration. The React development server proxies `/api/auth/*` requests
+to Express on `127.0.0.1:3000`; Express uses only the Firestore emulator. You
+can also open Express's built frontend at `http://localhost:3000/` if you do
+not need hot reload. The emulator stores local `users`, `emailKeys`,
+`loginSessions`, and `loginFailureCounters` records. It does not write them to
+Cloud Firestore. Emulator data may be discarded when it stops unless you
+explicitly configure an export.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+If the emulator is absent, the host or project is wrong, or the build is
+missing, Express exits before listening and prints a non-sensitive setup error.
+It never switches to a cloud project. `PORT` may be set to another integer
+from 1 through 65535 if port 3000 is occupied.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Production configuration
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Deployment must explicitly set `LIBCONNECT_FIRESTORE_MODE=production`,
+`LIBCONNECT_FIRESTORE_PROJECT_ID` to the intended production project ID,
+and `GOOGLE_CLOUD_PROJECT` to the same ID. This configuration currently
+recognizes Cloud Run through its `K_SERVICE` runtime signal and uses its
+application-default runtime identity. Do not set `FIRESTORE_EMULATOR_HOST` or
+`GOOGLE_APPLICATION_CREDENTIALS` in production. Missing or inconsistent
+configuration prevents startup. Startup also rejects a well-known local gcloud
+ADC file at `CLOUDSDK_CONFIG` or the platform's default gcloud config path,
+and verifies the Cloud Run metadata project ID matches the configured project
+before initializing Firebase Admin. It checks only for the file's presence;
+it never reads its contents. Configure the deployment identity and
+Firestore permissions as a separately approved release step; this repository
+does not contain production credentials or a production project ID.
 
-### `npm run eject`
+## Verification
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```powershell
+$env:CI = 'true'
+npm test -- --watch=false --runInBand
+npm run build
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+With the emulator already running and the three local target variables set,
+the opt-in integration test exercises registration and login against it:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+```powershell
+$env:RUN_FIRESTORE_EMULATOR_TESTS = '1'
+npm test -- --watch=false --runInBand --runTestsByPath test/firestore-mode.integration.test.js
+```
