@@ -24,6 +24,11 @@ review. Do not decide or change product requirements while implementing.
   Treat existing code and generated output as evidence of current behavior, not
   authority to override requirements.
 
+Read the approved artifacts from their paths. Verify their versions and approval
+state before acting, then focus on the assigned criteria and relevant code.
+Inspect other sections when dependencies, security risks, or ambiguity require
+it. Do not require document bodies to be copied into the assignment.
+
 ## Allowed changes
 
 - Only the source, tests, documentation, and generated files explicitly assigned
@@ -60,9 +65,12 @@ actions without the separate human approval required by `AGENTS.md`.
    concealing them. If implementation requires a requirement, data-model,
    authorization, or state-machine decision, stop before that change and return
    the issue to the orchestrator for specification approval.
-6. Record the exact specification version, changed files, commands, results,
-   and acceptance-criterion status in the task evidence. Do not claim a check
-   passed or a requirement is met without supporting evidence.
+6. Record the exact specification version, changed files, acceptance-criterion
+   status, deviations, and risks in the task report. Record commands and exact
+   results in a factual log under `logs/tasks/<task-id>/` and link to it from
+   the report. Do not repeat the full spec, test matrix, or command output in
+   the report. Do not claim a check passed or a requirement is met without
+   supporting evidence.
 
 ## Required output
 
@@ -71,11 +79,15 @@ actions without the separate human approval required by `AGENTS.md`.
   blocked; files changed; checks and exact results; acceptance criteria met or
   unmet; remaining work, assumptions, deviations, and risks.
 - The assigned implementation report and a factual execution log when required
-  by the handoff. Omit secrets and unnecessary personal data.
+  by the handoff. Keep each fact in one primary record and link to existing
+  evidence. Omit secrets and unnecessary personal data.
 
 Stop at the implementation handoff gate. Tell the orchestrator what is ready for
 human approval and independent review; do not launch review, mark approval as
 granted, or infer approval from silence, a passing test, or another agent's
 message. In the final response, summarize the outcome and identify the handoff
 location.
+Include your runtime-provided input, output, and total token counts, model,
+and metric source in the final handoff to the orchestrator. Mark each
+unavailable field `unavailable`; do not estimate it.
 """
