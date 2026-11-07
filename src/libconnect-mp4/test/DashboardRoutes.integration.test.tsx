@@ -14,15 +14,31 @@ beforeAll(() => {
 
 function renderAppAt(path: string, fetchMock: jest.Mock) {
   window.history.replaceState({}, '', path);
-  global.fetch = fetchMock as typeof fetch;
+  global.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    const requestUrl = typeof input === 'string' || input instanceof URL ? input.toString() : input.url;
+    if (new URL(requestUrl, window.location.origin).pathname === '/api/member/catalog') {
+      return Promise.resolve({
+        status: 200,
+        ok: true,
+        json: async () => ({
+          books: [],
+          nextCursor: null,
+          scannedAnyDocument: false,
+          scannedValidBooks: false,
+          scanComplete: true,
+        }),
+      }) as Promise<Response>;
+    }
+    return fetchMock(input, init);
+  }) as typeof fetch;
   return render(mockAppTree as React.ReactElement);
 }
 
-function sessionResponse(status: number, accountType?: string) {
+function sessionResponse(status: number, accountType?: string, name?: string) {
   return {
     status,
     ok: status >= 200 && status < 300,
-    json: async () => accountType ? { accountType } : {},
+    json: async () => accountType ? { accountType, ...(name ? { name } : {}) } : {},
   };
 }
 
@@ -46,6 +62,15 @@ describe('dashboard route session guard and logout', () => {
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/auth/session', expect.anything()));
     expect(await screen.findByRole('heading', { name: new RegExp(`${accountType} Dashboard`, 'i') })).toBeInTheDocument();
+  });
+
+  test('greets the verified member by name without interpreting it as markup', async () => {
+    const name = '<strong>Reader</strong>';
+    const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'MEMBER', name));
+    renderAppAt('/member/dashboard', fetchMock);
+
+    expect(await screen.findByRole('heading', { name: `Welcome back, ${name}` })).toBeInTheDocument();
+    expect(document.querySelector('strong')).toBeNull();
   });
 
   test('rechecks the session after a member-to-librarian route transition and hides content while checking', async () => {
@@ -175,7 +200,7 @@ describe('dashboard route session guard and logout', () => {
     renderAppAt('/member/dashboard?accountType=LIBRARIAN', fetchMock);
 
     expect(await screen.findByRole('heading', { name: /member dashboard/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: /your library account/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /librarian dashboard/i })).not.toBeInTheDocument();
   });
 

@@ -104,6 +104,14 @@ beforeAll(async () => {
 });
 
 describe('T04 authorization and server sessions', () => {
+  test('returns only the verified member name alongside the session role', async () => {
+    const system = makeSystem({ user: { ...account, name: ' Synthetic Reader ' } });
+    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    expect(login.body).toEqual({ accountType: 'MEMBER' });
+    const session = await request(system.app).get('/api/auth/session').set('Cookie', cookieFrom(login));
+    expect(session.body).toEqual({ accountType: 'MEMBER', name: 'Synthetic Reader' });
+  });
+
   test.each(['MEMBER', 'LIBRARIAN'])('establishes durable success only for an active stored %s account', async (accountType) => {
     const system = makeSystem({ user: { ...account, accountType } });
     const response = await request(system.app).post('/api/auth/login')

@@ -1,0 +1,7 @@
+# T03 factual review log
+
+- Read `server/catalog/contract.js`, `server/catalog/route.js`, `server/auth/login.js`, `server/index.js`, `test/member-catalog.endpoint.test.js`, existing `test/server.test.js`, T03 implementation report/log, and the approved T01 contract. Reviewed `git diff -- server/auth/login.js server/index.js` against clean HEAD; only catalog route registration changed in those tracked paths.
+- Inspected `package.json` scripts before testing. Direct local Jest avoided the incomplete app-root CRA installation and used the approved offline `.deps-batch2/node_modules`; no install or registry action by reviewer.
+- With `NODE_PATH` set to the local `.deps-batch2/node_modules`, `node .deps-batch2/node_modules/jest/bin/jest.js --config '{"testEnvironment":"node","modulePathIgnorePatterns":["<rootDir>/.deps-batch2/"]}' --runInBand test/server.test.js test/login.session.test.js test/member-catalog.adapter.test.js test/member-catalog.endpoint.test.js`: exit 0; `PASS` for all four suites, 39/39 tests passed, zero snapshots, 6.143 s reported by Jest. This includes T03's endpoint tests and existing server/session regressions.
+- `rg -n "console\\.|logger|write\\(|set\\(|update\\(|delete\\(" server/catalog server/auth/login.js server/index.js`: no catalog content logging or Book write calls. Existing server startup logs and auth session methods only.
+- No cloud/emulator call, secret access, production change, dependency/configuration change, or commit. No review-only tests added.

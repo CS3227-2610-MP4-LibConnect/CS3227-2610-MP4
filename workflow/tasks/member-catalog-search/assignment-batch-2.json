@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 2,
+  "taskId": "member-catalog-search",
+  "batch": 2,
+  "items": [
+    "T02",
+    "T03"
+  ],
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/member-catalog-search.md",
+      "version": "0.1"
+    },
+    "checklist": {
+      "path": "workflow/tasks/member-catalog-search/tasks.md",
+      "version": "0.2"
+    },
+    "handoff": {
+      "path": "workflow/tasks/member-catalog-search/handoff.md",
+      "version": "0.2"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/member-catalog-search/handoff.md",
+  "implementer": {
+    "agentId": "implementer-batch-2",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/libconnect-mp4/server/catalog/adapter.js",
+      "src/libconnect-mp4/server/catalog/contract.js",
+      "src/libconnect-mp4/server/catalog/route.js",
+      "src/libconnect-mp4/server/index.js",
+      "src/libconnect-mp4/server/auth/login.js",
+      "src/libconnect-mp4/test/member-catalog.adapter.test.js",
+      "src/libconnect-mp4/test/member-catalog.endpoint.test.js",
+      "src/libconnect-mp4/test/server.test.js",
+      "workflow/tasks/member-catalog-search/implementation-T02.md",
+      "workflow/tasks/member-catalog-search/implementation-T03.md",
+      "logs/tasks/member-catalog-search/implementation-T02.md",
+      "logs/tasks/member-catalog-search/implementation-T03.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-batch-2",
+    "worktree": "shared workspace",
+    "separationException": "Uncommitted implementation is not available in a separate clean checkout; reviewer will inspect exact working diff against clean HEAD with separate read-only agent and reports.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/member-catalog-search/review-T02.md",
+      "workflow/tasks/member-catalog-search/review-T03.md",
+      "logs/tasks/member-catalog-search/review-T02.md",
+      "logs/tasks/member-catalog-search/review-T03.md"
+    ]
+  },
+  "itemEvidence": {
+    "T02": {
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-T02.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-T02.md",
+      "reviewLog": "logs/tasks/member-catalog-search/review-T02.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "command": "CRA focused adapter test (app-root typescript unresolved)",
+          "result": "fail"
+        },
+        {
+          "command": "direct isolated Jest test/member-catalog.adapter.test.js",
+          "result": "pass"
+        }
+      ],
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T02.md"
+    },
+    "T03": {
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-T03.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-T03.md",
+      "reviewLog": "logs/tasks/member-catalog-search/review-T03.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "command": "direct isolated Jest catalog adapter, endpoint, server, login.session suites",
+          "result": "pass"
+        }
+      ],
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T03.md"
+    }
+  }
+}

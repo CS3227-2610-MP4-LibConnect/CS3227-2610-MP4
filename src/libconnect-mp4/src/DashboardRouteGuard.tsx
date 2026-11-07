@@ -8,6 +8,7 @@ type GuardState = 'checking' | 'ready' | 'denied' | 'retry';
 function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
   const [state, setState] = useState<GuardState>('checking');
   const [verifiedAccountType, setVerifiedAccountType] = useState<AccountType | null>(null);
+  const [verifiedName, setVerifiedName] = useState<string | null>(null);
   const lastAutoCheckFor = useRef<AccountType | null>(null);
   const requestGeneration = useRef(0);
   const lifecycleVersion = useRef(0);
@@ -20,6 +21,7 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
 
     setState('checking');
     setVerifiedAccountType(null);
+    setVerifiedName(null);
     try {
       const response = await fetch('/api/auth/session', { method: 'GET', credentials: 'same-origin' });
       if (!isCurrentRequest()) return;
@@ -42,12 +44,15 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
       }
       if (!isCurrentRequest()) return;
       const returnedType = (body as { accountType?: unknown } | null)?.accountType;
+      const returnedName = (body as { name?: unknown } | null)?.name;
       if (returnedType !== 'MEMBER' && returnedType !== 'LIBRARIAN') {
         setState('retry');
         return;
       }
       if (returnedType === accountType) {
         setVerifiedAccountType(returnedType);
+        setVerifiedName(returnedType === 'MEMBER' && typeof returnedName === 'string' &&
+          returnedName.trim().length > 0 && returnedName.length <= 200 ? returnedName.trim() : null);
         setState('ready');
       } else {
         setVerifiedAccountType(returnedType);
@@ -105,10 +110,11 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
 
   const clearVerifiedAccount = () => {
     setVerifiedAccountType(null);
+    setVerifiedName(null);
     setState('checking');
   };
   return accountType === 'MEMBER'
-    ? <MemberDashboard onLogoutConfirmed={clearVerifiedAccount} />
+    ? <MemberDashboard onLogoutConfirmed={clearVerifiedAccount} name={verifiedName} />
     : <LibrarianDashboard onLogoutConfirmed={clearVerifiedAccount} />;
 }
 
