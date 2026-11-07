@@ -1,0 +1,8 @@
+# T03 factual execution log
+
+- Preflight: canonical and task specification copies match SHA-256 `AE609123AD4151616BADFEA10C1EE91B710E1C441E17D43FE77C8703D91A4842`; checklist/handoff v0.2 and batch-2 manifest list T02 then T03. T02 implementation and 5/5 passing synthetic tests were recorded before T03 began.
+- Implemented strict query/cursor validation in `server/catalog/contract.js`, error-isolated route in `server/catalog/route.js`, and narrow route registration in existing `createLoginApp`/`createServerApp`. No login, session, CSRF, or logout policy changed.
+- `node .deps-batch2/node_modules/jest/bin/jest.js --config '{"testEnvironment":"node","modulePathIgnorePatterns":["<rootDir>/.deps-batch2/"]}' --runInBand test/member-catalog.adapter.test.js test/member-catalog.endpoint.test.js` with `NODE_PATH=.deps-batch2/node_modules`: exit 0; 2 suites, 26 tests passed.
+- `node .deps-batch2/node_modules/jest/bin/jest.js --config '{"testEnvironment":"node","modulePathIgnorePatterns":["<rootDir>/.deps-batch2/"]}' --runInBand test/server.test.js test/login.session.test.js test/member-catalog.adapter.test.js test/member-catalog.endpoint.test.js` with the same `NODE_PATH`: exit 0; 4 suites, 39 tests passed.
+- `git diff -- server/index.js server/auth/login.js` showed only catalog route registration in existing files. `git status --short` showed scoped new catalog/test files and the staging evidence; preexisting unrelated workspace changes were left untouched.
+- Fixtures contain synthetic Book and account data only. No raw search/Book content was logged. No Firebase CLI, cloud access, Book write, dependency/config edit, commit, or external action occurred.

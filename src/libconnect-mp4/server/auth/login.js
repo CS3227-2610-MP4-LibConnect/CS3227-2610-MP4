@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const express = require('express');
 const argon2 = require('argon2');
+const { createCatalogHandler } = require('../catalog/route');
 
 const MAX_BODY_BYTES = 8 * 1024;
 const MAX_EMAIL_BYTES = 254;
@@ -174,7 +175,11 @@ function createLoginApp(repository, authStore, options = {}) {
       // transaction attempt, so an in-flight request cannot touch stale state.
       const touched = await authStore.touchSession(idHash, now);
       if (!touched) return null;
-      return { idHash, session, accountType: user.accountType };
+      const name = typeof user.name === 'string' ? user.name.trim() : '';
+      return {
+        idHash, session, accountType: user.accountType,
+        name: name && Buffer.byteLength(name, 'utf8') <= 200 ? name : null,
+      };
     } catch (error) {
       throw error;
     }
@@ -252,11 +257,18 @@ function createLoginApp(repository, authStore, options = {}) {
         clearSessionCookie(res);
         return res.status(401).json({ message: 'Authentication required.' });
       }
-      return res.status(200).json({ accountType: auth.accountType });
+      return res.status(200).json({
+        accountType: auth.accountType,
+        ...(auth.accountType === 'MEMBER' && auth.name ? { name: auth.name } : {}),
+      });
     } catch (error) {
       return res.status(503).json({ message: RETRY_MESSAGE });
     }
   });
+
+  if (options.catalogDb) {
+    app.get('/api/member/catalog', createCatalogHandler(options.catalogDb, authenticateRequest));
+  }
 
   app.get('/api/auth/csrf', async (req, res) => {
     try {

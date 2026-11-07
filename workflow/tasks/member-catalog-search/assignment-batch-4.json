@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 2,
+  "taskId": "member-catalog-search",
+  "batch": 4,
+  "items": [
+    "T06"
+  ],
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/member-catalog-search.md",
+      "version": "0.1"
+    },
+    "checklist": {
+      "path": "workflow/tasks/member-catalog-search/tasks.md",
+      "version": "0.2"
+    },
+    "handoff": {
+      "path": "workflow/tasks/member-catalog-search/handoff.md",
+      "version": "0.2"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/member-catalog-search/handoff.md",
+  "implementer": {
+    "agentId": "implementer-batch-4",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/libconnect-mp4/src/MemberDashboard.tsx",
+      "src/libconnect-mp4/src/DashboardViews.css",
+      "src/libconnect-mp4/src/MemberCatalog.tsx",
+      "src/libconnect-mp4/src/MemberCatalog.css",
+      "src/libconnect-mp4/src/DashboardLogout.tsx",
+      "src/libconnect-mp4/src/DashboardRouteGuard.tsx",
+      "src/libconnect-mp4/server/catalog/adapter.js",
+      "src/libconnect-mp4/server/catalog/contract.js",
+      "src/libconnect-mp4/server/catalog/route.js",
+      "src/libconnect-mp4/server/auth/login.js",
+      "src/libconnect-mp4/server/index.js",
+      "src/libconnect-mp4/test/MemberCatalogSearch.test.tsx",
+      "src/libconnect-mp4/test/MemberCatalogCards.test.tsx",
+      "src/libconnect-mp4/test/member-catalog.adapter.test.js",
+      "src/libconnect-mp4/test/member-catalog.endpoint.test.js",
+      "src/libconnect-mp4/test/server.test.js",
+      "src/libconnect-mp4/test/login.session.test.js",
+      "workflow/tasks/member-catalog-search/implementation-report.md",
+      "logs/tasks/member-catalog-search/implementation-T06.md",
+      "src/libconnect-mp4/test/DashboardRoutes.integration.test.tsx"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-batch-4",
+    "worktree": "shared workspace",
+    "separationException": "Uncommitted implementation is not available in a separate clean checkout; reviewer will inspect exact working diff against clean HEAD with separate read-only agent and reports.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/member-catalog-search/review-report.md",
+      "logs/tasks/member-catalog-search/review-T06.md"
+    ]
+  },
+  "itemEvidence": {
+    "T06": {
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-report.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-report.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "command": "full frontend Jest suite 90/90",
+          "result": "pass"
+        },
+        {
+          "command": "full server Jest suite 160 pass, 1 skipped",
+          "result": "pass"
+        },
+        {
+          "command": "isolated TypeScript no-emit",
+          "result": "pass"
+        },
+        {
+          "command": "isolated production build",
+          "result": "pass"
+        },
+        {
+          "command": "rendered desktop/320px browser inspection",
+          "result": "skipped"
+        },
+        {
+          "command": "live or emulator Firestore integration",
+          "result": "skipped"
+        }
+      ],
+      "reviewLog": "logs/tasks/member-catalog-search/review-T06.md",
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T06.md",
+      "correctionReports": [
+        "workflow/tasks/member-catalog-search/implementation-T06-correction.md",
+        "workflow/tasks/member-catalog-search/implementation-T06-response-correction.md"
+      ]
+    }
+  },
+  "approvalMessage": "2026-11-08 human message: approved, in response to T06 singleton batch plan and implementation dispatch request.",
+  "allowedFilesAmendment": "2026-11-08: include existing dashboard route/logout regression test, explicitly required by T06 and approved handoff, after combined suite exposed its obsolete global fetch mock assumptions."
+}

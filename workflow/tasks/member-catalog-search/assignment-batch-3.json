@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 2,
+  "taskId": "member-catalog-search",
+  "batch": 3,
+  "items": [
+    "T04",
+    "T05"
+  ],
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/member-catalog-search.md",
+      "version": "0.1"
+    },
+    "checklist": {
+      "path": "workflow/tasks/member-catalog-search/tasks.md",
+      "version": "0.2"
+    },
+    "handoff": {
+      "path": "workflow/tasks/member-catalog-search/handoff.md",
+      "version": "0.2"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/member-catalog-search/handoff.md",
+  "implementer": {
+    "agentId": "implementer-batch-3",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/libconnect-mp4/src/MemberDashboard.tsx",
+      "src/libconnect-mp4/src/DashboardViews.css",
+      "src/libconnect-mp4/src/MemberCatalog.tsx",
+      "src/libconnect-mp4/src/MemberCatalog.css",
+      "src/libconnect-mp4/src/DashboardLogout.tsx",
+      "src/libconnect-mp4/src/DashboardRouteGuard.tsx",
+      "src/libconnect-mp4/test/MemberCatalogSearch.test.tsx",
+      "src/libconnect-mp4/test/MemberCatalogCards.test.tsx",
+      "workflow/tasks/member-catalog-search/implementation-T04.md",
+      "workflow/tasks/member-catalog-search/implementation-T05.md",
+      "logs/tasks/member-catalog-search/implementation-T04.md",
+      "logs/tasks/member-catalog-search/implementation-T05.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-batch-3",
+    "worktree": "shared workspace",
+    "separationException": "Uncommitted implementation is not available in a separate clean checkout; reviewer will inspect exact working diff against clean HEAD with separate read-only agent and reports.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/member-catalog-search/review-T04.md",
+      "workflow/tasks/member-catalog-search/review-T05.md",
+      "logs/tasks/member-catalog-search/review-T04.md",
+      "logs/tasks/member-catalog-search/review-T05.md"
+    ]
+  },
+  "itemEvidence": {
+    "T05": {
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T05.md",
+      "correctionReport": "workflow/tasks/member-catalog-search/implementation-T05-correction.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "result": "pass",
+          "command": "focused React interaction suites 14/14"
+        },
+        {
+          "result": "pass",
+          "command": "isolated TypeScript project check"
+        },
+        {
+          "result": "skipped",
+          "command": "rendered desktop and 320px visual inspection"
+        }
+      ],
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-T05.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-T05-final.md",
+      "reviewLog": "logs/tasks/member-catalog-search/review-T05-final.md"
+    },
+    "T04": {
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T04.md",
+      "correctionReport": "workflow/tasks/member-catalog-search/implementation-T04-correction.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "result": "pass",
+          "command": "focused React component/navigation suites"
+        },
+        {
+          "result": "skipped",
+          "command": "rendered desktop and 320px visual inspection"
+        }
+      ],
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-T04.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-T04-final.md",
+      "reviewLog": "logs/tasks/member-catalog-search/review-T04-final.md"
+    }
+  },
+  "approvalMessage": "2026-11-07 human message: approve, in response to T04-T05 batch plan and implementation dispatch request."
+}

@@ -1,7 +1,6 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { generateKeyPairSync } = require('crypto');
 
 const LOCAL_PROJECT_ID = 'libconnect-mp4';
 const LOCAL_EMULATOR_HOST = '127.0.0.1:8080';
@@ -96,20 +95,9 @@ async function connectFirestoreTarget(target, deps = {}) {
     await (deps.probeEmulator || probeEmulator)('127.0.0.1', 8080);
     // The Admin Firestore client reads this variable when it is constructed.
     if (!deps.getFirestore) process.env.FIRESTORE_EMULATOR_HOST = LOCAL_EMULATOR_HOST;
-    // Admin Firestore otherwise asks for developer ADC even when the emulator
-    // host is set. This fresh, unregistered key is only usable locally.
-    const { privateKey } = generateKeyPairSync('rsa', {
-      modulusLength: 2048,
-      publicKeyEncoding: { type: 'spki', format: 'pem' },
-      privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
-    });
-    const cert = deps.cert || require('firebase-admin/app').cert;
-    const credential = cert({
-      projectId: LOCAL_PROJECT_ID,
-      clientEmail: 'emulator@libconnect-mp4.iam.gserviceaccount.com',
-      privateKey,
-    });
-    const app = initializeApp({ projectId: LOCAL_PROJECT_ID, credential });
+    // The emulator uses the pinned host and project ID without credentials.
+    // Supplying a synthetic credential triggers deprecated GoogleAuth options.
+    const app = initializeApp({ projectId: LOCAL_PROJECT_ID });
     return getFirestore(app);
   }
   if (!nonempty(target.projectId) || target.emulatorHost !== undefined ||

@@ -13,8 +13,23 @@ start the local Firestore emulator from this directory:
 firebase emulators:start --only firestore --project libconnect-mp4
 ```
 
-Wait until Firestore is listening on `127.0.0.1:8080`. In a second PowerShell
-terminal, from this same directory, start Express:
+Wait until Firestore is listening on `127.0.0.1:8080`. To populate it with 120
+sample Books and three BookCopy records per Book, run this from
+this directory in a second PowerShell terminal:
+
+```powershell
+node scripts/seed-local-books.js
+```
+
+The script writes only to the local `libconnect-mp4` emulator. Book documents use
+ISBN IDs in `books`; copies use `<isbn>-01` through `<isbn>-03` IDs in
+`bookCopies`. It creates only missing IDs in one batch, so rerunning it preserves
+existing books and copy statuses while bringing the seeded set to 120 books and
+360 copies. Newly created copies start as `AVAILABLE`; existing statuses are
+preserved. Use `--dry-run` to print the target counts without connecting or
+writing.
+
+Then start Express:
 
 ```powershell
 $env:LIBCONNECT_FIRESTORE_MODE = 'local-emulator'

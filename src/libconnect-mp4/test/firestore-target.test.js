@@ -54,8 +54,8 @@ describe('explicit Firestore target selection', () => {
     expect(db).toBe(deps.db);
     expect(deps.probeEmulator).toHaveBeenCalledWith('127.0.0.1', 8080);
     expect(deps.applicationDefault).not.toHaveBeenCalled();
-    expect(deps.cert).toHaveBeenCalledTimes(1);
-    expect(deps.initializeApp).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'libconnect-mp4' }));
+    expect(deps.cert).not.toHaveBeenCalled();
+    expect(deps.initializeApp).toHaveBeenCalledWith({ projectId: 'libconnect-mp4' });
     expect(deps.getFirestore).toHaveBeenCalledTimes(1);
   });
 
