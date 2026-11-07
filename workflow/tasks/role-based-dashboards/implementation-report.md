@@ -3,7 +3,7 @@
 Task ID: `role-based-dashboards`
 Approved specification: `workflow/specs/role-based-dashboards.md` v0.3
 Approved checklist and handoff: v0.3
-Status: T01–T07 implementation complete; independent review passed with documented follow-ups; v0.3 human merge decision pending
+Status: T01–T07 implementation complete in commit `e887b0d6e4791df971bb9c2c724baf74d2856e88`; exact-commit review passed with documented follow-ups; v0.3 human merge decision pending
 
 ## Delivered behavior
 
@@ -97,11 +97,12 @@ The runtime did not expose per-run token metrics. Historical exchanges are liste
 | Task grouper | T07 Group 6 application | unavailable | unavailable | unavailable | unavailable | unavailable |
 | Implementer | Group 6 T07 | unavailable | unavailable | unavailable | unavailable | unavailable |
 | Reviewer | T07 independent review | unavailable | unavailable | unavailable | unavailable | unavailable |
+| Reviewer | v0.3 exact-commit review | unavailable | unavailable | unavailable | unavailable | unavailable |
 
 ## Version 0.2 human decision (historical)
 
 On 2026-11-07, after the combined v0.2 implementation and independent review were presented with the browser-refresh and low-priority theme-test follow-ups, the human replied `approved`. This records the human merge decision for the reviewed change. No agent set this approval. A concrete commit message requires separate human approval before committing. No commit, merge, push, deploy, or public action is recorded.
 
-## Current next gate — version 0.3 human merge decision
+## Exact-commit verification and next gate
 
-Present the combined v0.3 implementation and independent review, including the existing browser-refresh and theme-test follow-ups and the manual T07 baseline comparison limit, for a new human merge decision. The human approved the exact proposed `Auth: Add role-based dashboards and shared theme` commit message on 2026-11-07; that approval does not grant v0.3 merge approval. At this report revision, no commit, push, deploy, or public action is recorded.
+The human approved the exact `Auth: Add role-based dashboards and shared theme` commit message on 2026-11-07. Commit `e887b0d6e4791df971bb9c2c724baf74d2856e88` contains the reviewed v0.3 implementation and task evidence. A separate reviewer checked that exact commit in a clean local clone: focused 37/37, full 260 tests with one skipped, production build passed, and no new finding. The review is in `exact-commit-review.md` and its factual log. The earlier browser-refresh and theme-test follow-ups remain. The manual T07 baseline comparison limit is documented in `review-T07.md`; the exact committed manifest has now been checked. Present these results for a new human merge decision. No v0.3 merge approval, push, deploy, or public action is recorded.

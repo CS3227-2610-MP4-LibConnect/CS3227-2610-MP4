@@ -3,7 +3,7 @@
 Date: 2026-11-07
 Specification: `workflow/specs/role-based-dashboards.md` v0.3
 Checklist and handoff: v0.3, with recorded human approvals
-Overall verdict: **pass with documented follow-ups; v0.3 human merge decision pending**
+Overall verdict: **pass with documented follow-ups; exact commit `e887b0d` reviewed; v0.3 human merge decision pending**
 
 ## Results
 
@@ -72,3 +72,9 @@ The human approved canonical specification, checklist, and handoff v0.3, then ap
 Independent T07 review concluded **pass** after comparing the new modules with the prior combined source in an isolated snapshot. The focused suite passed 29 tests, the isolated full suite passed 262 tests with one skipped, and the production build passed. The reviewer verified workspace/snapshot file hashes. Because the prior v0.2 dashboard files were untracked, the baseline source comparison was manual rather than a Git diff; this is a review-method limit, not a found behavior defect. T02 role separation and T06 theme dependencies continued to pass. Exact commands and criteria are in `review-T07.md` and its factual log.
 
 T07 was marked `[x]` after independent review; all seven checklist tasks are complete. The existing real-browser refresh/deep-link check and low-priority theme-test maintenance follow-up remain open. No production finding, policy change, or additional follow-up was identified by T07 review. The earlier human merge decision covered v0.2 only; the combined v0.3 change requires a new human merge decision. No commit, push, deployment, or external-service action was performed.
+
+## Exact-commit review
+
+After the human approved the exact commit message, commit `e887b0d6e4791df971bb9c2c724baf74d2856e88` was created on `login-and-registration`. A separate reviewer checked the committed manifest and code in a clean local clone. The exact-commit verdict is **pass with follow-up**: focused 4 suites/37 tests passed, the full suite passed 13 suites with one skipped and 260 tests with one skipped, and the build passed. No new implementation or security finding appeared. The prior real-browser refresh and theme-test maintenance follow-ups remain. See `exact-commit-review.md` and `logs/tasks/role-based-dashboards/reviewer-exact-commit.md` for the exact commands and limits.
+
+The four unrelated test files modified in the shared working tree after commit creation were not part of the reviewed commit or exact-commit checkout. They are outside this task and are excluded from its review-evidence commit. The human merge decision for v0.3 remains pending; the earlier v0.2 approval does not cover this commit.

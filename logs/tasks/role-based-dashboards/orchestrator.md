@@ -45,3 +45,9 @@ After independent review, the orchestrator marked T07 `[x]`; all seven tasks are
 ## Version 0.3 commit-message approval
 
 After the v0.3 merge-decision request, the human asked to see the proposed commit message, then replied `approved` to the exact message beginning `Auth: Add role-based dashboards and shared theme`. The full approved body covers role-specific routing, server-session verification, CSRF logout, deep links, separate member and librarian files, shared styling/logout, and dependency-safe task regrouping. This is commit-message approval only; the v0.3 merge decision remains pending. No commit, merge, push, deployment, or external-service action had occurred when this entry was written.
+
+## Version 0.3 committed implementation and exact review
+
+The human-approved message was used verbatim to create commit `e887b0d6e4791df971bb9c2c724baf74d2856e88` on `login-and-registration`. The staged change contained 67 task-scoped files and evidence artifacts; `git diff --cached --check` passed after trailing Markdown whitespace was removed from new evidence files. The commit contained no package, lockfile, CI, deployment, secret, or unrelated path. An independent reviewer inspected the exact commit in a clean local clone, verified the manifest and approvals, ran focused 37/37, full 260 tests with one skipped, and a successful build. The exact-commit verdict was pass with the two pre-existing follow-ups and no new finding. Evidence is in `exact-commit-review.md` and `reviewer-exact-commit.md`.
+
+After commit creation, four unrelated test files in the shared working tree were modified outside this dashboard task. Those changes were absent from the reviewed commit and excluded from the exact-commit review checkout; the orchestrator did not edit, stage, or discard them. The v0.3 human merge decision remains pending. No merge, push, deployment, or external-service action was performed.
