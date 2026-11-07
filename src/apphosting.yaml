@@ -22,3 +22,23 @@ runConfig:
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
   # - variable: MY_SECRET
   #   secret: mySecretRef
+
+
+env: 
+- variable: LIBCONNECT_FIRESTORE_MODE
+  value: production
+  availability: 
+    - BUILD
+    - RUNTIME
+
+- variable: LIBCONNECT_FIRESTORE_PROJECT_ID
+  value: libconnect-mp4
+  availability: 
+    - BUILD
+    - RUNTIME
+
+- variable: GOOGLE_CLOUD_PROJECT
+  value: libconnect-mp4
+  availability: 
+    - BUILD
+    - RUNTIME
