@@ -35,15 +35,12 @@ The applicable skill must be selected and recorded in the handoff. The
 repository-specific skill mapping and the `specdocs` path adapter are defined
 in `workflow/README.md`; do not create a second specification tree.
 
-The analyst prepares the specification, dependency-ordered task checklist, and
-handoff for separate human approvals. Once those approvals are in place, the
-orchestrator coordinates test writing, proposes ordered batches of up to two
-checklist items, and presents the batch plan for human approval. One implementer
-completes the items in each approved batch sequentially, with separate
-verification evidence for each. One different reviewer independently reviews
-each item and the combined change before the next batch starts. The
-orchestrator reconciles the evidence and presents the review findings for a
-human merge decision.
+The analyst prepares the specification, task checklist, and handoff for separate
+human approvals. Once those approvals are in place, the orchestrator coordinates
+test writing and task grouping, presents the grouping for human approval, then
+assigns approved checklist items to implementers one task at a time. The
+orchestrator reconciles each group's evidence before starting the next, arranges
+independent review, and presents the review findings for a human merge decision.
 It owns shared checklist updates and agent handoff records; no agent response or
 passing test advances an approval gate.
 

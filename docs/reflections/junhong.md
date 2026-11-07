@@ -28,29 +28,3 @@ approval checks, test evidence, security review, and human merge decision. The
 reduction has not yet been measured against a completed task. Future
 implementation reports will record token usage for each subagent so I can
 measure the effect; earlier runs did not capture those figures.
-
-## Trying two-task implementation batches
-
-To reduce input token use further, I changed the workflow to use consecutive
-batches of up to two checklist items. One implementer completes and verifies
-the items in order, and a different reviewer checks each item and their
-combined behavior. The orchestrator reconciles the evidence before starting
-the next batch.
-
-For new tasks, this replaces the task-grouper and parallel-group approach. The
-aim is to reduce repeated agent startup and context loading while retaining
-item-level checks, independent review, and human approval gates. Sequential
-implementation may take longer when tasks could otherwise run in parallel.
-A batch can still contain one item when a dependency, approval boundary,
-security concern, or review size makes a pair unsuitable.
-
-The task-grouper entry in the earlier table and the plan to record subagent
-token usage describe the previous workflow. The task-grouper role has been
-retired. I also removed the token-reporting requirement because agents in
-earlier task runs could not see their own token counts.
-
-I compared T01 and T02 under the old and new workflows. The new approach used
-about 0.2 million fewer input tokens out of roughly 4 million, a saving of
-about 5%. That is modest, but the catalog search feature consumed about
-66 million tokens overall. I did not notice a difference in agent execution
-time, so even a small reduction in token use seems worthwhile.
