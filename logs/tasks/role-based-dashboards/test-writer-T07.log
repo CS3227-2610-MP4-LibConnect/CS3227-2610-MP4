@@ -1,0 +1,17 @@
+Task: role-based-dashboards / T07 test-writing
+Specification: workflow/specs/role-based-dashboards.md v0.3 (human-approved 2026-11-07)
+Checklist and handoff: v0.3 (human-approved 2026-11-07)
+Scope: test-only work; no implementation dispatch inferred.
+
+Command (working directory: src/libconnect-mp4):
+npm test -- --watchAll=false --runInBand --runTestsByPath test/SharedTheme.test.tsx test/DashboardRoutes.integration.test.tsx
+
+Result (initial focused run): exit code 1. DashboardRoutes.integration.test.tsx passed (25 tests). SharedTheme.test.tsx failed during module resolution because ../src/MemberDashboard does not exist yet. Therefore its assertions did not execute. The run is an expected red pre-implementation result, not a passing validation of the new module contracts. Jest also emitted Node's [DEP0040] punycode deprecation warning.
+
+After relaxing the stylesheet import-location assertion to allow a role module, route guard, or app entry to import DashboardViews.css, reran the same command. Result: exit code 1 with the same outcome (DashboardRoutes.integration.test.tsx passed all 25 tests; SharedTheme.test.tsx stopped at missing ../src/MemberDashboard before executing its assertions; same deprecation warning).
+
+Changed test file: src/libconnect-mp4/test/SharedTheme.test.tsx. It now imports role views from their intended dedicated modules, reads theme markup from the two module paths, and asserts DashboardRouteGuard imports each corresponding module, each role view imports the shared DashboardLogout, and DashboardViews.css is imported from at least one role module or a common route/app module.
+
+No production source, specification, task checklist, or handoff files were changed. No external services were accessed. No secrets or real user data were used.
+
+Runtime usage metrics: unavailable to this subagent. Model: unavailable to this subagent. Metric source: unavailable.

@@ -1,0 +1,102 @@
+:root {
+  color-scheme: light;
+  --lc-color-page: #f5f9ff;
+  --lc-color-page-glow: #dbeafe;
+  --lc-color-page-glow-login-top: rgba(191, 219, 254, 0.72);
+  --lc-color-page-glow-login-bottom: rgba(219, 234, 254, 0.78);
+  --lc-color-page-glow-dashboard: rgba(191, 219, 254, 0.55);
+  --lc-color-navy: #172554;
+  --lc-color-blue: #1e40af;
+  --lc-color-blue-hover: #1e3a8a;
+  --lc-color-blue-link: #1d4ed8;
+  --lc-color-text: #24385f;
+  --lc-color-option: #425574;
+  --lc-color-muted: #52627c;
+  --lc-color-placeholder: #7889a5;
+  --lc-color-icon: #365885;
+  --lc-color-icon-surface: #eaf1fc;
+  --lc-color-accent-surface: #eff6ff;
+  --lc-color-accent-surface-strong: #dbeafe;
+  --lc-color-error: #a33131;
+  --lc-color-footer: #687b99;
+  --lc-color-border: #dbe7f7;
+  --lc-color-border-subtle: #e5edfa;
+  --lc-color-control-border: #cbd9ed;
+  --lc-color-surface: #ffffff;
+  --lc-color-focus: rgba(37, 99, 235, 0.38);
+  --lc-color-focus-soft: rgba(37, 99, 235, 0.16);
+  --lc-color-focus-option: rgba(37, 99, 235, 0.3);
+  --lc-font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --lc-font-display: Georgia, 'Times New Roman', serif;
+  --lc-radius-control: 8px;
+  --lc-radius-surface: 18px;
+  --lc-space-page: 24px;
+  --lc-space-1: 4px;
+  --lc-space-2: 8px;
+  --lc-space-3: 12px;
+  --lc-space-4: 16px;
+  --lc-space-5: 20px;
+  --lc-space-6: 24px;
+  --lc-space-7: 28px;
+  --lc-space-8: 32px;
+  --lc-space-12: 48px;
+  --lc-space-16: 64px;
+  --lc-space-control-inline: 18px;
+  --lc-space-control-gap: 10px;
+  --lc-space-form-gap: 18px;
+  --lc-size-input-height: 46px;
+  --lc-size-button-height: 48px;
+  --lc-shadow-surface: 0 20px 55px rgba(30, 64, 175, 0.1);
+}
+
+body {
+  color: var(--lc-color-navy);
+  font-family: var(--lc-font-body);
+  background-color: var(--lc-color-page);
+}
+
+.login-card,
+.dashboard-panel {
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-surface);
+  background: var(--lc-color-surface);
+  box-shadow: var(--lc-shadow-surface);
+}
+
+.login-card h1,
+.dashboard-page h1,
+.dashboard-panel h2 {
+  color: var(--lc-color-navy);
+  font-family: var(--lc-font-display);
+}
+
+.eyebrow {
+  color: var(--lc-color-blue-link);
+}
+
+.submit-button,
+.dashboard-page + button {
+  min-height: var(--lc-size-button-height);
+  padding: 0 var(--lc-space-control-inline);
+  border: 0;
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-blue);
+  color: var(--lc-color-surface);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.submit-button:hover,
+.dashboard-page + button:hover {
+  background: var(--lc-color-blue-hover);
+}
+
+.submit-button:focus-visible,
+.dashboard-page + button:focus-visible,
+.login-card a:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}

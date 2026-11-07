@@ -23,13 +23,11 @@ function LoginPage() {
   const [accountType, setAccountType] = useState<AccountType>('MEMBER');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState('');
-  const [signedInAs, setSignedInAs] = useState<AccountType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function submitLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError('');
-    setSignedInAs(null);
 
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get('email') ?? '');
@@ -74,26 +72,12 @@ function LoginPage() {
         setFormError('Unable to complete sign in. Please try again.');
         return;
       }
-      setSignedInAs(returnedType);
+      window.location.assign(returnedType === 'MEMBER' ? '/member/dashboard' : '/librarian/dashboard');
     } catch {
       setFormError('Sign in is temporarily unavailable. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  if (signedInAs) {
-    const label = signedInAs === 'MEMBER' ? 'Member' : 'Librarian';
-    return (
-      <main className="login-page">
-        <section className="login-card" aria-labelledby="login-title">
-          <div className="brand-mark" aria-hidden="true">L</div>
-          <p className="eyebrow">LIBCONNECT</p>
-          <h1 id="login-title">You’re signed in</h1>
-          <p className="login-intro" role="status">Signed in as {label}.</p>
-        </section>
-      </main>
-    );
   }
 
   return (

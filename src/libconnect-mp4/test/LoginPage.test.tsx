@@ -161,17 +161,27 @@ describe('role-aware login', () => {
     }
   });
 
-  test('confirms the server-returned type after HTTP 200', async () => {
-    const { restore } = mockLoginResponse(200, { accountType: 'MEMBER' });
+  test.each([
+    { accountType: 'MEMBER', destination: '/member/dashboard' },
+    { accountType: 'LIBRARIAN', destination: '/librarian/dashboard' },
+  ])('navigates to the $accountType dashboard after successful login', async ({ accountType, destination }) => {
+    const { restore } = mockLoginResponse(200, { accountType });
+    const assign = jest.fn();
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, pathname: '/', assign },
+    });
     try {
       render(<LoginPage />);
-      chooseAccountType('LIBRARIAN');
+      chooseAccountType(accountType as 'MEMBER' | 'LIBRARIAN');
       fillLogin('person@example.test', 'synthetic-password');
       submitLogin();
 
-      expect(await screen.findByText(/signed.?in.*member/i)).toBeInTheDocument();
-      expect(screen.queryByText(/signed.?in.*librarian/i)).not.toBeInTheDocument();
+      await waitFor(() => expect(assign).toHaveBeenCalledWith(destination));
+      expect(screen.queryByText(/signed.?in/i)).not.toBeInTheDocument();
     } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
       restore();
     }
   });

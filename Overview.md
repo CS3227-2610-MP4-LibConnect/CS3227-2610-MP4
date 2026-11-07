@@ -257,6 +257,16 @@ The first manager is provisioned through a documented bootstrap procedure.
 - Development and production Firestore projects and credentials must be
   separate. Deployment must be performed by team-owned automation.
 
+## Interface design convention
+
+Use the login page's visual theme across the application: a pale blue backdrop,
+navy and blue accents, white rounded surfaces, restrained shadows, serif display
+headings, clear focus states, and responsive spacing. Keep shared design tokens
+and reusable visual classes in a common project CSS file. Reuse interface
+elements when their structure and behavior are shared, while giving each page
+the layout its function needs. New pages should follow this convention so the
+member and librarian experiences remain visually consistent.
+
 ## Development context
 
 LibConnect will be developed by two developers. The assigned development areas are documented in:
@@ -267,3 +277,7 @@ LibConnect will be developed by two developers. The assigned development areas a
 The implementation plan and capability map are specified in [`workflow/PLAN.md`](./workflow/PLAN.md).
 
 Keep the full project scope in mind when developing individual features. Design interfaces and shared code so that the separately developed parts can be integrated.
+
+## Amendments
+
+- 2026-11-07: The human approved planning-document edits for a project-wide visual convention based on the login page, including a common CSS file and reusable interface elements where appropriate. This entry records the approved amendment request and its reason: consistent dashboard styling now and consistent future pages. The substantive convention is added separately after amendment entries are recorded in all affected planning documents.

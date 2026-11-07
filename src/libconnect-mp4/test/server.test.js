@@ -53,6 +53,22 @@ test('serves the built frontend and the login API from one origin', async () => 
     expect(registrationPage.status).toBe(200);
     expect(registrationPage.text).toContain('<title>LibConnect</title>');
 
+    const dashboardResults = [];
+    for (const dashboardPath of ['/member/dashboard', '/librarian/dashboard']) {
+      const directNavigation = await request(app).get(dashboardPath);
+      const refresh = await request(app).get(dashboardPath);
+      dashboardResults.push(
+        { path: dashboardPath, kind: 'direct', status: directNavigation.status, shell: directNavigation.text.includes('<title>LibConnect</title>') },
+        { path: dashboardPath, kind: 'refresh', status: refresh.status, shell: refresh.text.includes('<title>LibConnect</title>') },
+      );
+    }
+    expect(dashboardResults).toEqual([
+      { path: '/member/dashboard', kind: 'direct', status: 200, shell: true },
+      { path: '/member/dashboard', kind: 'refresh', status: 200, shell: true },
+      { path: '/librarian/dashboard', kind: 'direct', status: 200, shell: true },
+      { path: '/librarian/dashboard', kind: 'refresh', status: 200, shell: true },
+    ]);
+
     const login = await request(app).post('/api/auth/login').send({
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'MEMBER',
     });

@@ -1,5 +1,5 @@
 const React = require('react');
-const { fireEvent, render, screen } = require('@testing-library/react');
+const { fireEvent, render, screen, waitFor } = require('@testing-library/react');
 const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
@@ -136,13 +136,20 @@ describe('T05 React to Express login integration', () => {
     const users = await makeUsers();
     const system = createSyntheticSystem(users);
     const bridge = connectReactFetchToExpress(system.app);
+    const originalLocation = window.location;
+    const assign = jest.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...originalLocation, pathname: '/', assign },
+    });
     try {
       render(<LoginPage />);
       fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
       fill(` ${librarianEmail.toUpperCase()} `, librarianPassword);
       submit();
 
-      expect(await screen.findByText(/signed in as librarian/i)).toBeInTheDocument();
+      await waitFor(() => expect(assign).toHaveBeenCalledWith('/librarian/dashboard'));
+      expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
       expect(bridge.calls[0]).toEqual(expect.objectContaining({
         url: '/api/auth/login', method: 'POST',
         body: { email: librarianEmail.toUpperCase(), password: librarianPassword, accountType: 'LIBRARIAN' },
@@ -180,6 +187,7 @@ describe('T05 React to Express login integration', () => {
       expect(logout.headers['set-cookie'][0]).toContain('Max-Age=0');
       expect((await bridge.agent.get('/api/auth/session').set('Cookie', cookie)).status).toBe(401);
     } finally {
+      Object.defineProperty(window, 'location', { configurable: true, value: originalLocation });
       bridge.restore();
     }
   });
