@@ -42,8 +42,15 @@ const BEARER_TOKEN = /\b(Bearer[ \t]+)[A-Za-z0-9\-._~+/]{8,}=*/gi;
 // `token = ghp_...` becoming `token = [REDACTED]`) is matched whole by the
 // `\[REDACTED\]` alternative; otherwise the unquoted-value class would stop at
 // the closing bracket and leave a stray `]` behind.
+//
+// A type annotation between the name and `=` (`password: str = ...`,
+// `const token: string = ...`, `val apiKey: String? = ...`) is kept and the
+// value after `=` is replaced. The annotation is bounded to 65 characters and
+// may contain spaces, `|`, `?`, `.`, `<>`, and `[]`, but not commas or quotes,
+// so `password: hunter2, retries = 3` still redacts `hunter2`. Without a
+// following `=` (not `==` or `=>`), the `:` itself is the operator.
 const ASSIGNMENT =
-  /(?<![A-Za-z0-9_.-])(["']?[A-Za-z0-9_.-]{0,64}(?:password|secret|token|api_key|apikey)[A-Za-z0-9_.-]{0,64}["']?[ \t]*(?::=|=>|=(?!=)|:)[ \t]*)(?:\[REDACTED\]|"[^"\r\n]*"|'[^'\r\n]*'|`[^`\r\n]*`|[^\s"'`,;)}\]]+)/gi;
+  /(?<![A-Za-z0-9_.-])(["']?[A-Za-z0-9_.-]{0,64}(?:password|secret|token|api_key|apikey)[A-Za-z0-9_.-]{0,64}["']?[ \t]*(?::[ \t]*[A-Za-z_][A-Za-z0-9_.<>[\]|? \t]{0,64}(?==(?![=>])))?(?::=|=>|=(?!=)|:)[ \t]*)(?:\[REDACTED\]|"[^"\r\n]*"|'[^'\r\n]*'|`[^`\r\n]*`|[^\s"'`,;)}\]]+)/gi;
 
 // Email addresses. The lookbehind limits match starts to the beginning of a
 // local-part run; bounded label lengths follow RFC 5321 limits.
