@@ -1,9 +1,10 @@
-# LibConnect Agent Instructions
+# CodeClinic Agent Instructions
 
 These instructions apply to every coding agent working in this repository.
-Role-specific procedures live under `workflow/agents/`, and the `orchestrator`
-skill is at `workflow/skills/orchestrator/SKILL.md`;
-the workflow and handoff rules live in `workflow/README.md`.
+Role-specific procedures live under `workflow/agents/`, including the
+orchestrator profile at `workflow/agents/orchestrator.toml`; the workflow and
+handoff rules live in `workflow/README.md`, and the delivery plan lives in
+`workflow/PLAN.md`.
 
 ## Source of truth
 

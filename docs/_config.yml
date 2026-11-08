@@ -1,9 +1,10 @@
-title: "LibConnect"
+title: "CodeClinic"
 theme: minima
 
 header_pages:
   - UserGuide.md
   - DeveloperGuide.md
+  - Reflections.md
 
-repository: " CS3227-2610-MP3-LibConnect/CS3227-2610-MP3"
+repository: "CS3227-2610-MP4-LibConnect/CS3227-2610-MP4"
 github_icon: "images/github-icon.png"

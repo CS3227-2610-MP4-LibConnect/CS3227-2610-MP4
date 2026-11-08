@@ -1,7 +1,7 @@
 # CS3227-2610-MP4
 
 ### Running Commands 
-To run commands first cd into src/libconnect-mp4
+To run commands first cd into src/codeclinic
 
 Available Commands:
 
