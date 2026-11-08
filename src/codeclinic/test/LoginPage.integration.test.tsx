@@ -164,7 +164,7 @@ describe('T05 React to Express login integration', () => {
       expect(loginResponse.status).toBe(200);
       expect(loginResponse.body).toEqual({ accountType: 'TA' });
       const cookieHeader = (loginResponse.headers['set-cookie'] as string[])[0];
-      expect(cookieHeader).toContain('__Host-libconnect_session=');
+      expect(cookieHeader).toContain('__Host-codeclinic_session=');
       expect(cookieHeader).toContain('Secure');
       expect(cookieHeader).toContain('HttpOnly');
       expect(cookieHeader).toContain('SameSite=Lax');

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './LoginPage.css';
 
 type AccountType = 'STUDENT' | 'TA';
-const REGISTRATION_NOTICE_KEY = 'libconnect.registrationNotice';
+const REGISTRATION_NOTICE_KEY = 'codeclinic.registrationNotice';
 
 function readRegistrationNotice(): AccountType | null {
   try {
@@ -83,10 +83,10 @@ function LoginPage() {
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="login-title">
-        <div className="brand-mark" aria-hidden="true">L</div>
-        <p className="eyebrow">LIBCONNECT</p>
+        <div className="brand-mark" aria-hidden="true">C</div>
+        <p className="eyebrow">CODECLINIC</p>
         <h1 id="login-title">Welcome back</h1>
-        <p className="login-intro">Sign in to continue to your library account.</p>
+        <p className="login-intro">Sign in to continue to CodeClinic.</p>
         {registrationNotice && <p role="status" aria-live="polite">
           {registrationNotice === 'STUDENT'
             ? 'Student registration complete. You can now sign in.'
@@ -158,7 +158,7 @@ function LoginPage() {
           </button>
         </form>
 
-        <p className="login-footer">New to LibConnect? <a href="/register">Register</a></p>
+        <p className="login-footer">New to CodeClinic? <a href="/register">Register</a></p>
       </section>
     </main>
   );

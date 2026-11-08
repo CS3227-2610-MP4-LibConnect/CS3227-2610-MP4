@@ -100,7 +100,7 @@ describe('T03 POST /api/auth/login', () => {
 
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ accountType: 'STUDENT' });
-    expect(response.headers['set-cookie'][0]).toContain('__Host-libconnect_session=');
+    expect(response.headers['set-cookie'][0]).toContain('__Host-codeclinic_session=');
     expect(authStore.createSession).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(response.body)).not.toContain(validUser.passwordHash);
     expect(repository.findEmailKeyMatches).toHaveBeenCalledTimes(1);

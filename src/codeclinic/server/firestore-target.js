@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const LOCAL_PROJECT_ID = 'libconnect-mp4';
+const LOCAL_PROJECT_ID = 'demo-codeclinic';
 const LOCAL_EMULATOR_HOST = '127.0.0.1:8080';
 
 function nonempty(value) {
@@ -10,12 +10,12 @@ function nonempty(value) {
 }
 
 function resolveFirestoreTarget(env) {
-  const mode = env.LIBCONNECT_FIRESTORE_MODE;
-  const projectId = env.LIBCONNECT_FIRESTORE_PROJECT_ID;
+  const mode = env.CODECLINIC_FIRESTORE_MODE;
+  const projectId = env.CODECLINIC_FIRESTORE_PROJECT_ID;
   if (mode === 'local-emulator') {
     if (projectId !== LOCAL_PROJECT_ID || env.FIRESTORE_EMULATOR_HOST !== LOCAL_EMULATOR_HOST ||
         (nonempty(env.GOOGLE_CLOUD_PROJECT) && env.GOOGLE_CLOUD_PROJECT !== LOCAL_PROJECT_ID)) {
-      throw new Error('Local Firestore requires project libconnect-mp4 and emulator 127.0.0.1:8080.');
+      throw new Error('Local Firestore requires project demo-codeclinic and emulator 127.0.0.1:8080.');
     }
     return Object.freeze({ mode, projectId, emulatorHost: LOCAL_EMULATOR_HOST });
   }
@@ -27,7 +27,7 @@ function resolveFirestoreTarget(env) {
     }
     return Object.freeze({ mode, projectId });
   }
-  throw new Error('LIBCONNECT_FIRESTORE_MODE must be local-emulator or production.');
+  throw new Error('CODECLINIC_FIRESTORE_MODE must be local-emulator or production.');
 }
 
 function probeEmulator(host, port) {

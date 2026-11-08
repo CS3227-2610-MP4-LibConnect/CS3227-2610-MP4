@@ -194,7 +194,7 @@ describe('registration page', () => {
     await waitFor(() => expect(screen.getAllByRole('alert').some((node) => Boolean(node.textContent?.trim()))).toBe(true));
     expect(window.location.pathname).toBe('/register');
     expect(screen.queryByRole('status', { name: /success/i })).not.toBeInTheDocument();
-    expect(window.sessionStorage.getItem('libconnect.registrationNotice')).toBeNull();
+    expect(window.sessionStorage.getItem('codeclinic.registrationNotice')).toBeNull();
   });
 
   test.each([
@@ -214,7 +214,7 @@ describe('registration page', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/returning to login in 5 seconds/i);
     expect(screen.getByRole('link', { name: /go to login now/i })).toHaveAttribute('href', '/');
     if (type === 'TA') expect(screen.getByRole('status')).toHaveTextContent(/TA Coordinator must activate/i);
-    expect(window.sessionStorage.getItem('libconnect.registrationNotice')).toBe(type);
+    expect(window.sessionStorage.getItem('codeclinic.registrationNotice')).toBe(type);
     for (let second = 0; second < 4; second += 1) {
       await act(async () => { jest.advanceTimersByTime(1000); });
     }
@@ -222,7 +222,7 @@ describe('registration page', () => {
     page.unmount();
     render(<LoginPage />);
     expect(screen.getByRole('status')).toHaveTextContent(message);
-    expect(window.sessionStorage.getItem('libconnect.registrationNotice')).toBeNull();
+    expect(window.sessionStorage.getItem('codeclinic.registrationNotice')).toBeNull();
   });
 
   test('redirects to login after five seconds, and not before', async () => {

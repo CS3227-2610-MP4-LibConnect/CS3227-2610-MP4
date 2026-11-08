@@ -79,8 +79,8 @@ function fakeSystem() {
     async deleteSession() {},
     async deleteSessionIfCsrfMatches() { return false; },
   };
-  const build = fs.mkdtempSync(path.join(os.tmpdir(), 'libconnect-registration-'));
-  fs.writeFileSync(path.join(build, 'index.html'), '<!doctype html><title>LibConnect</title>');
+  const build = fs.mkdtempSync(path.join(os.tmpdir(), 'codeclinic-registration-'));
+  fs.writeFileSync(path.join(build, 'index.html'), '<!doctype html><title>CodeClinic</title>');
   return {
     app: createServerApp(db, build, authStore), records, rateSlots, sessions,
     setFailCommit(value) { failCommit = value; },

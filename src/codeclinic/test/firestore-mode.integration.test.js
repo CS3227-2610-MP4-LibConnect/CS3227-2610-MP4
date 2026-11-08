@@ -7,8 +7,8 @@ const emulatorTest = process.env.RUN_FIRESTORE_EMULATOR_TESTS === '1' ? test : t
 
 emulatorTest('registration and login share the local Firestore emulator', () => {
   expect(process.env.FIRESTORE_EMULATOR_HOST).toBe('127.0.0.1:8080');
-  expect(process.env.LIBCONNECT_FIRESTORE_MODE).toBe('local-emulator');
-  expect(process.env.LIBCONNECT_FIRESTORE_PROJECT_ID).toBe('libconnect-mp4');
+  expect(process.env.CODECLINIC_FIRESTORE_MODE).toBe('local-emulator');
+  expect(process.env.CODECLINIC_FIRESTORE_PROJECT_ID).toBe('demo-codeclinic');
 
   // CRA/Jest has a browser-flavored resolver. Exercise the real Admin SDK in
   // a child Node process, matching the Express runtime.

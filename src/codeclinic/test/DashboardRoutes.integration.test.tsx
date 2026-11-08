@@ -343,7 +343,7 @@ describe('student dashboard navigation', () => {
   test('provides dashboard navigation and keeps logout available', async () => {
     render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
 
-    expect(screen.getByRole('link', { name: /libconnect/i })).toHaveAttribute('href', '/student/dashboard');
+    expect(screen.getByRole('link', { name: /codeclinic/i })).toHaveAttribute('href', '/student/dashboard');
     expect(screen.getByRole('button', { name: /log out/i })).toBeVisible();
   });
 });

@@ -38,13 +38,13 @@ async function startServer() {
   const db = await connectFirestoreTarget(target);
   const app = createServerApp(db, buildDirectory);
   return app.listen(port, () => {
-    console.info(`LibConnect server listening on port ${port}.`);
+    console.info(`CodeClinic server listening on port ${port}.`);
   });
 }
 
 if (require.main === module) {
   startServer().catch(() => {
-    console.error('LibConnect server could not start. Check Firestore mode, project, runtime, emulator, and build configuration.');
+    console.error('CodeClinic server could not start. Check Firestore mode, project, runtime, emulator, and build configuration.');
     process.exitCode = 1;
   });
 }
