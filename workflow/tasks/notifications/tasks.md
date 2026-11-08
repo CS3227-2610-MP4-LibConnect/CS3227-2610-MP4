@@ -11,9 +11,9 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
 ## N-G1 — Notify module and inbox API (parallel)
 
-- [ ] **T01 — Shared notify module.** Add `server/notifications/notify.js` with the R1 validation, the 300-character cap, the write shape, and the single retry, with a non-sensitive log on failure that never throws to the caller. Unit-test it with a fake Firestore. (Spec R1; scenarios 1, 6.)
+- [x] **T01 — Shared notify module.** Add `server/notifications/notify.js` with the R1 validation, the 300-character cap, the write shape, and the single retry, with a non-sensitive log on failure that never throws to the caller. Unit-test it with a fake Firestore. (Spec R1; scenarios 1, 6.)
 
-- [ ] **T02 — Inbox API.** Add the four R2 endpoints under `server/notifications/route.js`, mounted in `server/index.js`: own-only access, a `404` for other users' IDs, cursor pagination with 20 per page, an unread count capped at 99, CSRF on the `POST` endpoints, and `503` on storage failure. Test ownership, pagination, CSRF, and every status code. (Spec R2; scenarios 2–4, 7.)
+- [x] **T02 — Inbox API.** Add the four R2 endpoints under `server/notifications/route.js`, mounted in `server/index.js`: own-only access, a `404` for other users' IDs, cursor pagination with 20 per page, an unread count capped at 99, CSRF on the `POST` endpoints, and `503` on storage failure. Test ownership, pagination, CSRF, and every status code. (Spec R2; scenarios 2–4, 7.)
 
 ## N-G2 — Bell and inbox page
 

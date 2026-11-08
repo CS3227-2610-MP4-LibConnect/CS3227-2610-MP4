@@ -6,10 +6,18 @@ const { createFirestoreAuthStore } = require('./auth/firestore-store');
 const { createRegistrationHandler } = require('./auth/register');
 const { createFirestoreRegistrationPersistence } = require('./auth/firestore-registration');
 const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-target');
+const { configureNotify } = require('./notifications/notify');
+const { createNotificationsRouter, createFirestoreNotificationStore } = require('./notifications/route');
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
   const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
   app.post('/api/auth/register', createRegistrationHandler(registrationPersistence, authStore));
+  configureNotify(db);
+  app.use('/api/notifications', createNotificationsRouter({
+    repository: createFirestoreLoginRepository(db),
+    authStore,
+    store: createFirestoreNotificationStore(db),
+  }));
   if (fs.existsSync(path.join(buildDirectory, 'index.html'))) {
     app.use(express.static(buildDirectory));
     app.get('/register', (_request, response) => {
