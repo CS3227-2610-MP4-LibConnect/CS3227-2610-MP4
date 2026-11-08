@@ -12,7 +12,7 @@ function fillLogin(email: string, password: string) {
   });
 }
 
-function chooseAccountType(type: 'MEMBER' | 'LIBRARIAN') {
+function chooseAccountType(type: 'STUDENT' | 'TA') {
   const name = new RegExp(type, 'i');
   const radio = screen.queryByRole('radio', { name });
   if (radio) {
@@ -52,28 +52,28 @@ describe('role-aware login', () => {
 
     expect(screen.getByRole('textbox', { name: /email/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/password/i)).toHaveAttribute('type', 'password');
-    expect(screen.getByText(/member/i)).toBeInTheDocument();
-    expect(screen.getByText(/librarian/i)).toBeInTheDocument();
+    expect(screen.getByText(/student/i)).toBeInTheDocument();
+    expect(screen.getByText(/^ta$/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log\s*in|sign\s*in/i })).toBeInTheDocument();
   });
 
   test('exposes an accessible radio group with a visible selected account type', () => {
     render(<LoginPage />);
 
-    const memberOption = screen.getByRole('radio', { name: /member/i });
-    const librarianOption = screen.getByRole('radio', { name: /librarian/i });
-    expect(memberOption).toBeChecked();
-    expect(librarianOption).not.toBeChecked();
-    expect(memberOption).toHaveAccessibleName('Member');
-    expect(librarianOption).toHaveAccessibleName('Librarian');
+    const studentOption = screen.getByRole('radio', { name: /student/i });
+    const taOption = screen.getByRole('radio', { name: /^ta$/i });
+    expect(studentOption).toBeChecked();
+    expect(taOption).not.toBeChecked();
+    expect(studentOption).toHaveAccessibleName('Student');
+    expect(taOption).toHaveAccessibleName('TA');
 
     userEvent.tab();
-    expect(memberOption).toHaveFocus();
+    expect(studentOption).toHaveFocus();
 
-    fireEvent.click(librarianOption);
-    expect(librarianOption).toBeChecked();
-    expect(memberOption).not.toBeChecked();
-    expect(librarianOption.closest('label')).toHaveClass('is-selected');
+    fireEvent.click(taOption);
+    expect(taOption).toBeChecked();
+    expect(studentOption).not.toBeChecked();
+    expect(taOption.closest('label')).toHaveClass('is-selected');
   });
 
   test.each([
@@ -100,7 +100,7 @@ describe('role-aware login', () => {
     }
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'] as const)(
+  test.each(['STUDENT', 'TA'] as const)(
     'sends one POST with the selected %s type and exact password',
     async (type) => {
       const { request, restore } = mockLoginResponse(401, {
@@ -162,8 +162,8 @@ describe('role-aware login', () => {
   });
 
   test.each([
-    { accountType: 'MEMBER', destination: '/member/dashboard' },
-    { accountType: 'LIBRARIAN', destination: '/librarian/dashboard' },
+    { accountType: 'STUDENT', destination: '/member/dashboard' },
+    { accountType: 'TA', destination: '/librarian/dashboard' },
   ])('navigates to the $accountType dashboard after successful login', async ({ accountType, destination }) => {
     const { restore } = mockLoginResponse(200, { accountType });
     const assign = jest.fn();
@@ -174,7 +174,7 @@ describe('role-aware login', () => {
     });
     try {
       render(<LoginPage />);
-      chooseAccountType(accountType as 'MEMBER' | 'LIBRARIAN');
+      chooseAccountType(accountType as 'STUDENT' | 'TA');
       fillLogin('person@example.test', 'synthetic-password');
       submitLogin();
 

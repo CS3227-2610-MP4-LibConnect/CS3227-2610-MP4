@@ -97,7 +97,7 @@ beforeAll(async () => {
     email,
     canonicalEmailKey: email,
     passwordHash,
-    accountType: 'MEMBER',
+    accountType: 'STUDENT',
     accountStatus: 'ACTIVE',
     isManager: false,
   };
@@ -106,13 +106,13 @@ beforeAll(async () => {
 describe('T04 authorization and server sessions', () => {
   test('returns only the verified member name alongside the session role', async () => {
     const system = makeSystem({ user: { ...account, name: ' Synthetic Reader ' } });
-    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
-    expect(login.body).toEqual({ accountType: 'MEMBER' });
+    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
+    expect(login.body).toEqual({ accountType: 'STUDENT' });
     const session = await request(system.app).get('/api/auth/session').set('Cookie', cookieFrom(login));
-    expect(session.body).toEqual({ accountType: 'MEMBER', name: 'Synthetic Reader' });
+    expect(session.body).toEqual({ accountType: 'STUDENT', name: 'Synthetic Reader' });
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'])('establishes durable success only for an active stored %s account', async (accountType) => {
+  test.each(['STUDENT', 'TA'])('establishes durable success only for an active stored %s account', async (accountType) => {
     const system = makeSystem({ user: { ...account, accountType } });
     const response = await request(system.app).post('/api/auth/login')
       .send({ email, password, accountType, role: 'MANAGER', isManager: true, accountStatus: 'ACTIVE', userId: 'forged', passwordHash: 'forged' });
@@ -135,9 +135,9 @@ describe('T04 authorization and server sessions', () => {
   });
 
   test.each([
-    ['member selected as librarian', 'MEMBER', 'ACTIVE', 'LIBRARIAN'],
-    ['librarian selected as member', 'LIBRARIAN', 'ACTIVE', 'MEMBER'],
-    ['inactive account', 'MEMBER', 'INACTIVE', 'MEMBER'],
+    ['member selected as librarian', 'STUDENT', 'ACTIVE', 'TA'],
+    ['librarian selected as member', 'TA', 'ACTIVE', 'STUDENT'],
+    ['inactive account', 'STUDENT', 'INACTIVE', 'STUDENT'],
   ])('uses a uniform denial and writes no session for %s', async (_label, accountType, accountStatus, selected) => {
     const system = makeSystem({ user: { ...account, accountType, accountStatus } });
     const response = await request(system.app).post('/api/auth/login').send({ email, password, accountType: selected });
@@ -149,7 +149,7 @@ describe('T04 authorization and server sessions', () => {
 
   test('does not create a session when session persistence fails', async () => {
     const system = makeSystem({ createError: new Error('synthetic store outage') });
-    const response = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    const response = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     expect(response.status).toBe(503);
     expect(response.body).toEqual({ message: RETRY_MESSAGE });
     expect(response.headers['set-cookie']).toBeUndefined();
@@ -158,7 +158,7 @@ describe('T04 authorization and server sessions', () => {
 
   test('rechecks active status and stored role on protected routes', async () => {
     const system = makeSystem();
-    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     const cookie = cookieFrom(login);
     expect((await request(system.app).get('/api/auth/session').set('Cookie', cookie)).status).toBe(200);
 
@@ -168,8 +168,8 @@ describe('T04 authorization and server sessions', () => {
     expect(system.sessions.size).toBe(0);
 
     const roleSystem = makeSystem();
-    const roleLogin = await request(roleSystem.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
-    roleSystem.user = { ...account, accountType: 'LIBRARIAN' };
+    const roleLogin = await request(roleSystem.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
+    roleSystem.user = { ...account, accountType: 'TA' };
     const roleResponse = await request(roleSystem.app).get('/api/auth/session').set('Cookie', cookieFrom(roleLogin));
     expect(roleResponse.status).toBe(401);
     expect(roleSystem.sessions.size).toBe(0);
@@ -178,14 +178,14 @@ describe('T04 authorization and server sessions', () => {
   test('enforces idle and absolute expiry at the server', async () => {
     let time = 1_800_000_000_000;
     const system = makeSystem({ clock: () => time });
-    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     const cookie = cookieFrom(login);
     time += 30 * 60 * 1000;
     expect((await request(system.app).get('/api/auth/session').set('Cookie', cookie)).status).toBe(401);
     expect(system.sessions.size).toBe(0);
 
     time += 1;
-    const second = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    const second = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     const secondCookie = cookieFrom(second);
     time += 8 * 60 * 60 * 1000;
     expect((await request(system.app).get('/api/auth/session').set('Cookie', secondCookie)).status).toBe(401);
@@ -193,7 +193,7 @@ describe('T04 authorization and server sessions', () => {
 
   test('requires CSRF on logout, then invalidates the durable session', async () => {
     const system = makeSystem();
-    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+    const login = await request(system.app).post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     const cookie = cookieFrom(login);
     const missing = await request(system.app).post('/api/auth/logout').set('Cookie', cookie);
     expect(missing.status).toBe(403);
@@ -214,11 +214,11 @@ describe('T04 authorization and server sessions', () => {
     const system = makeSystem();
     for (let index = 0; index < 5; index += 1) {
       const response = await request(system.app).post('/api/auth/login')
-        .send({ email: ' MEMBER@EXAMPLE.TEST ', password: 'wrong', accountType: 'MEMBER' });
+        .send({ email: ' MEMBER@EXAMPLE.TEST ', password: 'wrong', accountType: 'STUDENT' });
       expect(response.status).toBe(401);
     }
     const limited = await request(system.app).post('/api/auth/login')
-      .send({ email, password, accountType: 'MEMBER' });
+      .send({ email, password, accountType: 'STUDENT' });
     expect(limited.status).toBe(429);
     expect(limited.body).toEqual({ message: 'Unable to sign in right now. Please try again later.' });
     expect(system.sessions.size).toBe(0);
@@ -230,11 +230,11 @@ describe('T04 authorization and server sessions', () => {
     for (let index = 0; index < 30; index += 1) {
       const response = await request(system.app).post('/api/auth/login')
         .set('X-Forwarded-For', `203.0.113.${index + 1}`)
-        .send({ email: `unknown${index}@example.test`, password: 'wrong', accountType: 'MEMBER' });
+        .send({ email: `unknown${index}@example.test`, password: 'wrong', accountType: 'STUDENT' });
       expect(response.status).toBe(401);
     }
     const limited = await request(system.app).post('/api/auth/login')
-      .send({ email: 'another@example.test', password: 'wrong', accountType: 'MEMBER' });
+      .send({ email: 'another@example.test', password: 'wrong', accountType: 'STUDENT' });
     expect(limited.status).toBe(429);
     expect(limited.body).toEqual({ message: 'Unable to sign in right now. Please try again later.' });
     expect(system.sessions.size).toBe(0);
@@ -243,9 +243,9 @@ describe('T04 authorization and server sessions', () => {
   test('uses no forwarded headers as source identity and does not return private account data', async () => {
     const system = makeSystem();
     const response = await request(system.app).post('/api/auth/login')
-      .set('X-Forwarded-For', '203.0.113.9').send({ email, password, accountType: 'MEMBER' });
+      .set('X-Forwarded-For', '203.0.113.9').send({ email, password, accountType: 'STUDENT' });
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ accountType: 'MEMBER' });
+    expect(response.body).toEqual({ accountType: 'STUDENT' });
     expect(JSON.stringify(response.body)).not.toMatch(/email|password|userId|manager|session/i);
   });
 });

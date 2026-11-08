@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './LoginPage.css';
 
-type AccountType = 'MEMBER' | 'LIBRARIAN';
+type AccountType = 'STUDENT' | 'TA';
 type Field = 'name' | 'email' | 'password' | 'confirmation' | 'employeeId';
 type Errors = Partial<Record<Field, string>>;
 const REGISTRATION_NOTICE_KEY = 'libconnect.registrationNotice';
@@ -9,7 +9,7 @@ const byteLength = (value: string) => new Blob([value]).size;
 const REGISTRATION_EMAIL_FORMAT = /^[^\s@.]+(\.[^\s@.]+)*@[^\s@.]+(\.[^\s@.]+)+$/;
 
 function RegistrationPage() {
-  const [accountType, setAccountType] = useState<AccountType>('MEMBER');
+  const [accountType, setAccountType] = useState<AccountType>('STUDENT');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,7 +47,7 @@ function RegistrationPage() {
   function selectType(next: AccountType) {
     setAccountType(next);
     setFormError('');
-    if (next === 'MEMBER') {
+    if (next === 'STUDENT') {
       setEmployeeId('');
       clearError('employeeId');
     }
@@ -71,7 +71,7 @@ function RegistrationPage() {
     else if (byteLength(password) > 1024) nextErrors.password = 'Password must be at most 1024 bytes.';
     if (!confirmation.trim()) nextErrors.confirmation = 'Confirm your password.';
     else if (confirmation !== password) nextErrors.confirmation = 'Passwords must match.';
-    if (accountType === 'LIBRARIAN') {
+    if (accountType === 'TA') {
       if (!cleanEmployeeId) nextErrors.employeeId = 'Enter your employee ID.';
       else if (byteLength(cleanEmployeeId) > 64) nextErrors.employeeId = 'Employee ID must be at most 64 bytes.';
     }
@@ -82,7 +82,7 @@ function RegistrationPage() {
     try {
       const payload = {
         accountType, name: cleanName, email: cleanEmail, password,
-        ...(accountType === 'LIBRARIAN' ? { employeeId: cleanEmployeeId } : {}),
+        ...(accountType === 'TA' ? { employeeId: cleanEmployeeId } : {}),
       };
       const response = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
@@ -94,7 +94,7 @@ function RegistrationPage() {
       else {
         const body: unknown = await response.json();
         const result = body as { accountType?: unknown; accountStatus?: unknown } | null;
-        const expectedStatus = accountType === 'MEMBER' ? 'ACTIVE' : 'INACTIVE';
+        const expectedStatus = accountType === 'STUDENT' ? 'ACTIVE' : 'INACTIVE';
         if (!result || typeof result !== 'object' || Array.isArray(result) ||
             Object.keys(result).sort().join(',') !== 'accountStatus,accountType' ||
             result.accountType !== accountType || result.accountStatus !== expectedStatus)
@@ -124,9 +124,9 @@ function RegistrationPage() {
         <h1 id="registration-title">Register</h1>
         <p className="login-intro">Create your library account.</p>
         {completedType ? <div role="status" aria-live="polite">
-          <p>{completedType === 'MEMBER'
-            ? 'Member registration complete. You can now sign in.'
-            : 'Librarian registration complete. A manager librarian must activate your account before you can sign in.'}</p>
+          <p>{completedType === 'STUDENT'
+            ? 'Student registration complete. You can now sign in.'
+            : 'TA registration complete. A TA Coordinator must activate your account before you can sign in.'}</p>
           <p>Returning to login in {secondsRemaining} seconds.</p>
           <p><a href="/">Go to login now</a></p>
         </div> : <>
@@ -134,16 +134,16 @@ function RegistrationPage() {
             <fieldset className="account-type-fieldset" disabled={isSubmitting}>
               <legend>Register as</legend>
               <div className="account-type-options">
-                {(['MEMBER', 'LIBRARIAN'] as const).map((type) => (
+                {(['STUDENT', 'TA'] as const).map((type) => (
                   <label key={type} className={`account-type-option${accountType === type ? ' is-selected' : ''}`}>
                     <input type="radio" name="accountType" value={type} checked={accountType === type} onChange={() => selectType(type)} />
                     <span className="option-icon" aria-hidden="true">{type[0]}</span>
-                    <span>{type === 'MEMBER' ? 'Member' : 'Librarian'}</span>
+                    <span>{type === 'STUDENT' ? 'Student' : 'TA'}</span>
                   </label>
                 ))}
               </div>
             </fieldset>
-            {accountType === 'LIBRARIAN' && <p role="note">A manager librarian must activate your account before you can sign in.</p>}
+            {accountType === 'TA' && <p role="note">A TA Coordinator must activate your account before you can sign in.</p>}
             <div className="form-field">
               <label htmlFor="name">Name</label>
               <input id="name" name="name" autoComplete="name" value={name} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? 'name-error' : undefined} onChange={(event) => { setName(event.target.value); clearError('name'); }} />
@@ -164,7 +164,7 @@ function RegistrationPage() {
               <input id="confirmation" name="confirmation" type="password" autoComplete="new-password" value={confirmation} aria-invalid={Boolean(errors.confirmation)} aria-describedby={errors.confirmation ? 'confirmation-error' : undefined} onChange={(event) => { setConfirmation(event.target.value); clearError('confirmation'); }} />
               {fieldError('confirmation')}
             </div>
-            {accountType === 'LIBRARIAN' && <div className="form-field">
+            {accountType === 'TA' && <div className="form-field">
               <label htmlFor="employeeId">Employee ID</label>
               <input id="employeeId" name="employeeId" value={employeeId} aria-invalid={Boolean(errors.employeeId)} aria-describedby={errors.employeeId ? 'employeeId-error' : undefined} onChange={(event) => { setEmployeeId(event.target.value); clearError('employeeId'); }} />
               {fieldError('employeeId')}

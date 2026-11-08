@@ -30,17 +30,17 @@ emulatorTest('registration and login share the local Firestore emulator', () => 
         const app = createServerApp(db);
         step = 'member registration';
         const member = await request(app).post('/api/auth/register').send({
-          accountType: 'MEMBER', name: 'Synthetic Member', email: memberEmail, password,
+          accountType: 'STUDENT', name: 'Synthetic Member', email: memberEmail, password,
         });
         assert.equal(member.status, 201);
-        assert.deepEqual(member.body, { accountType: 'MEMBER', accountStatus: 'ACTIVE' });
+        assert.deepEqual(member.body, { accountType: 'STUDENT', accountStatus: 'ACTIVE' });
         step = 'librarian registration';
         const librarian = await request(app).post('/api/auth/register').send({
-          accountType: 'LIBRARIAN', name: 'Synthetic Librarian', email: librarianEmail,
+          accountType: 'TA', name: 'Synthetic Librarian', email: librarianEmail,
           password, employeeId: 'SYN-' + suffix,
         });
         assert.equal(librarian.status, 201);
-        assert.deepEqual(librarian.body, { accountType: 'LIBRARIAN', accountStatus: 'INACTIVE' });
+        assert.deepEqual(librarian.body, { accountType: 'TA', accountStatus: 'INACTIVE' });
         step = 'record verification';
         const memberKey = await db.collection('emailKeys').doc(emailKeyFor(memberEmail)).get();
         const librarianKey = await db.collection('emailKeys').doc(emailKeyFor(librarianEmail)).get();
@@ -49,19 +49,19 @@ emulatorTest('registration and login share the local Firestore emulator', () => 
         const memberUser = await db.collection('users').doc(memberKey.data().userId).get();
         const librarianUser = await db.collection('users').doc(librarianKey.data().userId).get();
         assert.equal(memberUser.data().accountStatus, 'ACTIVE');
-        assert.equal(memberUser.data().memberId, memberKey.data().userId);
+        assert.equal(memberUser.data().studentId, memberKey.data().userId);
         assert.equal(librarianUser.data().accountStatus, 'INACTIVE');
         assert.equal(librarianUser.data().isManager, false);
         step = 'member login';
         const memberLogin = await request(app).post('/api/auth/login').send({
-          accountType: 'MEMBER', email: memberEmail, password,
+          accountType: 'STUDENT', email: memberEmail, password,
         });
         assert.equal(memberLogin.status, 200);
-        assert.deepEqual(memberLogin.body, { accountType: 'MEMBER' });
+        assert.deepEqual(memberLogin.body, { accountType: 'STUDENT' });
         assert.ok(memberLogin.headers['set-cookie']);
         step = 'librarian login';
         const librarianLogin = await request(app).post('/api/auth/login').send({
-          accountType: 'LIBRARIAN', email: librarianEmail, password,
+          accountType: 'TA', email: librarianEmail, password,
         });
         assert.equal(librarianLogin.status, 401);
         assert.equal(librarianLogin.headers['set-cookie'], undefined);
