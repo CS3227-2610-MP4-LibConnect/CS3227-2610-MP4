@@ -85,7 +85,7 @@ beforeAll(async () => {
     email: 'Reader@Example.Test',
     canonicalEmailKey: canonicalEmail,
     passwordHash,
-    accountType: 'MEMBER',
+    accountType: 'STUDENT',
     accountStatus: 'ACTIVE',
   };
 });
@@ -96,10 +96,10 @@ describe('T03 POST /api/auth/login', () => {
     const { app, authStore } = makeApp(repository);
     const response = await request(app)
       .post('/api/auth/login')
-      .send({ email: '  READER@Example.Test  ', password, accountType: 'MEMBER' });
+      .send({ email: '  READER@Example.Test  ', password, accountType: 'STUDENT' });
 
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ accountType: 'MEMBER' });
+    expect(response.body).toEqual({ accountType: 'STUDENT' });
     expect(response.headers['set-cookie'][0]).toContain('__Host-libconnect_session=');
     expect(authStore.createSession).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(response.body)).not.toContain(validUser.passwordHash);
@@ -110,9 +110,9 @@ describe('T03 POST /api/auth/login', () => {
     const result = await verifyCredentials(makeRepository(), {
       email,
       password,
-      accountType: 'MEMBER',
+      accountType: 'STUDENT',
     });
-    expect(result).toEqual({ passwordMatched: true, userId: 'synthetic-user', accountType: 'MEMBER' });
+    expect(result).toEqual({ passwordMatched: true, userId: 'synthetic-user', accountType: 'STUDENT' });
   });
 
   test('unknown email runs a valid dummy Argon2id verification', async () => {
@@ -121,7 +121,7 @@ describe('T03 POST /api/auth/login', () => {
     try {
     const response = await request(makeApp(makeRepository({ mappings: [] })).app)
         .post('/api/auth/login')
-        .send({ email, password, accountType: 'MEMBER' });
+        .send({ email, password, accountType: 'STUDENT' });
 
       expect(response.status).toBe(401);
       expect(verifySpy).toHaveBeenCalledWith(expect.stringMatching(/^\$argon2id\$v=19\$/), password);
@@ -133,8 +133,8 @@ describe('T03 POST /api/auth/login', () => {
   });
 
   test.each([
-    ['inactive account', { accountStatus: 'INACTIVE' }, 'MEMBER'],
-    ['selected type mismatch', { accountType: 'LIBRARIAN' }, 'MEMBER'],
+    ['inactive account', { accountStatus: 'INACTIVE' }, 'STUDENT'],
+    ['selected type mismatch', { accountType: 'TA' }, 'STUDENT'],
   ])('keeps %s as password evidence only and never establishes a login', async (_label, override, selectedType) => {
     const repository = makeRepository({ user: { ...validUser, ...override } });
     const evidence = await verifyCredentials(repository, { email, password, accountType: selectedType });
@@ -147,14 +147,14 @@ describe('T03 POST /api/auth/login', () => {
   });
 
   test.each([
-    ['missing email', { password, accountType: 'MEMBER' }],
-    ['non-string email', { email: 123, password, accountType: 'MEMBER' }],
-    ['missing password', { email, accountType: 'MEMBER' }],
+    ['missing email', { password, accountType: 'STUDENT' }],
+    ['non-string email', { email: 123, password, accountType: 'STUDENT' }],
+    ['missing password', { email, accountType: 'STUDENT' }],
     ['wrong account type', { email, password, accountType: 'MANAGER' }],
-    ['whitespace email', { email: '  ', password, accountType: 'MEMBER' }],
-    ['whitespace password', { email, password: ' \t ', accountType: 'MEMBER' }],
-    ['email over limit', { email: `${'a'.repeat(250)}@test.test`, password, accountType: 'MEMBER' }],
-    ['password over limit', { email, password: 'p'.repeat(1025), accountType: 'MEMBER' }],
+    ['whitespace email', { email: '  ', password, accountType: 'STUDENT' }],
+    ['whitespace password', { email, password: ' \t ', accountType: 'STUDENT' }],
+    ['email over limit', { email: `${'a'.repeat(250)}@test.test`, password, accountType: 'STUDENT' }],
+    ['password over limit', { email, password: 'p'.repeat(1025), accountType: 'STUDENT' }],
   ])('returns 400 for %s before repository access', async (_label, body) => {
     const repository = makeRepository();
     const response = await request(makeApp(repository).app).post('/api/auth/login').send(body);
@@ -167,13 +167,13 @@ describe('T03 POST /api/auth/login', () => {
     const malformed = await request(app).post('/api/auth/login').set('Content-Type', 'application/json').send('{');
     expect(malformed.status).toBe(400);
     const oversized = await request(app).post('/api/auth/login').set('Content-Type', 'application/json')
-      .send(JSON.stringify({ email, password: 'p'.repeat(9000), accountType: 'MEMBER' }));
+      .send(JSON.stringify({ email, password: 'p'.repeat(9000), accountType: 'STUDENT' }));
     expect(oversized.status).toBe(400);
   });
 
   test('denies incorrect passwords with a generic response', async () => {
     const response = await request(makeApp(makeRepository()).app).post('/api/auth/login')
-      .send({ email, password: 'wrong password', accountType: 'MEMBER' });
+      .send({ email, password: 'wrong password', accountType: 'STUDENT' });
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: GENERIC_DENIAL });
     expect(response.headers['set-cookie']).toBeUndefined();
@@ -186,7 +186,7 @@ describe('T03 POST /api/auth/login', () => {
     ['mapping to absent user', [{ userId: 'unknown-user' }]],
   ])('fails closed for %s', async (_label, mappings) => {
     const response = await request(makeApp(makeRepository({ mappings })).app).post('/api/auth/login')
-      .send({ email, password, accountType: 'MEMBER' });
+      .send({ email, password, accountType: 'STUDENT' });
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: GENERIC_DENIAL });
   });
@@ -200,14 +200,40 @@ describe('T03 POST /api/auth/login', () => {
   ])('fails closed for %s', async (_label, override) => {
     const user = override === null ? null : { ...validUser, ...override };
     const response = await request(makeApp(makeRepository({ user })).app).post('/api/auth/login')
-      .send({ email, password, accountType: 'MEMBER' });
+      .send({ email, password, accountType: 'STUDENT' });
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: GENERIC_DENIAL });
   });
 
+  test.each([
+    ['former MEMBER account type', { accountType: 'MEMBER' }, 'STUDENT'],
+    ['former LIBRARIAN account type', { accountType: 'LIBRARIAN' }, 'TA'],
+    ['former memberId field instead of studentId', { memberId: 'synthetic-user' }, 'STUDENT'],
+  ])('fails closed as malformed for a stored record with the %s', async (_label, override, selectedType) => {
+    const repository = makeRepository({ user: { ...validUser, ...override } });
+    const evidence = await verifyCredentials(repository, { email, password, accountType: selectedType });
+    expect(evidence).toEqual({ passwordMatched: false });
+
+    const { app, authStore } = makeApp(repository);
+    const response = await request(app).post('/api/auth/login')
+      .send({ email, password, accountType: selectedType });
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ message: GENERIC_DENIAL });
+    expect(response.headers['set-cookie']).toBeUndefined();
+    expect(authStore.createSession).not.toHaveBeenCalled();
+  });
+
+  test.each(['MEMBER', 'LIBRARIAN'])('returns 400 for the former %s request value before repository access', async (accountType) => {
+    const repository = makeRepository();
+    const response = await request(makeApp(repository).app).post('/api/auth/login')
+      .send({ email, password, accountType });
+    expect(response.status).toBe(400);
+    expect(repository.findEmailKeyMatches).not.toHaveBeenCalled();
+  });
+
   test('returns a generic service error when the injected data adapter fails', async () => {
     const response = await request(makeApp(makeRepository({ error: new Error('synthetic outage') })).app)
-      .post('/api/auth/login').send({ email, password, accountType: 'MEMBER' });
+      .post('/api/auth/login').send({ email, password, accountType: 'STUDENT' });
     expect(response.status).toBe(503);
     expect(response.body).toEqual({ message: RETRY_MESSAGE });
     expect(JSON.stringify(response.body)).not.toContain('synthetic outage');

@@ -28,45 +28,45 @@ describe('registration page', () => {
 
   test('shows common fields, explicit type choice, and a route to login', () => {
     render(<RegistrationPage />);
-    expect(screen.getByRole('radio', { name: /member/i })).toBeChecked();
-    expect(screen.getByRole('radio', { name: /librarian/i })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: /student/i })).toBeChecked();
+    expect(screen.getByRole('radio', { name: /^ta$/i })).not.toBeChecked();
     for (const label of [/name/i, /email/i, /^password$/i, /confirm password/i]) {
       expect(screen.getByLabelText(label)).toBeInTheDocument();
     }
     expect(screen.queryByLabelText(/employee id/i)).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: /log in|sign in|back to login/i })).toHaveAttribute('href', '/');
-    expect(screen.queryByRole('radio', { name: /manager/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('radio', { name: /coordinator|manager/i })).not.toBeInTheDocument();
   });
 
-  test('librarian choice reveals employee ID and activation notice; switching back omits stale ID', async () => {
+  test('TA choice reveals employee ID and activation notice; switching back omits stale ID', async () => {
     const fetchMock = jest.fn().mockResolvedValue({ status: 409, json: async () => ({ message: 'Registration could not be completed.' }) });
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
-    fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
-    expect(screen.getByRole('radio', { name: /librarian/i })).toBeChecked();
-    expect(screen.getByText(/manager.*activat|activat.*manager/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
+    expect(screen.getByRole('radio', { name: /^ta$/i })).toBeChecked();
+    expect(screen.getByText(/coordinator.*activat|activat.*coordinator/i)).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: 'EMP-123' } });
-    fireEvent.click(screen.getByRole('radio', { name: /member/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /student/i }));
     fillCommonFields();
     submit();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const [url, options] = fetchMock.mock.calls[0];
     expect(url).toBe('/api/auth/register');
     expect(options.method).toBe('POST');
-    expect(JSON.parse(options.body)).toEqual({ accountType: 'MEMBER', name: 'Test Reader', email: 'Reader@Example.Test', password: syntheticPassword });
+    expect(JSON.parse(options.body)).toEqual({ accountType: 'STUDENT', name: 'Test Reader', email: 'Reader@Example.Test', password: syntheticPassword });
   });
 
-  test('sends librarian employee ID and never sends confirmation or system-controlled fields', async () => {
+  test('sends TA employee ID and never sends confirmation or system-controlled fields', async () => {
     const fetchMock = jest.fn().mockResolvedValue({ status: 409, json: async () => ({ message: 'Registration could not be completed.' }) });
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
-    fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
     fillCommonFields();
     fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: 'EMP-123' } });
     submit();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
-      accountType: 'LIBRARIAN', name: 'Test Reader', email: 'Reader@Example.Test', password: syntheticPassword, employeeId: 'EMP-123',
+      accountType: 'TA', name: 'Test Reader', email: 'Reader@Example.Test', password: syntheticPassword, employeeId: 'EMP-123',
     });
   });
 
@@ -84,11 +84,11 @@ describe('registration page', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test('whitespace-only librarian ID and password are rejected without a request', () => {
+  test('whitespace-only TA employee ID and password are rejected without a request', () => {
     const fetchMock = jest.fn();
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
-    fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
     fillCommonFields();
     fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: '   ' } });
     fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: '        ' } });
@@ -99,12 +99,12 @@ describe('registration page', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'] as const)('%s accepts minimal, dotted-local, and subdomain emails after trimming', async (accountType) => {
+  test.each(['STUDENT', 'TA'] as const)('%s accepts minimal, dotted-local, and subdomain emails after trimming', async (accountType) => {
     const fetchMock = jest.fn().mockResolvedValue({ status: 409, json: async () => ({ message: 'Registration could not be completed.' }) });
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
-    if (accountType === 'LIBRARIAN') {
-      fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    if (accountType === 'TA') {
+      fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: 'EMP-123' } });
     }
     fillCommonFields();
@@ -120,12 +120,12 @@ describe('registration page', () => {
     }
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'] as const)('%s rejects invalid email format with a linked accessible error and no request', (accountType) => {
+  test.each(['STUDENT', 'TA'] as const)('%s rejects invalid email format with a linked accessible error and no request', (accountType) => {
     const fetchMock = jest.fn();
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
-    if (accountType === 'LIBRARIAN') {
-      fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    if (accountType === 'TA') {
+      fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: 'EMP-123' } });
     }
     fillCommonFields();
@@ -156,7 +156,7 @@ describe('registration page', () => {
     global.fetch = fetchMock as typeof fetch;
     render(<RegistrationPage />);
     fillCommonFields();
-    if (_field === 'employee ID') fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    if (_field === 'employee ID') fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
     submit();
     expect(screen.getByLabelText(label)).toHaveAttribute('aria-invalid', 'true');
@@ -181,8 +181,8 @@ describe('registration page', () => {
   });
 
   test.each([
-    ['bad response', { status: 201, json: async () => ({ accountType: 'MEMBER' }) }],
-    ['unexpected success field', { status: 201, json: async () => ({ accountType: 'MEMBER', accountStatus: 'ACTIVE', sessionId: 'forged' }) }],
+    ['bad response', { status: 201, json: async () => ({ accountType: 'STUDENT' }) }],
+    ['unexpected success field', { status: 201, json: async () => ({ accountType: 'STUDENT', accountStatus: 'ACTIVE', sessionId: 'forged' }) }],
     ['network failure', null],
   ])('%s does not announce success or return to login', async (_label, response) => {
     const fetchMock = response ? jest.fn().mockResolvedValue(response) : jest.fn().mockRejectedValue(new Error('synthetic outage'));
@@ -198,13 +198,13 @@ describe('registration page', () => {
   });
 
   test.each([
-    ['MEMBER', 'ACTIVE', /member registration complete/i],
-    ['LIBRARIAN', 'INACTIVE', /librarian registration complete/i],
+    ['STUDENT', 'ACTIVE', /student registration complete/i],
+    ['TA', 'INACTIVE', /TA registration complete/i],
   ] as const)('valid %s success is announced, counts down, and retains a login notice', async (type, status, message) => {
     global.fetch = jest.fn().mockResolvedValue({ status: 201, json: async () => ({ accountType: type, accountStatus: status }) }) as typeof fetch;
     const page = render(<RegistrationPage />);
-    if (type === 'LIBRARIAN') {
-      fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+    if (type === 'TA') {
+      fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fireEvent.change(screen.getByLabelText(/employee id/i), { target: { value: 'EMP-123' } });
     }
     fillCommonFields();
@@ -213,7 +213,7 @@ describe('registration page', () => {
     expect(screen.getByRole('status')).toHaveTextContent(message);
     expect(screen.getByRole('status')).toHaveTextContent(/returning to login in 5 seconds/i);
     expect(screen.getByRole('link', { name: /go to login now/i })).toHaveAttribute('href', '/');
-    if (type === 'LIBRARIAN') expect(screen.getByRole('status')).toHaveTextContent(/manager librarian must activate/i);
+    if (type === 'TA') expect(screen.getByRole('status')).toHaveTextContent(/TA Coordinator must activate/i);
     expect(window.sessionStorage.getItem('libconnect.registrationNotice')).toBe(type);
     for (let second = 0; second < 4; second += 1) {
       await act(async () => { jest.advanceTimersByTime(1000); });
@@ -234,7 +234,7 @@ describe('registration page', () => {
     });
     try {
       global.fetch = jest.fn().mockResolvedValue({
-        status: 201, json: async () => ({ accountType: 'MEMBER', accountStatus: 'ACTIVE' }),
+        status: 201, json: async () => ({ accountType: 'STUDENT', accountStatus: 'ACTIVE' }),
       }) as typeof fetch;
       jest.useFakeTimers();
       render(<RegistrationPage />);

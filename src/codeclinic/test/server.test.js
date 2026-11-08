@@ -70,7 +70,7 @@ test('serves the built frontend and the login API from one origin', async () => 
     ]);
 
     const login = await request(app).post('/api/auth/login').send({
-      email: 'unknown@example.test', password: 'synthetic-password', accountType: 'MEMBER',
+      email: 'unknown@example.test', password: 'synthetic-password', accountType: 'STUDENT',
     });
     expect(login.status).toBe(401);
     expect(login.body).toEqual({ message: 'Unable to sign in with those details.' });

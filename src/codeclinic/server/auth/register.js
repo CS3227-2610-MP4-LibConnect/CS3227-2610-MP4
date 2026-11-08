@@ -14,26 +14,26 @@ function boundedString(value, maxBytes) {
 
 function validateRegistrationBody(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
-  const librarian = body.accountType === 'LIBRARIAN';
-  if (!librarian && body.accountType !== 'MEMBER') return null;
-  const allowed = librarian
+  const isTa = body.accountType === 'TA';
+  if (!isTa && body.accountType !== 'STUDENT') return null;
+  const allowed = isTa
     ? ['accountType', 'name', 'email', 'password', 'employeeId']
     : ['accountType', 'name', 'email', 'password'];
   if (Object.keys(body).length !== allowed.length ||
       Object.keys(body).some((key) => !allowed.includes(key))) return null;
   if (!boundedString(body.name, 200) || !boundedString(body.email, 254) ||
       !boundedString(body.password, 1024) || body.password.length < 8 ||
-      (librarian && !boundedString(body.employeeId, 64))) return null;
+      (isTa && !boundedString(body.employeeId, 64))) return null;
   const email = body.email.trim();
   if (!REGISTRATION_EMAIL_FORMAT.test(email) || Buffer.byteLength(email, 'utf8') > 254) return null;
   return {
     accountType: body.accountType,
-    accountStatus: librarian ? 'INACTIVE' : 'ACTIVE',
+    accountStatus: isTa ? 'INACTIVE' : 'ACTIVE',
     name: body.name.trim(),
     email,
     canonicalEmail: canonicalizeEmail(body.email),
     password: body.password,
-    ...(librarian ? { employeeId: body.employeeId.trim(), isManager: false } : {}),
+    ...(isTa ? { employeeId: body.employeeId.trim(), isManager: false } : {}),
   };
 }
 

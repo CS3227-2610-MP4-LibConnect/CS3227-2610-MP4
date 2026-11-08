@@ -4,7 +4,7 @@ global.TextDecoder = TextDecoder;
 const request = require('supertest');
 const { createServerApp } = require('../server');
 
-const member = { accountType: 'MEMBER', name: ' Test Reader ', email: ' Reader@Example.Test ', password: '  synthetic passphrase  ' };
+const member = { accountType: 'STUDENT', name: ' Test Reader ', email: ' Reader@Example.Test ', password: '  synthetic passphrase  ' };
 
 function system() {
   const created = [];
@@ -37,7 +37,7 @@ function system() {
 describe('registration endpoint boundary', () => {
   test.each([
     [member, 'ACTIVE'],
-    [{ ...member, accountType: 'LIBRARIAN', employeeId: ' EMP-123 ' }, 'INACTIVE'],
+    [{ ...member, accountType: 'TA', employeeId: ' EMP-123 ' }, 'INACTIVE'],
   ])('accepts valid type with server-controlled status and minimal response', async (body, expectedStatus) => {
     const { app, created } = system();
     const response = await request(app).post('/api/auth/register').send(body);
@@ -50,7 +50,7 @@ describe('registration endpoint boundary', () => {
       name: 'Test Reader', email: 'Reader@Example.Test', canonicalEmail: 'reader@example.test',
       password: body.password,
     });
-    if (body.accountType === 'LIBRARIAN') {
+    if (body.accountType === 'TA') {
       expect(created[0]).toMatchObject({ employeeId: 'EMP-123', isManager: false });
     } else {
       expect(created[0]).not.toHaveProperty('employeeId');
@@ -78,6 +78,6 @@ describe('registration endpoint boundary', () => {
     const response = await request(app).post('/api/auth/register').send(member);
     expect(response.status).toBe(status);
     expect(response.headers['set-cookie']).toBeUndefined();
-    expect(JSON.stringify(response.body)).not.toMatch(/private|Reader|passphrase|MEMBER|ACTIVE/i);
+    expect(JSON.stringify(response.body)).not.toMatch(/private|Reader|passphrase|STUDENT|ACTIVE/i);
   });
 });

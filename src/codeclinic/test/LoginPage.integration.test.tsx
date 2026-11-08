@@ -18,7 +18,7 @@ type SyntheticUser = {
   email: string;
   canonicalEmailKey: string;
   passwordHash: string;
-  accountType: 'MEMBER' | 'LIBRARIAN';
+  accountType: 'STUDENT' | 'TA';
   accountStatus: 'ACTIVE' | 'INACTIVE';
   isManager: boolean;
 };
@@ -115,11 +115,11 @@ async function makeUsers(): Promise<SyntheticUser[]> {
   return [
     {
       userId: 'synthetic-member', email: memberEmail, canonicalEmailKey: memberEmail,
-      passwordHash: await argon2.hash(memberPassword, hashOptions), accountType: 'MEMBER', accountStatus: 'ACTIVE', isManager: false,
+      passwordHash: await argon2.hash(memberPassword, hashOptions), accountType: 'STUDENT', accountStatus: 'ACTIVE', isManager: false,
     },
     {
       userId: 'synthetic-librarian', email: librarianEmail, canonicalEmailKey: librarianEmail,
-      passwordHash: await argon2.hash(librarianPassword, hashOptions), accountType: 'LIBRARIAN', accountStatus: 'ACTIVE', isManager: false,
+      passwordHash: await argon2.hash(librarianPassword, hashOptions), accountType: 'TA', accountStatus: 'ACTIVE', isManager: false,
     },
   ];
 }
@@ -144,7 +144,7 @@ describe('T05 React to Express login integration', () => {
     });
     try {
       render(<LoginPage />);
-      fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+      fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fill(` ${librarianEmail.toUpperCase()} `, librarianPassword);
       submit();
 
@@ -152,7 +152,7 @@ describe('T05 React to Express login integration', () => {
       expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
       expect(bridge.calls[0]).toEqual(expect.objectContaining({
         url: '/api/auth/login', method: 'POST',
-        body: { email: librarianEmail.toUpperCase(), password: librarianPassword, accountType: 'LIBRARIAN' },
+        body: { email: librarianEmail.toUpperCase(), password: librarianPassword, accountType: 'TA' },
       }));
       expect(system.sessions.size).toBe(1);
       const sessionRecord = [...system.sessions.values()][0];
@@ -162,7 +162,7 @@ describe('T05 React to Express login integration', () => {
 
       const loginResponse = bridge.responses[0];
       expect(loginResponse.status).toBe(200);
-      expect(loginResponse.body).toEqual({ accountType: 'LIBRARIAN' });
+      expect(loginResponse.body).toEqual({ accountType: 'TA' });
       const cookieHeader = (loginResponse.headers['set-cookie'] as string[])[0];
       expect(cookieHeader).toContain('__Host-libconnect_session=');
       expect(cookieHeader).toContain('Secure');
@@ -174,7 +174,7 @@ describe('T05 React to Express login integration', () => {
 
       const check = await bridge.agent.get('/api/auth/session').set('Cookie', cookie);
       expect(check.status).toBe(200);
-      expect(check.body).toEqual({ accountType: 'LIBRARIAN' });
+      expect(check.body).toEqual({ accountType: 'TA' });
       const csrf = await bridge.agent.get('/api/auth/csrf').set('Cookie', cookie);
       expect(csrf.status).toBe(200);
       expect(typeof csrf.body.csrfToken).toBe('string');
@@ -202,7 +202,7 @@ describe('T05 React to Express login integration', () => {
     const bridge = connectReactFetchToExpress(system.app);
     try {
       render(<LoginPage />);
-      if (caseName === 'wrong selected type') fireEvent.click(screen.getByRole('radio', { name: /librarian/i }));
+      if (caseName === 'wrong selected type') fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fill(email, password);
       submit();
       expect(await screen.findByText('Unable to sign in with those details.')).toBeInTheDocument();
@@ -218,7 +218,7 @@ describe('T05 React to Express login integration', () => {
     try {
       for (let index = 0; index < 5; index += 1) {
         const response = await request(system.app).post('/api/auth/login')
-          .send({ email: ` ${memberEmail.toUpperCase()} `, password: 'incorrect synthetic password', accountType: 'MEMBER' });
+          .send({ email: ` ${memberEmail.toUpperCase()} `, password: 'incorrect synthetic password', accountType: 'STUDENT' });
         expect(response.status).toBe(401);
       }
       render(<LoginPage />);
@@ -227,7 +227,7 @@ describe('T05 React to Express login integration', () => {
       expect(await screen.findByText(/complete sign in/i)).toBeInTheDocument();
       expect(bridge.calls).toHaveLength(1);
       const response = await request(system.app).post('/api/auth/login')
-        .send({ email: memberEmail, password: memberPassword, accountType: 'MEMBER' });
+        .send({ email: memberEmail, password: memberPassword, accountType: 'STUDENT' });
       expect(response.status).toBe(429);
       expect(response.body).toEqual({ message: 'Unable to sign in right now. Please try again later.' });
       expect(system.sessions.size).toBe(0);

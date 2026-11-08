@@ -13,9 +13,9 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
 
 ## Group 1 — Server roles and login pages (parallel)
 
-- [ ] **T01 — Server account types and identifiers.** In `server/auth/register.js`, `server/auth/firestore-registration.js`, and `server/auth/login.js`, replace `MEMBER`/`LIBRARIAN` with `STUDENT`/`TA` and `memberId` with `studentId`. Stored records with the former values must fail closed as malformed (account-registration v0.7 amendment). Update the affected server tests by renaming values only. (account-registration R2, R4–R6; role-aware-login R3–R4.)
+- [x] **T01 — Server account types and identifiers.** In `server/auth/register.js`, `server/auth/firestore-registration.js`, and `server/auth/login.js`, replace `MEMBER`/`LIBRARIAN` with `STUDENT`/`TA` and `memberId` with `studentId`. Stored records with the former values must fail closed as malformed (account-registration v0.7 amendment). Update the affected server tests by renaming values only. (account-registration R2, R4–R6; role-aware-login R3–R4.)
 
-- [ ] **T02 — Registration and login pages.** In `src/RegistrationPage.tsx` and `src/LoginPage.tsx`, change the choices, labels, request values, and messages to Student and TA. The TA notice says a TA Coordinator must activate the account. Update the matching page tests by renaming values and labels only. (account-registration R2, R3, R7; role-aware-login R1–R2.)
+- [x] **T02 — Registration and login pages.** In `src/RegistrationPage.tsx` and `src/LoginPage.tsx`, change the choices, labels, request values, and messages to Student and TA. The TA notice says a TA Coordinator must activate the account. Update the matching page tests by renaming values and labels only. (account-registration R2, R3, R7; role-aware-login R1–R2.)
 
 ## Group 2 — Dashboards and email helpers (parallel)
 

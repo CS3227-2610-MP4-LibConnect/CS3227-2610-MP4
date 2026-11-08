@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './LoginPage.css';
 
-type AccountType = 'MEMBER' | 'LIBRARIAN';
+type AccountType = 'STUDENT' | 'TA';
 const REGISTRATION_NOTICE_KEY = 'libconnect.registrationNotice';
 
 function readRegistrationNotice(): AccountType | null {
   try {
     const value = window.sessionStorage.getItem(REGISTRATION_NOTICE_KEY);
-    return value === 'MEMBER' || value === 'LIBRARIAN' ? value : null;
+    return value === 'STUDENT' || value === 'TA' ? value : null;
   } catch {
     return null;
   }
@@ -20,7 +20,7 @@ function LoginPage() {
       try { window.sessionStorage.removeItem(REGISTRATION_NOTICE_KEY); } catch { /* Storage can be unavailable. */ }
     }
   }, [registrationNotice]);
-  const [accountType, setAccountType] = useState<AccountType>('MEMBER');
+  const [accountType, setAccountType] = useState<AccountType>('STUDENT');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [formError, setFormError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,11 +68,11 @@ function LoginPage() {
       }
 
       const returnedType = (body as { accountType?: unknown } | null)?.accountType;
-      if (returnedType !== 'MEMBER' && returnedType !== 'LIBRARIAN') {
+      if (returnedType !== 'STUDENT' && returnedType !== 'TA') {
         setFormError('Unable to complete sign in. Please try again.');
         return;
       }
-      window.location.assign(returnedType === 'MEMBER' ? '/member/dashboard' : '/librarian/dashboard');
+      window.location.assign(returnedType === 'STUDENT' ? '/member/dashboard' : '/librarian/dashboard');
     } catch {
       setFormError('Sign in is temporarily unavailable. Please try again later.');
     } finally {
@@ -88,36 +88,36 @@ function LoginPage() {
         <h1 id="login-title">Welcome back</h1>
         <p className="login-intro">Sign in to continue to your library account.</p>
         {registrationNotice && <p role="status" aria-live="polite">
-          {registrationNotice === 'MEMBER'
-            ? 'Member registration complete. You can now sign in.'
-            : 'Librarian registration complete. A manager librarian must activate your account before you can sign in.'}
+          {registrationNotice === 'STUDENT'
+            ? 'Student registration complete. You can now sign in.'
+            : 'TA registration complete. A TA Coordinator must activate your account before you can sign in.'}
         </p>}
 
         <form className="login-form" noValidate onSubmit={submitLogin}>
           <fieldset className="account-type-fieldset">
             <legend>Sign in as</legend>
             <div className="account-type-options">
-              <label className={`account-type-option${accountType === 'MEMBER' ? ' is-selected' : ''}`}>
+              <label className={`account-type-option${accountType === 'STUDENT' ? ' is-selected' : ''}`}>
                 <input
                   type="radio"
                   name="accountType"
-                  value="MEMBER"
-                  checked={accountType === 'MEMBER'}
-                  onChange={() => setAccountType('MEMBER')}
+                  value="STUDENT"
+                  checked={accountType === 'STUDENT'}
+                  onChange={() => setAccountType('STUDENT')}
                 />
-                <span className="option-icon" aria-hidden="true">M</span>
-                <span>Member</span>
+                <span className="option-icon" aria-hidden="true">S</span>
+                <span>Student</span>
               </label>
-              <label className={`account-type-option${accountType === 'LIBRARIAN' ? ' is-selected' : ''}`}>
+              <label className={`account-type-option${accountType === 'TA' ? ' is-selected' : ''}`}>
                 <input
                   type="radio"
                   name="accountType"
-                  value="LIBRARIAN"
-                  checked={accountType === 'LIBRARIAN'}
-                  onChange={() => setAccountType('LIBRARIAN')}
+                  value="TA"
+                  checked={accountType === 'TA'}
+                  onChange={() => setAccountType('TA')}
                 />
-                <span className="option-icon" aria-hidden="true">L</span>
-                <span>Librarian</span>
+                <span className="option-icon" aria-hidden="true">T</span>
+                <span>TA</span>
               </label>
             </div>
           </fieldset>

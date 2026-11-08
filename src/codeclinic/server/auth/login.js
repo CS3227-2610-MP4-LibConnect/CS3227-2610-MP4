@@ -17,7 +17,7 @@ const RATE_WINDOW_MS = 15 * 60 * 1000;
 // It contains no user data and is never returned or logged.
 const DUMMY_HASH = '$argon2id$v=19$m=19456,t=2,p=1$MDEyMzQ1Njc4OWFiY2RlZg$9YWkgPbnBtCsQsBiGAJdRM2pfcLBgTIjg0QZVdkeeN0';
 
-/** @typedef {'MEMBER'|'LIBRARIAN'} AccountType */
+/** @typedef {'STUDENT'|'TA'} AccountType */
 /** @typedef {{ email: string, password: string, accountType: AccountType }} LoginRequest */
 
 function canonicalizeEmail(email) {
@@ -37,7 +37,7 @@ function validateLoginBody(body) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
   const { email, password, accountType } = body;
   if (typeof email !== 'string' || typeof password !== 'string') return null;
-  if (!['MEMBER', 'LIBRARIAN'].includes(accountType)) return null;
+  if (!['STUDENT', 'TA'].includes(accountType)) return null;
   if (!email.trim() || !password.trim()) return null;
   if (!isBoundedUtf8(email, MAX_EMAIL_BYTES) || !isBoundedUtf8(password, MAX_PASSWORD_BYTES)) return null;
   return { email, password, accountType };
@@ -54,18 +54,20 @@ function isVersionedArgon2idHash(hash) {
 
 function isValidAccountRecord(record, userId, canonicalEmail) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) return false;
+  // Records written before the Student/TA rename are malformed; there is no migration.
+  if (Object.prototype.hasOwnProperty.call(record, 'memberId')) return false;
   return record.userId === userId &&
     typeof record.email === 'string' &&
     record.canonicalEmailKey === canonicalEmail &&
     record.email.trim().toLowerCase() === canonicalEmail &&
     isVersionedArgon2idHash(record.passwordHash) &&
-    ['MEMBER', 'LIBRARIAN'].includes(record.accountType) &&
+    ['STUDENT', 'TA'].includes(record.accountType) &&
     ['ACTIVE', 'INACTIVE'].includes(record.accountStatus);
 }
 
 /**
  * @typedef {{ findEmailKeyMatches(key: string): Promise<unknown[]>, getUserById(userId: string): Promise<unknown> }} LoginRepository
- * @typedef {{ passwordMatched: boolean, userId?: string, accountType?: 'MEMBER'|'LIBRARIAN' }} PasswordVerificationResult
+ * @typedef {{ passwordMatched: boolean, userId?: string, accountType?: 'STUDENT'|'TA' }} PasswordVerificationResult
  * `passwordMatched` is credential evidence only. It does not authorize a login,
  * establish a session, or replace T04's account status and selected-type checks.
  */
@@ -164,10 +166,10 @@ function createLoginApp(repository, authStore, options = {}) {
     try {
       session = await authStore.getSession(idHash);
       if (!session || typeof session.userId !== 'string' ||
-          !['MEMBER', 'LIBRARIAN'].includes(session.accountTypeAtIssue)) return null;
+          !['STUDENT', 'TA'].includes(session.accountTypeAtIssue)) return null;
       const user = await repository.getUserById(session.userId);
       if (!user || user.userId !== session.userId || user.accountStatus !== 'ACTIVE' ||
-          user.accountType !== session.accountTypeAtIssue || !['MEMBER', 'LIBRARIAN'].includes(user.accountType)) {
+          user.accountType !== session.accountTypeAtIssue || !['STUDENT', 'TA'].includes(user.accountType)) {
         await authStore.deleteSession(idHash);
         return null;
       }
@@ -259,7 +261,7 @@ function createLoginApp(repository, authStore, options = {}) {
       }
       return res.status(200).json({
         accountType: auth.accountType,
-        ...(auth.accountType === 'MEMBER' && auth.name ? { name: auth.name } : {}),
+        ...(auth.accountType === 'STUDENT' && auth.name ? { name: auth.name } : {}),
       });
     } catch (error) {
       return res.status(503).json({ message: RETRY_MESSAGE });

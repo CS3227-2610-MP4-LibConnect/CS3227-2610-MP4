@@ -10,8 +10,8 @@ const request = require('supertest');
 const { createServerApp } = require('../server');
 
 const password = '  synthetic passphrase  ';
-const member = { accountType: 'MEMBER', name: ' Test Reader ', email: ' Reader@Example.Test ', password };
-const librarian = { ...member, accountType: 'LIBRARIAN', employeeId: ' EMP-123 ' };
+const member = { accountType: 'STUDENT', name: ' Test Reader ', email: ' Reader@Example.Test ', password };
+const librarian = { ...member, accountType: 'TA', employeeId: ' EMP-123 ' };
 
 function fakeSystem() {
   const records = new Map();
@@ -102,12 +102,12 @@ describe('POST /api/auth/register', () => {
   beforeEach(() => { system = fakeSystem(); });
   afterEach(() => system.cleanup());
 
-  test.each(['MEMBER', 'LIBRARIAN'].flatMap((accountType) => [
+  test.each(['STUDENT', 'TA'].flatMap((accountType) => [
     'ab.c', '@b.c', 'a@', 'a@b', 'a@@b.c', 'a@b@c.d',
     '.a@b.c', 'a.@b.c', 'a..b@c.d', 'a@.b.c', 'a@b.c.', 'a@b..c',
     'a b@c.d', 'a@b c.d', 'a@b. c',
   ].map((email) => [accountType, email])))('rejects direct %s invalid email %s with no user or key write', async (accountType, email) => {
-    const body = { ...(accountType === 'MEMBER' ? member : librarian), email };
+    const body = { ...(accountType === 'STUDENT' ? member : librarian), email };
     const response = await request(system.app).post('/api/auth/register').send(body);
     expect(response.status).toBe(400);
     expect(users(system)).toHaveLength(0);
@@ -115,8 +115,8 @@ describe('POST /api/auth/register', () => {
     expect(system.rateSlots.size).toBe(0);
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'])('stores trimmed original-case %s email and lowercase canonical key', async (accountType) => {
-    const body = { ...(accountType === 'MEMBER' ? member : librarian), email: '  A.B@Sub.Example.Com  ' };
+  test.each(['STUDENT', 'TA'])('stores trimmed original-case %s email and lowercase canonical key', async (accountType) => {
+    const body = { ...(accountType === 'STUDENT' ? member : librarian), email: '  A.B@Sub.Example.Com  ' };
     const response = await request(system.app).post('/api/auth/register').send(body);
     expect(response.status).toBe(201);
     expect(users(system)).toHaveLength(1);
@@ -126,11 +126,11 @@ describe('POST /api/auth/register', () => {
     expect(keys(system)[0][0]).toBe(`emailKeys/${crypto.createHash('sha256').update('a.b@sub.example.com').digest('hex')}`);
   });
 
-  test.each(['MEMBER', 'LIBRARIAN'].flatMap((accountType) => [
+  test.each(['STUDENT', 'TA'].flatMap((accountType) => [
     [accountType, 'a@b.c'],
     [accountType, 'a.b@sub.example.com'],
   ]))('accepts valid %s email %s', async (accountType, email) => {
-    const body = { ...(accountType === 'MEMBER' ? member : librarian), email };
+    const body = { ...(accountType === 'STUDENT' ? member : librarian), email };
     const response = await request(system.app).post('/api/auth/register').send(body);
     expect(response.status).toBe(201);
     expect(users(system)[0].email).toBe(email);
@@ -162,7 +162,7 @@ describe('POST /api/auth/register', () => {
     expect(Number(parallelism)).toBe(1);
     await expect(argon2.verify(user.passwordHash, password)).resolves.toBe(true);
     expect(user.passwordHash).not.toBe(password);
-    if (body.accountType === 'MEMBER') expect(user.memberId).toBe(user.userId);
+    if (body.accountType === 'STUDENT') expect(user.studentId).toBe(user.userId);
     else {
       expect(user.employeeId).toBe('EMP-123');
       expect(user.isManager).toBe(false);
@@ -177,7 +177,7 @@ describe('POST /api/auth/register', () => {
     const response = await request(system.app).post('/api/auth/register').send({ ...librarian, email: 'reader@example.test' });
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message', expect.any(String));
-    expect(JSON.stringify(response.body)).not.toMatch(/MEMBER|ACTIVE|Reader|EMP-123/i);
+    expect(JSON.stringify(response.body)).not.toMatch(/STUDENT|ACTIVE|Reader|EMP-123/i);
     expect(users(system)).toHaveLength(1);
     expect(keys(system)).toHaveLength(1);
   });
@@ -238,7 +238,7 @@ describe('POST /api/auth/register', () => {
     ['forged manager flag', { ...librarian, isManager: true }],
     ['forged active status', { ...librarian, accountStatus: 'ACTIVE' }],
     ['forged user ID', { ...member, userId: 'attacker' }],
-    ['forged member ID', { ...member, memberId: 'attacker' }],
+    ['forged member ID', { ...member, studentId: 'attacker' }],
     ['forged timestamp', { ...member, registrationDateTime: '2000-01-01' }],
     ['forged hash', { ...member, passwordHash: 'plaintext' }],
     ['confirmation field', { ...member, confirmPassword: password }],
@@ -294,14 +294,14 @@ describe('POST /api/auth/register', () => {
     expect(system.sessions.size).toBe(0);
 
     const memberLogin = await request(system.app).post('/api/auth/login')
-      .send({ accountType: 'MEMBER', email: ' reader@example.test ', password });
+      .send({ accountType: 'STUDENT', email: ' reader@example.test ', password });
     expect(memberLogin.status).toBe(200);
-    expect(memberLogin.body).toEqual({ accountType: 'MEMBER' });
+    expect(memberLogin.body).toEqual({ accountType: 'STUDENT' });
     expect(memberLogin.headers['set-cookie']).toBeDefined();
     expect(system.sessions.size).toBe(1);
 
     const librarianLogin = await request(system.app).post('/api/auth/login')
-      .send({ accountType: 'LIBRARIAN', email: 'staff@example.test', password });
+      .send({ accountType: 'TA', email: 'staff@example.test', password });
     expect(librarianLogin.status).toBe(401);
     expect(librarianLogin.headers['set-cookie']).toBeUndefined();
     expect(system.sessions.size).toBe(1);

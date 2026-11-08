@@ -10,9 +10,9 @@ function createFirestoreRegistrationPersistence(db) {
   return {
     async createAccount(input) {
       // The endpoint validates person-entered fields. Re-derive authorization
-      // fields here so an alternate caller cannot make a manager or active librarian.
-      const librarian = input.accountType === 'LIBRARIAN';
-      if (!librarian && input.accountType !== 'MEMBER') throw new TypeError('Invalid account type.');
+      // fields here so an alternate caller cannot make a manager or active TA.
+      const isTa = input.accountType === 'TA';
+      if (!isTa && input.accountType !== 'STUDENT') throw new TypeError('Invalid account type.');
       const userId = crypto.randomUUID();
       const canonicalEmail = canonicalizeEmail(input.email);
       const emailKey = emailKeyFor(canonicalEmail);
@@ -27,10 +27,10 @@ function createFirestoreRegistrationPersistence(db) {
         email: input.email,
         canonicalEmailKey: canonicalEmail,
         passwordHash,
-        accountType: librarian ? 'LIBRARIAN' : 'MEMBER',
-        accountStatus: librarian ? 'INACTIVE' : 'ACTIVE',
+        accountType: isTa ? 'TA' : 'STUDENT',
+        accountStatus: isTa ? 'INACTIVE' : 'ACTIVE',
         registrationDateTime: new Date(),
-        ...(librarian ? { employeeId: input.employeeId, isManager: false } : { memberId: userId }),
+        ...(isTa ? { employeeId: input.employeeId, isManager: false } : { studentId: userId }),
       };
 
       try {

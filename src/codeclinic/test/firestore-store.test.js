@@ -71,7 +71,7 @@ describe('Firestore auth-store transaction safeguards', () => {
     const id = 'a'.repeat(64);
     const issuedAt = 1_800_000_000_000;
     const db = makeDb({ [`loginSessions/${id}`]: {
-      userId: 'synthetic-user', accountTypeAtIssue: 'MEMBER',
+      userId: 'synthetic-user', accountTypeAtIssue: 'STUDENT',
       issuedAt: new Date(issuedAt), lastSeenAt: new Date(issuedAt),
       expiresAt: new Date(issuedAt + 30 * 60 * 1000), csrfTokenHash: hash('old'),
     } });
@@ -92,7 +92,7 @@ describe('Firestore auth-store transaction safeguards', () => {
     const issuedAt = 1_800_000_000_000;
     const lastSeenAt = issuedAt + 10_000;
     const db = makeDb({ [`loginSessions/${id}`]: {
-      userId: 'synthetic-user', accountTypeAtIssue: 'MEMBER', issuedAt: new Date(issuedAt),
+      userId: 'synthetic-user', accountTypeAtIssue: 'STUDENT', issuedAt: new Date(issuedAt),
       lastSeenAt: new Date(lastSeenAt), expiresAt: new Date(issuedAt + 8 * 60 * 60 * 1000), csrfTokenHash: hash('token'),
     } });
     const store = createFirestoreAuthStore(db);

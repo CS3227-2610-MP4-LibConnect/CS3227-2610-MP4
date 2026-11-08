@@ -15,7 +15,7 @@ function createCatalogHandler(db, authenticateRequest) {
     try { auth = await authenticateRequest(request, response); }
     catch (_) { return errorResponse(response, 503, 'CATALOG_UNAVAILABLE'); }
     if (!auth) return errorResponse(response, 401, 'UNAUTHENTICATED');
-    if (auth.accountType !== 'MEMBER') return errorResponse(response, 403, 'FORBIDDEN');
+    if (auth.accountType !== 'STUDENT') return errorResponse(response, 403, 'FORBIDDEN');
     const query = parseCatalogQuery(request.originalUrl);
     if (!query) return errorResponse(response, 400, 'INVALID_QUERY');
     try {

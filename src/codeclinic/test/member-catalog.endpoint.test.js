@@ -8,7 +8,7 @@ const token = 'a'.repeat(43);
 const hash = crypto.createHash('sha256').update(token).digest('hex');
 const cookie = `__Host-libconnect_session=${token}`;
 
-function system({ role = 'MEMBER', status = 'ACTIVE', expired = false, failSession = false, failBooks = false, docs = [] } = {}) {
+function system({ role = 'STUDENT', status = 'ACTIVE', expired = false, failSession = false, failBooks = false, docs = [] } = {}) {
   const state = { role, status, expired, reads: 0, accountReads: 0 };
   const repository = {
     async findEmailKeyMatches() { return []; },
@@ -75,22 +75,22 @@ test('unauthenticated, expired, inactive, and role-changed sessions deny before 
   expect(noCookie.status).toBe(401);
   expect(noCookie.body).toEqual({ error: { code: 'UNAUTHENTICATED' } });
   expect(unauth.state.reads).toBe(0);
-  for (const config of [{ expired: true }, { status: 'INACTIVE' }, { role: 'LIBRARIAN' }]) {
+  for (const config of [{ expired: true }, { status: 'INACTIVE' }, { role: 'TA' }]) {
     const unit = system(config);
-    const result = await request(unit.app).get('/api/member/catalog?role=MEMBER').set('Cookie', cookie);
+    const result = await request(unit.app).get('/api/member/catalog?role=STUDENT').set('Cookie', cookie);
     expect(result.status).toBe(config.role ? 403 : 401);
     expect(result.body.books).toBeUndefined();
     expect(unit.state.reads).toBe(0);
   }
   const changed = system();
-  changed.state.role = 'LIBRARIAN';
+  changed.state.role = 'TA';
   const result = await request(changed.app).get('/api/member/catalog').set('Cookie', cookie);
   expect(result.status).toBe(401);
   expect(changed.state.reads).toBe(0);
 });
 
 test.each([
-  '?role=MEMBER', '?status=ACTIVE', '?isManager=true', '?owner=synthetic',
+  '?role=STUDENT', '?status=ACTIVE', '?isManager=true', '?owner=synthetic',
   '?q=a&q=b', '?title=%ZZ', '?minYear=1449', '?minYear=2101', '?minYear=1999.5',
   '?minYear=2001&maxYear=2000', '?pageSize=0', '?pageSize=101', '?pageSize=01',
   '?cursor=bad', '?q=' + 'x'.repeat(101), '?q=' + 'x'.repeat(257),
