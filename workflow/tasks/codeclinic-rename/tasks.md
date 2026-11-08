@@ -47,17 +47,17 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
   - **Storage key:** rename the registration notice key to `codeclinic.registrationNotice`.
   - **Package name:** set it to `codeclinic` in `package.json` and `package-lock.json`.
   - **UI text:** replace "LibConnect"/"LIBCONNECT" with "CodeClinic" in page titles, the login and registration headings, `public/index.html`, and server log messages.
-  - **Search check:** afterwards, a case-insensitive search for `libconnect` under `src/codeclinic/` (excluding `node_modules` and `build`) finds nothing.
+  - **Search check:** afterwards, a case-insensitive search for `libconnect` under `src/codeclinic/` (excluding `node_modules` and `build`) finds only the production project ID `libconnect-mp4` in `.firebaserc` and `apphosting.yaml`.
 
   (Overview amendments; account-registration v0.7 R8; environments-and-deployment v0.2 R1.)
 
 ## Group 5 — Guides
 
-- [ ] **T07 — Update the guides to match.** Update `docs/UserGuide.md` (Student and TA, the new routes, CodeClinic name, no Book catalog, and remove the release-status note once it no longer applies) and the affected sections of `docs/DeveloperGuide.md` (layout, local setup variables and emulator project ID, registration, login and dashboard routes, the catalog section removed, the shared-components table, and the known-issue note). Each UI label in the User Guide must match the code. (Brief: guides must match the product.)
+- [x] **T07 — Update the guides to match.** Update `docs/UserGuide.md` (Student and TA, the new routes, CodeClinic name, no Book catalog, and remove the release-status note once it no longer applies) and the affected sections of `docs/DeveloperGuide.md` (layout, local setup variables and emulator project ID, registration, login and dashboard routes, the catalog section removed, the shared-components table, and the known-issue note). Each UI label in the User Guide must match the code. (Brief: guides must match the product.)
 
 ## Group 6 — Verification and evidence
 
-- [ ] **T08 — Verify and record evidence.**
+- [x] **T08 — Verify and record evidence.**
   - Run `npm ci`, `CI=true npm test -- --watch=false`, and `npm run build`.
   - Run the opt-in Firestore emulator integration test with `demo-codeclinic`.
   - Run the T05 search check.
@@ -72,3 +72,4 @@ Checklist v0.1 and handoff v0.1 are human-approved (2026-11-08). The six-group l
 - 2026-11-08: Drafted at the human's direction after the human confirmed the task ID and its scope, including removal of the retired Book catalog.
 - 2026-11-08: The human approved checklist v0.1 and handoff v0.1.
 - 2026-11-08: The human approved the six-group layout proposed by the task grouper and the Group 1 dispatch. Whole tasks were moved under group headings without changing their wording or checkboxes.
+- 2026-11-08: At the human's direction after review G4 finding F1, the T05 search check now allows the production project ID `libconnect-mp4`, which environments-and-deployment v0.3 R1 requires.

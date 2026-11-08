@@ -63,8 +63,8 @@ and verifies the Cloud Run metadata project ID matches the configured project
 before initializing Firebase Admin. It checks only for the file's presence;
 it never reads its contents. Configure the deployment identity and
 Firestore permissions as a separately approved release step. The production
-project ID `libconnect-mp4` appears in `.firebaserc` and `apphosting.yaml`;
-this repository does not contain production credentials.
+project ID is set in `.firebaserc` and `apphosting.yaml`; this repository
+does not contain production credentials.
 
 ## Verification
 

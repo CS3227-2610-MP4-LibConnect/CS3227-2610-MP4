@@ -4,13 +4,9 @@ CodeClinic is a help desk for programming courses. Students submit coding
 problems as tickets, and TAs claim, answer, and resolve them. AI coaches students
 with hints and helps TAs, without doing the work for them.
 
-> **Release status (8 Nov 2026).** The team is moving the app from its earlier
-> library scope to CodeClinic. The current build still shows the earlier
-> **LibConnect** name, the **Member** and **Librarian** account types, and a
-> Book catalog. This guide describes the current build exactly as it behaves.
-> [Planned features](#planned-features) lists what is not available yet. In this
-> guide, **Member** corresponds to a future Student and **Librarian** to a
-> future TA.
+The current build provides registration, sign-in, account updates, account
+support, and a notifications inbox. Tickets and role-specific AI features are not available yet;
+[Planned features](#planned-features) lists them.
 
 ## Accessing the app
 
@@ -25,9 +21,9 @@ Use only made-up test details. Do not enter a real password you use elsewhere.
 ## Creating an account
 
 1. On the sign-in page, select **Register**.
-2. Under **Register as**, choose **Member** or **Librarian**.
+2. Under **Register as**, choose **Student** or **TA**.
 3. Enter your **Name**, **Email address**, **Password**, and **Confirm password**.
-   A Librarian also enters an **Employee ID**.
+   A TA also enters an **Employee ID**.
 4. Select **Create account**.
 
 Rules:
@@ -40,9 +36,9 @@ Rules:
 After a successful registration, the page confirms it and returns to sign-in
 after five seconds. Select **Go to login now** to return immediately.
 
-- A **Member** account can sign in straight away.
-- A **Librarian** account starts inactive. A manager librarian must activate it
-  before you can sign in. Account activation is not available in the app yet.
+- A **Student** account can sign in straight away.
+- A **TA** account starts inactive. A TA Coordinator must activate it before you
+  can sign in. Coordinators use the **TAs** page to activate TA accounts.
 
 ## Signing in and out
 
@@ -54,30 +50,62 @@ If any detail is wrong, including the account type, the page shows **Unable to
 sign in with those details.** It does not say which detail was wrong. After too
 many failed attempts, wait before trying again.
 
-After you sign in, the app opens your dashboard. To sign out, select **Log out**.
-You are also signed out after 30 minutes without activity, or eight hours after
-signing in.
+After you sign in, the app opens your dashboard: `/student/dashboard` for a
+Student and `/ta/dashboard` for a TA. If you open the other role's dashboard,
+the page shows **Access denied** with a link to your own dashboard. To sign out,
+select **Log out**. You are also signed out after 30 minutes without activity,
+or eight hours after signing in.
 
-## Member dashboard: Book catalog
+## Student dashboard
 
-The Member dashboard lists the Book catalog. Each card shows a book's title,
-author, and a shortened synopsis.
+The Student dashboard is a landing page headed **Student Dashboard**. It shows
+**Welcome back** followed by your registered name. Select **CodeClinic** at the
+top left to return to the dashboard, or **Log out** at the top right to sign
+out. The navigation also includes **Account** and **Notifications**.
 
-- **Search:** type text and select **Search** to find books whose title or author
-  contains it. Letter case does not matter.
-- **Advanced search:** open it to search by title, author, publisher, category,
-  ISBN, synopsis, and a publication year range from 1450 to 2100. Every field you
-  fill in must match.
-- **Clear search:** clears every search field and shows the whole catalog again.
-- **Load more books:** shows the next page of results.
-- Select **LibConnect** at the top left to return to the unfiltered dashboard.
+## TA dashboard
 
-The Book catalog belongs to the earlier library scope. It will be replaced by
-the Bug FAQ.
+The TA dashboard is headed **TA Dashboard**. Its navigation includes **Account**,
+**Students**, and **Notifications**. A TA Coordinator also sees **TAs**.
 
-## Librarian dashboard
+## Updating your account
 
-The Librarian dashboard is a landing page. It has no other features yet.
+Select **Account** in the dashboard navigation. Under **Profile**, update your
+name or email and select **Save profile**. Changing your email requires your
+current password. An email already used by another account is rejected.
+
+Under **Password**, enter your current and new passwords, then select **Change
+password**. New passwords need at least 8 characters. A successful password
+change signs out your other sessions and keeps the current session.
+
+## Supporting accounts
+
+TAs and Coordinators select **Students** to list student accounts. Coordinators
+can also select **TAs** to support other TA accounts. Use **Load more** for
+additional accounts. Coordinators cannot support their own account through this page.
+
+- **Activate** enables sign-in. **Deactivate** asks for confirmation and signs
+  the account out of all sessions.
+- **Reset password** asks for confirmation, signs out the target account, and
+  displays one temporary password. Select **Copy password**, share it with the
+  owner outside CodeClinic, and select **Hide password** when finished. The app
+  does not store or display that plain-text password again.
+- After signing in with a temporary password, the owner must complete **Change
+  your password** before accessing other features.
+
+The first Coordinator is provisioned by a human administrator using the
+[bootstrap procedure](DeveloperGuide.md#first-ta-coordinator), outside the web app.
+
+## Notifications
+
+Select **Notifications** (the bell) in the navigation. Its badge shows up to 99
+unread items. The inbox shows each message as plain text with its type and
+relative time. Select **Mark as read** for an item or **Mark all as read** to
+clear the unread items. Failed actions offer **Retry**.
+
+The inbox infrastructure is ready. Ticket features will create notifications
+and supply related-ticket links when those features are integrated; they are
+not part of the current shared-work build.
 
 ## Planned features
 
@@ -91,9 +119,6 @@ These CodeClinic features are planned and **not available in the current build**
 | Student | Bug FAQ: search anonymised resolved tickets |
 | TA | Ticket queue with filters; claim, reply, and resolve with a fix note |
 | TA | AI Fix Note Drafter and AI Queue Insights |
-| TA | Activate, deactivate, and reset student accounts |
-| TA Coordinator | Activate, deactivate, and reset TA accounts |
-| Everyone | Notifications inbox and account details updates |
 | Optional | Live session requests and approvals |
 
 This guide will be updated as each feature is released.

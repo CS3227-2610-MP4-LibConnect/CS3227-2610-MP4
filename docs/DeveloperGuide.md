@@ -5,15 +5,9 @@ problems as tickets; TAs claim, answer, and resolve them; AI gives students
 hints and helps TAs. `Overview.md` defines the product scope, and
 `workflow/PLAN.md` orders the delivery work.
 
-> **Release status (8 Nov 2026).** The project is moving from its earlier
-> library scope (LibConnect) to CodeClinic. The sections from *Current
-> application layout* to *Running the production server* describe the code as
-> it is built today, including the Member and Librarian account types and the
-> Book catalog. The approved specifications now rename the account types to
-> Student and TA and retire the Book catalog; the code changes have not been
-> made yet. The application directory was renamed from `src/libconnect-mp4` to
-> `src/codeclinic` on 8 Nov 2026; task evidence written before then still uses
-> the old path. The Firebase emulator project ID is still `libconnect-mp4`.
+The project began with a library scope named LibConnect. Task evidence written
+before 8 Nov 2026 still uses that name, the Member and Librarian account types,
+and the former application path `src/libconnect-mp4`.
 
 ## Contents
 
@@ -21,7 +15,6 @@ hints and helps TAs. `Overview.md` defines the product scope, and
 - [Running the development server](#running-the-development-server)
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
-- [Member Book catalog and search](#member-book-catalog-and-search)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
 - [Security design](#security-design)
@@ -33,7 +26,7 @@ hints and helps TAs. `Overview.md` defines the product scope, and
 
 ## Current application layout
 
-`src/codeclinic` contains the React and TypeScript frontend, the Express API, and the Firestore-backed authentication and Book catalog stores. Express serves the built frontend on the same origin as `/api/auth/*` and `/api/member/catalog`. During development, the React server provides hot reload and proxies API calls to Express. Authentication and catalog access run through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
+`src/codeclinic` contains the React and TypeScript frontend (`src/`), the Express API (`server/`), and the tests (`test/`). Under `server/`, `auth/` holds registration, login, sessions, and the Firestore-backed authentication store; `shared/` holds the Firestore rate counter; and `ai/` holds the AI gateway's configuration, feature registry, prompt construction, secret redaction, rate limits, and usage store. The AI modules are not yet mounted on any route, so no AI feature is exposed. Express serves the built frontend on the same origin as `/api/auth/*`. During development, the React server provides hot reload and proxies API calls to Express. Authentication runs through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
 
 ```mermaid
 flowchart LR
@@ -55,26 +48,23 @@ npm ci
 Use three terminals. Start the local Firestore emulator first:
 
 ```powershell
-firebase emulators:start --only firestore --project libconnect-mp4
+firebase emulators:start --only firestore --project demo-codeclinic
 ```
 
-For Express, create a local `.env` file in `src/codeclinic` containing:
+The `demo-` prefix marks an emulator-only project ID, so the Firebase tools cannot reach a cloud project with it. For Express, create a local `.env` file in `src/codeclinic` containing:
 
 ```dotenv
-LIBCONNECT_FIRESTORE_MODE=local-emulator
-LIBCONNECT_FIRESTORE_PROJECT_ID=libconnect-mp4
+CODECLINIC_FIRESTORE_MODE=local-emulator
+CODECLINIC_FIRESTORE_PROJECT_ID=demo-codeclinic
 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 ```
 
 Keep `.env` out of Git and do not put production credentials in it. In the second terminal, wait until the emulator is listening on port 8080, then build the frontend and start Express on port 3000:
 
 ```powershell
-node scripts/seed-local-books.js
 npm run build
 node --env-file=.env server/index.js
 ```
-
-The seed command populates the local emulator with 120 sample Books and three BookCopy records per Book. It writes `books/{isbn}` and `bookCopies/{isbn}-01` through `-03`, creating only missing records. Rerunning it preserves existing Book data and copy statuses; new copies start as `AVAILABLE`. Run `node scripts/seed-local-books.js --dry-run` to see the target counts without connecting or writing. The seed is optional: an empty `books` collection makes the member catalog display “No books found.”
 
 The `--env-file=.env` flag is required; `node server/index.js` does not load the file automatically. In the third terminal, run React with hot reload on port 3001:
 
@@ -83,7 +73,7 @@ $env:PORT = '3001'
 npm start
 ```
 
-Open `http://localhost:3001/` for login or `http://localhost:3001/register` for registration. After signing in as an active Member, open `/member/dashboard` for the catalog. The React development server proxies `/api` requests to Express on port 3000. You can use `http://localhost:3000/` to view the built app without hot reload. Express uses only the local Firestore emulator, where accounts, sessions, rate counters, Books, and BookCopies are stored; emulator data can disappear when it stops. If the emulator, project settings, or frontend build are missing or wrong, Express stops before accepting requests. The [application README](../src/codeclinic/README.md#local-development-with-the-firestore-emulator) also shows a setup using PowerShell environment variables instead of `.env`.
+Open `http://localhost:3001/` for login or `http://localhost:3001/register` for registration. After signing in, a Student lands on `/student/dashboard` and a TA on `/ta/dashboard`. The React development server proxies `/api` requests to Express on port 3000. You can use `http://localhost:3000/` to view the built app without hot reload. Express uses only the local Firestore emulator, where accounts, sessions, and rate counters are stored; emulator data can disappear when it stops. If the emulator, project settings, or frontend build are missing or wrong, Express stops before accepting requests. The [application README](../src/codeclinic/README.md#local-development-with-the-firestore-emulator) also shows a setup using PowerShell environment variables instead of `.env`.
 
 ### Verify the local setup
 
@@ -104,9 +94,9 @@ npm test -- --watch=false --runInBand --runTestsByPath test/firestore-mode.integ
 
 ## Registration and account records
 
-The `/register` form accepts a Member or Librarian account. It collects name, email, password, and password confirmation; Librarian also requires a self-entered employee ID. The confirmation stays in the browser. Client validation gives field errors, and `POST /api/auth/register` repeats validation on the server. Registration email is trimmed and checked for one `@`, nonempty dot-separated segments, at least two domain labels, and no whitespace. The server accepts only the expected fields, uses an 8 KiB JSON limit, and limits registrations to five attempts per 15 minutes per direct source address.
+The `/register` form accepts a Student or TA account. It collects name, email, password, and password confirmation; TA also requires a self-entered employee ID. The confirmation stays in the browser. Client validation gives field errors, and `POST /api/auth/register` repeats validation on the server. Registration email is trimmed and checked for one `@`, nonempty dot-separated segments, at least two domain labels, and no whitespace. The server accepts only the expected fields, uses an 8 KiB JSON limit, and limits registrations to five attempts per 15 minutes per direct source address.
 
-The server hashes the exact password with Argon2id and generates the user ID, registration time, status, and privileges. In one Firestore transaction it creates `users/{userId}` and `emailKeys/{sha256(trimmed-lowercase-email)}`; a duplicate canonical email fails without a partial account. A Member starts `ACTIVE` with `memberId = userId`. A Librarian starts `INACTIVE` with `isManager = false` and needs manager activation before sign-in. No Manager registration option exists. A successful `201` contains only account type and status and creates no session. The page shows a success notice and returns to login after five seconds or via an immediate link.
+The server hashes the exact password with Argon2id and generates the user ID, registration time, status, and privileges. In one Firestore transaction it creates `users/{userId}` and `emailKeys/{sha256(trimmed-lowercase-email)}`; a duplicate canonical email fails without a partial account. A Student starts `ACTIVE` with `studentId = userId`. A TA starts `INACTIVE` with `isManager = false` and needs activation by a TA Coordinator before sign-in. No TA Coordinator registration option exists. Stored records that still hold the former `MEMBER` or `LIBRARIAN` types or a `memberId` are treated as malformed and fail closed. A successful `201` contains only account type and status and creates no session. The page shows a success notice and returns to login after five seconds or via an immediate link.
 
 ```mermaid
 sequenceDiagram
@@ -130,11 +120,11 @@ sequenceDiagram
 
 ## Login, sessions, and dashboard access
 
-The login form posts email, password, and the selected Member or Librarian type to `POST /api/auth/login`. Express trims and lowercases the email for lookup, reads the email-key and user records, verifies the Argon2id hash, and requires an `ACTIVE` account whose stored type matches the selected type. A denied login returns a generic `401`. Login attempts are limited to five per canonical email and 30 per direct source address in a 15-minute window; storage errors return `503`.
+The login form posts email, password, and the selected Student or TA type to `POST /api/auth/login`. Express trims and lowercases the email for lookup, reads the email-key and user records, verifies the Argon2id hash, and requires an `ACTIVE` account whose stored type matches the selected type. A denied login returns a generic `401`. Login attempts are limited to five per canonical email and 30 per direct source address in a 15-minute window; storage errors return `503`.
 
-On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-libconnect_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/member/dashboard` or `/librarian/dashboard`.
+On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. Express serves the frontend for only these two dashboard paths; the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
 
-Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Member, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The React route guard controls what is displayed; the member catalog API separately enforces its own server-side authorization on every request.
+Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; any future protected API must enforce its own server-side authorization on every request.
 
 ```mermaid
 sequenceDiagram
@@ -149,7 +139,7 @@ sequenceDiagram
     B->>B: Navigate to role dashboard
     B->>E: GET /api/auth/session with cookie
     E->>F: Check session and current user and refresh idle deadline
-    E-->>B: 200 verified accountType and optional member name, or 401/503
+    E-->>B: 200 verified accountType and optional student name, or 401/503
     B->>B: Render matching dashboard or denial/retry
 ```
 
@@ -157,30 +147,103 @@ Logout first calls `GET /api/auth/csrf` to rotate and obtain a token, then sends
 
 The local Firestore collections used by these flows are `users`, `emailKeys`, `loginSessions`, and `loginFailureCounters`. Only server code creates or changes their authentication records.
 
-## Member Book catalog and search
+## Account management
 
-The active Member dashboard at `/member/dashboard` shows the verified member's name when available, a sticky `LibConnect` navigation link, search controls, and Book cards. Each card shows the Book's title, author, and a visually shortened synopsis whose full text remains available to assistive technology. It has no synopsis expansion button or copy-availability claim. The catalog lists Book title records regardless of whether any physical copy is currently available.
+The server mounts `server/account/routes.js` under `/api`. It provides
+`GET /api/account`, `PATCH /api/account/profile`, `POST /api/account/password`,
+and the list/status/password-reset endpoints under `/api/support/accounts`.
+Every mutation requires the current server CSRF token. Authorization loads the
+actor and target records; browser role and manager fields have no authority.
+TAs support Students; Coordinators also support other TAs.
 
-Basic search checks whether the submitted text occurs anywhere in a title or author. **Advanced search** adds title, author, publisher, category, ISBN, synopsis, and inclusive minimum and maximum publication years. Text matching ignores case and surrounding whitespace. Populated advanced fields combine with each other and with the basic query using AND. Search runs on **Search** submission; **Clear search** restores the full catalog. Closing the advanced panel stops applying its criteria while retaining their values for reopening. Years must be whole numbers from 1450 through 2100, and the minimum cannot exceed the maximum.
+Email changes move the canonical `emailKeys` reservation atomically. Password
+changes and support resets use Argon2id; a successful self-service change
+preserves the caller's session and deletes the others. Deactivation and reset
+delete the target's sessions. Reset returns a new 16-character temporary
+password once with `Cache-Control: no-store`, stores only its hash, and sets
+`mustChangePassword`.
 
-The browser requests `GET /api/member/catalog` from Express, using its existing session cookie. Express revalidates the session and current active Member role on every request before reading `books`; Librarians and unauthenticated visitors receive no catalog data. The browser never queries Firestore directly. The endpoint is read-only and returns only card fields (`isbn`, `title`, `author`, `synopsis`) plus pagination and scan metadata. Book documents are keyed by ISBN and must contain nonempty `isbn`, `title`, and `author` strings and an integer `publicationYear`; malformed records are skipped. `bookCopies` is not read to decide which titles appear.
+Temporary-password sessions may access only session lookup, CSRF retrieval,
+logout, and the own-password-change endpoint. Every other protected API,
+including notifications, returns `403 PASSWORD_CHANGE_REQUIRED`. The browser
+routes the owner to `/account/password-change` until the change succeeds.
 
-| API behavior | Contract |
-| --- | --- |
-| Filters | Optional `q`, `title`, `author`, `publisher`, `category`, `isbn`, `synopsis`, `minYear`, and `maxYear` query parameters. Text values are limited to 100 characters after trimming; years are four digits within 1450–2100. |
-| Pagination | `pageSize` defaults to 100 and may be 1–100. Records are scanned in Book document-ID order. The response's `nextCursor` is passed back as `cursor` with the same filters and page size. The dashboard uses **Load more books** to reach later pages. |
-| Success | `200` with `books`, `nextCursor`, `scannedAnyDocument`, `scannedValidBooks`, and `scanComplete`. These scan fields let the UI distinguish an empty collection from a search with no matches, including across pages. |
-| Rejection or outage | `400` for an invalid query, `401` for an invalid session, `403` for a verified non-Member, and `503` when catalog storage or session validation fails. Errors contain a non-sensitive code and no Book data. |
+Shared UI routes are `/student/account`, `/ta/account`, `/ta/students`,
+`/ta/tas`, and `/account/password-change`. The Express server serves the SPA
+shell for direct navigation and refresh. These pages add shared account
+functionality; role-owned ticket and AI features remain separate tasks.
 
-An empty `books` collection displays “No books found.” A populated collection with no matches displays “No matching books.” A network or service failure displays a Retry action instead of either empty-state message. A search response that arrives after a newer search or reset cannot replace the newer results. The catalog's expected maximum is 1,000 Book documents; each API page reads at most 100 documents, so searches spanning the full collection require successive page requests. The local 120-Book seed exposes a second page for testing continuation.
+### First TA Coordinator
+
+A human administrator first registers a TA account, then runs
+`scripts/bootstrap-coordinator.js` with an explicit `--project` and supplies the
+existing TA email through `CODECLINIC_COORDINATOR_EMAIL`. For local synthetic
+data only, with the Firestore emulator already running:
+
+```sh
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 CODECLINIC_COORDINATOR_EMAIL=existing-ta@example.test node scripts/bootstrap-coordinator.js --project demo-codeclinic
+```
+
+The script promotes the matching existing TA to `isManager: true` and `ACTIVE`.
+It refuses a Student, missing account, or an existing Coordinator unless
+`--allow-additional` is explicitly supplied. It prints outcomes without the
+full email or credentials. Production bootstrap is a human administrator's
+operation; agents do not run this script against a cloud project. Never reuse
+production credentials for local development.
+
+## Notifications
+
+`server/notifications/notify.js` is the sole shared notification writer. Ticket
+owners call `notify` from authorized server operations; the inbox has no
+client-facing creation endpoint. Failed writes retry once and never roll back
+the calling operation. Event/recipient decisions belong to the ticket tasks.
+
+The four `/api/notifications` endpoints list the caller's notifications, count
+unread items (maximum 99), mark one read, and mark all read. Mutations require
+CSRF; another user's item ID returns the same `404` as a missing item. Messages
+are plain text. `NotificationBell` appears in both dashboard navbars and
+`/notifications` renders the session-checked inbox. A future role feature may
+supply `NotificationInbox.ticketHref`; no ticket route is invented here.
+
+The list query needs a Firestore composite index on `recipientUserId` ascending
+and `createdAt` descending. That production prerequisite remains with the
+Firebase/deployment owner; the local emulator does not enforce index creation.
+The current task does not configure or deploy cloud indexes.
+
+## Shared AI gateway
+
+`server/ai/gateway.js` composes the approved units and exposes
+`createAiGateway(deps)` with `register(definition)` and
+`run({ feature, actor, input })`. The startup instance is available at
+`app.locals.aiGateway`. Calling features must first authenticate and authorize
+the actor and data in trusted server code. No real feature is registered and
+no AI HTTP endpoint is exposed by this shared-work implementation.
+
+Configuration is read once from the server environment. Missing or malformed
+`SOCLAAS_API_KEY`, `SOCLAAS_BASE_URL`, or `SOCLAAS_MODEL` disables the gateway
+without stopping the server. Tests use fakes. Do not place keys in browser
+configuration or logs. Production configuration belongs to the deployment owner.
+
+Calls reserve shared Firestore limits (5/user/minute, 50/user/day, and a global
+default of 40/minute, configurable up to 45), redact common secrets and email
+addresses, reject oversized input without truncation, and put fixed system
+instructions before delimited user data. The provider transport has a
+20-second attempt timeout, one bounded retry, a circuit breaker, redirect
+refusal, and a 1 MiB response cap. Output must pass JSON and feature-schema
+validation. Logs and `aiUsage` store metadata and numeric token counts only.
+
+Redaction can miss secrets: users must never paste credentials. Model output
+is advisory and cannot authorize writes or invoke tools. Real model selection
+and `max_tokens` support still require a human smoke check; no live provider
+call was made during automated verification.
 
 ## Running the production server
 
-The Express server in `src/codeclinic/server/index.js` serves the built React app and handles registration, login, sessions, rate counters, and the read-only member catalog. Deploy it on Cloud Run with a service account that has the Firestore permissions the app needs. Set these runtime environment variables to the **actual production Firebase project ID**:
+The Express server in `src/codeclinic/server/index.js` serves the built React app and handles registration, login, sessions, and rate counters. Deploy it on Cloud Run with a service account that has the Firestore permissions the app needs. Set these runtime environment variables to the **actual production Firebase project ID**:
 
 ```text
-LIBCONNECT_FIRESTORE_MODE=production
-LIBCONNECT_FIRESTORE_PROJECT_ID=<production-project-id>
+CODECLINIC_FIRESTORE_MODE=production
+CODECLINIC_FIRESTORE_PROJECT_ID=<production-project-id>
 GOOGLE_CLOUD_PROJECT=<same-production-project-id>
 ```
 
@@ -191,7 +254,7 @@ npm run build
 node server/index.js
 ```
 
-Cloud Run supplies `PORT` and `K_SERVICE`. Use its service account identity for credentials; do not set `FIRESTORE_EMULATOR_HOST` or `GOOGLE_APPLICATION_CREDENTIALS` in production. The server rejects a local gcloud Application Default Credentials file and checks that the Cloud Run metadata project matches `LIBCONNECT_FIRESTORE_PROJECT_ID` before it starts accepting requests. Missing or inconsistent configuration stops startup rather than switching Firestore targets.
+Cloud Run supplies `PORT` and `K_SERVICE`. Use its service account identity for credentials; do not set `FIRESTORE_EMULATOR_HOST` or `GOOGLE_APPLICATION_CREDENTIALS` in production. The server rejects a local gcloud Application Default Credentials file and checks that the Cloud Run metadata project matches `CODECLINIC_FIRESTORE_PROJECT_ID` before it starts accepting requests. Missing or inconsistent configuration stops startup rather than switching Firestore targets.
 
 Production deployment, service account permissions, and a live Firestore connection still need to be configured and verified. The repository contains no credentials. Production mode is designed to fail on a developer laptop.
 
@@ -203,15 +266,18 @@ Shared server code is split by responsibility so each feature reuses one impleme
 | --- | --- | --- | --- |
 | Firestore target selection | `server/firestore-target.js` | Chooses the emulator or production Firestore once at startup and fails closed on inconsistent configuration | `server/index.js` |
 | Auth store | `server/auth/firestore-store.js` | Reads and writes users, email keys, sessions, and rate counters | Login, session checks, registration rate limits |
-| Email canonicalization | `canonicalizeEmail` and `emailKeyFor` in `server/auth/login.js` | One rule for email lookup keys | Login and registration |
+| Email canonicalization | `server/auth/email.js` (`canonicalizeEmail`, `emailKeyFor`) | One rule for email lookup keys | Login and registration |
 | Registration persistence | `server/auth/firestore-registration.js` | Atomic user and email-key creation | Registration |
-| Catalog contract and adapter | `server/catalog/contract.js`, `adapter.js`, `route.js` | Query validation, filtering and pagination, and the HTTP handler, kept separate | Member catalog |
+| Firestore rate counter | `server/shared/firestore-rate-counter.js` | Fixed-window counters stored in Firestore | Auth store and AI gateway rate limits |
 | Shared theme | `src/theme.css` | Design tokens and reusable visual classes | Every page |
 | Dashboard logout | `src/DashboardLogout.tsx` | One logout flow with CSRF handling | Both dashboards |
+| AI gateway | `server/ai/` | Server-only configuration, redaction and caps, stable prompts, Firestore rate limits, bounded provider transport, schema validation, and safe usage records | Created at server startup; no real feature registered |
+| Account support | `server/account/` | Own-profile/password updates and server-authorized support operations | Account and support pages |
+| Notifications | `server/notifications/`, `src/notifications/` | Shared writer, own-user inbox API, bell and plain-text inbox | Both dashboards |
 
-Known issue: `server/auth/login.js` also mounts the catalog route and exports the email helpers, so it currently has more than one responsibility.
+Known issue: `server/auth/login.js` still re-exports the email helpers from `server/auth/email.js` for one frontend test import. The re-export can be removed once that test imports `email.js` directly.
 
-Planned shared components, including the AI gateway, are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+The remaining planned shared components, including role-specific AI integrations, are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
 ## Security design
 
@@ -224,7 +290,7 @@ Implemented security controls:
 - Login and registration are rate limited, and failures use generic messages that do not reveal whether an account exists.
 - The browser never accesses Firestore directly.
 
-No AI features are built yet. Planned AI security controls are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+No role-specific AI feature is exposed yet. The shared AI gateway is created once at server startup, including when configuration is missing; a disabled gateway returns `AI_UNAVAILABLE` while the rest of the server continues. Planned AI security controls are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
 ## Environments and deployment
 
@@ -232,10 +298,10 @@ Current state:
 
 | Environment | Firestore target | Status |
 | --- | --- | --- |
-| Local development | Firestore emulator, project `libconnect-mp4` | Working |
+| Local development | Firestore emulator, project `demo-codeclinic` | Working |
 | Production | `apphosting.yaml` configures Firebase App Hosting in `production` mode for project `libconnect-mp4` | Not verified |
 
-The local emulator and production configuration currently share the project ID `libconnect-mp4`, and there is no separate deployed development environment. The repository has no GitHub Actions workflow yet. The planned environments and deployment pipeline are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+The `.firebaserc` `default` alias is the emulator-only `demo-codeclinic`, and its `prod` alias is `libconnect-mp4`. There is no separate deployed development environment. The repository has no GitHub Actions workflow yet. The planned environments and deployment pipeline are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
 ## Multi-agent development workflow
 
