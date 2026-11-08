@@ -28,6 +28,7 @@ const RETRY_JITTER_MS = 1_000;
 const MAX_RETRY_AFTER_MS = 5_000;
 const BREAKER_FAILURE_THRESHOLD = 5;
 const BREAKER_OPEN_MS = 60_000;
+const MAX_RESPONSE_BYTES = 1024 * 1024;
 
 const FAILURE_CATEGORIES = Object.freeze({
   CONFIG_ERROR: 'CONFIG_ERROR',
@@ -38,6 +39,7 @@ const FAILURE_CATEGORIES = Object.freeze({
   UPSTREAM_RATE_LIMITED: 'UPSTREAM_RATE_LIMITED',
   UPSTREAM_SERVER_ERROR: 'UPSTREAM_SERVER_ERROR',
   UPSTREAM_CLIENT_ERROR: 'UPSTREAM_CLIENT_ERROR',
+  UPSTREAM_RESPONSE_TOO_LARGE: 'UPSTREAM_RESPONSE_TOO_LARGE',
 });
 
 const RETRYABLE = new Set([
@@ -116,6 +118,40 @@ function discardBody(response) {
   }
 }
 
+// Reads a 2xx body as UTF-8 text, giving up once it exceeds
+// MAX_RESPONSE_BYTES. Returns `null` on overflow. A declared
+// `content-length` above the cap is rejected before reading. Streams are read
+// incrementally and cancelled on overflow; objects without a readable stream
+// (test fakes) fall back to `text()` with a post-read size check.
+async function readBoundedText(response) {
+  const declared = Number(readHeader(response, 'content-length'));
+  if (Number.isFinite(declared) && declared > MAX_RESPONSE_BYTES) {
+    discardBody(response);
+    return null;
+  }
+  const body = response.body;
+  if (body && typeof body.getReader === 'function') {
+    const reader = body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let received = 0;
+    let text = '';
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      received += value.byteLength;
+      if (received > MAX_RESPONSE_BYTES) {
+        Promise.resolve(reader.cancel()).catch(() => {});
+        return null;
+      }
+      text += decoder.decode(value, { stream: true });
+    }
+    return text + decoder.decode();
+  }
+  const text = await response.text();
+  if (typeof text !== 'string') return '';
+  return Buffer.byteLength(text, 'utf8') > MAX_RESPONSE_BYTES ? null : text;
+}
+
 function categoryForStatus(status) {
   if (status === 429) return FAILURE_CATEGORIES.UPSTREAM_RATE_LIMITED;
   if (status >= 500 && status <= 599) return FAILURE_CATEGORIES.UPSTREAM_SERVER_ERROR;
@@ -150,6 +186,7 @@ function createTransport({
           'Content-Type': 'application/json',
         },
         body,
+        redirect: 'error',
         signal: controller ? controller.signal : undefined,
       });
       const status = Number(response && response.status);
@@ -162,9 +199,13 @@ function createTransport({
           retryAfter: readHeader(response, 'retry-after'),
         };
       }
+      const text = await readBoundedText(response);
+      if (text === null) {
+        return { ok: false, category: FAILURE_CATEGORIES.UPSTREAM_RESPONSE_TOO_LARGE, status };
+      }
       let parsed = null;
       try {
-        parsed = JSON.parse(await response.text());
+        parsed = JSON.parse(text);
       } catch {
         parsed = null;
       }
@@ -253,6 +294,7 @@ module.exports = {
   BREAKER_FAILURE_THRESHOLD,
   BREAKER_OPEN_MS,
   FAILURE_CATEGORIES,
+  MAX_RESPONSE_BYTES,
   MAX_RETRY_AFTER_MS,
   RETRY_JITTER_MS,
   RETRY_MIN_DELAY_MS,

@@ -29,11 +29,11 @@ All new gateway code goes under `src/codeclinic/server/ai/` as CommonJS JavaScri
 
 ## Group 3 — Gateway composition and startup wiring (T08)
 
-- [ ] **T08 — Gateway pipeline and server wiring.** Add `server/ai/gateway.js` exposing `createAiGateway(deps)` and `gateway.run({ feature, actor, input })`. It composes T01–T07 in the R4 order, returns only the R10 results, never throws to the caller, and records usage for every call that passes feature validation. In `server/index.js`, create one gateway at startup from `process.env`, so a disabled gateway does not stop the server. Add no route and register no real feature. Test the full pipeline with a fake feature and a fake provider, the disabled state, and that log and record output contains no key, header, prompt, or output text. (Spec R1, R4, R10; scenarios 1, 3, 11.)
+- [x] **T08 — Gateway pipeline and server wiring.** Add `server/ai/gateway.js` exposing `createAiGateway(deps)` and `gateway.run({ feature, actor, input })`. It composes T01–T07 in the R4 order, returns only the R10 results, never throws to the caller, and records usage for every call that passes registered-feature and server-resolved actor validation. In `server/index.js`, create one gateway at startup from `process.env`, so a disabled gateway does not stop the server. Add no route and register no real feature. Test the full pipeline with a fake feature and a fake provider, the disabled state, and that log and record output contains no key, header, prompt, or output text. (Spec R1, R4, R10; scenarios 1, 3, 11.)
 
 ## Group 4 — Browser boundary verification and evidence (T09)
 
-- [ ] **T09 — Browser boundary check and evidence.** Add a test that fails if any file under `src/codeclinic/src/` references `soclaas`, `SOCLAAS_`, or `server/ai`. Run the full test suite and build, then record changed files, commands, results, deviations, and unresolved risks in `implementation-report.md` and `logs/tasks/ai-gateway/`, including the *Subagent token usage* table. The manual smoke check against the real provider is run only by the human, with a key supplied outside the repository. (Spec R1, verification matrix; scenario 12.)
+- [x] **T09 — Browser boundary check and evidence.** Add a test that fails if any file under `src/codeclinic/src/` references `soclaas`, `SOCLAAS_`, or `server/ai`. Run the full test suite and build, then record changed files, commands, results, deviations, and unresolved risks in `implementation-report.md` and `logs/tasks/ai-gateway/`, including the *Subagent token usage* table. The manual smoke check against the real provider is run only by the human, with a key supplied outside the repository. (Spec R1, verification matrix; scenario 12.)
 
 ## Approval boundary
 
@@ -44,3 +44,5 @@ Checklist v0.1 and handoff v0.1 are human-approved (2026-11-08). Grouping approv
 - 2026-11-08: Drafted at the human's direction after the human approved specification v0.1.
 - 2026-11-08: The human approved checklist v0.1 and handoff v0.1.
 - 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this file were updated; requirements are unchanged.
+
+- 2026-11-08: The human selected **Approve the clarification** in the continuation chat for R4/R11, this checklist and the handoff: per-user usage records require both a registered feature and a valid server-resolved actor. Invalid actors return AI_UNAVAILABLE without provider calls or fabricated audit identities. This records the human-approved wording clarification; gateway behavior is unchanged.

@@ -40,7 +40,7 @@ Not in scope: `package.json` or the lockfile (no new dependencies), React source
 
 - The gateway does not authenticate users or check roles; features must do that before calling `run`. The gateway must never accept identity, role, or model from feature input.
 - Model output never triggers a write other than the usage record, and no tool calling exists.
-- Rate-limit and usage writes are keyed by the trusted `actor.userId` only.
+- Rate-limit and usage writes are keyed by the trusted `actor.userId` only. Both the registered feature and the server-resolved actor must validate before usage recording; invalid actors return `AI_UNAVAILABLE` without provider calls or a fabricated audit identity.
 
 ## Permissions, tools, and external access
 
@@ -84,3 +84,5 @@ Specification v0.1: human-approved on 2026-11-08. Checklist v0.1 and this handof
 ## Amendments
 
 - 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this handoff were updated; scope and allowed files are otherwise unchanged.
+
+- 2026-11-08: The human selected **Approve the clarification** in the continuation chat for R4/R11, this checklist and the handoff: per-user usage records require both a registered feature and a valid server-resolved actor. Invalid actors return AI_UNAVAILABLE without provider calls or fabricated audit identities. This records the human-approved wording clarification; gateway behavior is unchanged.

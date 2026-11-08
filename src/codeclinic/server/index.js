@@ -8,6 +8,7 @@ const { createFirestoreRegistrationPersistence } = require('./auth/firestore-reg
 const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-target');
 const { configureNotify } = require('./notifications/notify');
 const { createNotificationsRouter, createFirestoreNotificationStore } = require('./notifications/route');
+const { createAiGateway } = require('./ai/gateway');
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
   const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
@@ -45,6 +46,7 @@ async function startServer() {
 
   const db = await connectFirestoreTarget(target);
   const app = createServerApp(db, buildDirectory);
+  app.locals.aiGateway = createAiGateway({ env: process.env, db });
   return app.listen(port, () => {
     console.info(`CodeClinic server listening on port ${port}.`);
   });

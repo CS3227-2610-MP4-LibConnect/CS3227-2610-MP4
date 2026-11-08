@@ -107,8 +107,10 @@ Each call MUST pass, in order, through:
 4. **Output parsing (R9).**
 5. **Result:** typed data, or a safe fallback (R10).
 
-A failure at any layer MUST stop the pipeline, record usage (R11), and return a
-fallback. It MUST NOT throw an unhandled error to the route.
+A failure at any layer MUST stop the pipeline and return a fallback. Usage is
+recorded under R11 only after both the feature and the server-resolved actor
+validate; an invalid actor MUST NOT contact the provider or create a fabricated
+audit identity. It MUST NOT throw an unhandled error to the route.
 
 ### R5. Rate limits
 
@@ -202,7 +204,8 @@ define those messages.
 
 ### R11. Usage records
 
-Every call that passes feature validation MUST write one `aiUsage` document
+Every call that passes registered-feature and server-resolved actor validation
+MUST write one `aiUsage` document
 with `userId`, `feature`, `outcome` (`SUCCESS`, `RATE_LIMITED`, `TIMEOUT`,
 `INVALID_OUTPUT`, `PROVIDER_ERROR`, `INPUT_TOO_LARGE`, or `DISABLED`),
 `attempts`, `latencyMs`, `createdAt`, and token counts. Token counts come from
@@ -282,3 +285,5 @@ Automated tests MUST NOT call the real provider or need a real key.
   `workflow/tasks/ai-gateway/design.md` to CodeClinic.
 - 2026-11-08: The human approved version 0.1, confirmed the per-user limits, and confirmed that SoC issued one key. The global limit is therefore 40/min per environment, at most 45.
 - 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this file were updated; requirements are unchanged.
+
+- 2026-11-08: The human selected **Approve the clarification** in the continuation chat for R4/R11, this checklist and the handoff: per-user usage records require both a registered feature and a valid server-resolved actor. Invalid actors return AI_UNAVAILABLE without provider calls or fabricated audit identities. This records the human-approved wording clarification; gateway behavior is unchanged.

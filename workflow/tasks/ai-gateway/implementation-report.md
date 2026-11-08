@@ -1,6 +1,6 @@
 # Implementation report: AI gateway
 
-Status: preparation only; implementation dispatch pending human approval.
+Status: Shared gateway framework implemented and independently reviewed; human commit/merge decision pending.
 Specification: `workflow/specs/ai-gateway.md` v0.1 (2026-11-08).
 Checklist and analyst handoff: v0.1 (2026-11-08).
 Base branch and commit inspected: `codeclinic-scope`, `4554c71`.
@@ -44,3 +44,45 @@ total. Grouping application and verification are recorded in
 compared the nine complete checklist lines with `HEAD`, verified the four
 `## Group N` headings and approved task order, and ran `git diff --check`;
 all checks passed. These are document checks, not implementation verification.
+
+## Continuation — 2026-11-08
+
+The earlier preparation status above is historical. T01–T07 are already implemented,
+reviewed and merged on `codeclinic-scope`. This continuation implements T08 and T09:
+`server/ai/gateway.js`, startup creation in `server/index.js`, recovered transport
+hardening, and new pipeline/browser-boundary/transport-hardening tests. Real features
+remain unregistered and no AI endpoint is exposed.
+
+Targeted verification: 49 tests passed across four suites. Execution evidence:
+[`continuation.md`](../../../logs/tasks/ai-gateway/continuation.md).
+Full regression/build and independent review remain pending at this point.
+No specification, authorization or dependency changes. A malformed or missing trusted
+actor fails before audit identity creation; no fabricated user ID is stored.
+
+Selected skills: repository-adapted `openspec-apply-change`; `ai-security-review`.
+This gateway implementation was performed by the orchestrating agent. Continuation
+reviewer usage will be recorded after independent review; unavailable counts are not estimated.
+
+## Final continuation verification
+
+Current-source regression passed: 36 suites / 645 tests; three opt-in integrations
+skipped by default. The fresh local emulator run passed all three integrations;
+the production build compiled successfully. Independent reviews and residual
+owner actions are linked from `logs/tasks/codeclinic-scope/shared-continuation.md`.
+No commit, merge, push or deployment has occurred. Checklist changes record
+verified implementation only and do not grant human approval.
+
+### Continuation subagent usage
+
+Runtime token counts unavailable; aggregate unavailable. Full per-run configured
+model and role table: `logs/tasks/codeclinic-scope/shared-continuation.md`.
+
+### Continuation runtime usage detail
+
+| Role | Task/run | Configured model | Input tokens | Output tokens | Total tokens | Source |
+| --- | --- | --- | --- | --- | --- | --- |
+| Reviewer | gateway continuation, run 1 | gpt-6-luna | unavailable | unavailable | unavailable | Runtime metrics unavailable |
+| Reviewer | clarification/cleanup addendum, run 2 | gpt-6-luna | unavailable | unavailable | unavailable | Runtime metrics unavailable |
+
+Configured model is the explicit profile setting; actual runtime model telemetry
+and aggregate token usage are unavailable. Root integration work is not a subagent.
