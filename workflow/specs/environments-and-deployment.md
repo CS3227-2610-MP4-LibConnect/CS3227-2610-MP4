@@ -1,7 +1,7 @@
 # Environments and deployment specification
 
-Version: 0.1 (2026-11-08)
-Approval evidence: the human replied "approved both specs" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state.
+Version: 0.2 (2026-11-08)
+Approval evidence: the human replied "all aproved" to version 0.2 on 2026-11-08; recorded at the human's request; no agent-set approval state. Earlier, the human replied "approved both specs" to version 0.1 on 2026-11-08; no agent-set approval state.
 Task ID: `environments-and-deployment` (from approved `workflow/PLAN.md` v0.1)
 
 ## Purpose and scope
@@ -40,7 +40,7 @@ Out of scope:
   project.
 - `workflow/specs/ai-gateway.md` (draft): the `SOCLAAS_*` configuration.
 - Current repository:
-  - `src/libconnect-mp4/apphosting.yaml` sets `production` mode for project
+  - `src/codeclinic/apphosting.yaml` sets `production` mode for project
     `libconnect-mp4`.
   - `.firebaserc` has only a `default` alias, `libconnect-mp4`, which is also
     the local emulator project ID.
@@ -54,12 +54,12 @@ Out of scope:
 
 | Environment | Firebase project | App Hosting environment name | Deployed by | Data |
 | --- | --- | --- | --- | --- |
-| Local | `libconnect-mp4` (emulator only) | — | Developer | Synthetic, disposable |
+| Local | `demo-codeclinic` (emulator only) | — | Developer | Synthetic, disposable |
 | Development | `<dev-project-id>`, a new project | `development` | GitHub Actions, on each merge to `main` | Synthetic test data only |
 | Production | `<prod-project-id>` | `production` | GitHub Actions, after a manual approval | Real users |
 
 The human chose two new projects on 2026-11-08 and will supply their IDs (R8).
-`libconnect-mp4` remains the local emulator project ID only.
+The local emulator uses the emulator-only project ID `demo-codeclinic` (account-registration v0.7).
 
 ## Requirements
 
@@ -75,10 +75,14 @@ configuration MUST be split into:
 
 - `apphosting.yaml`: shared settings (build and run commands, run config).
 - `apphosting.development.yaml` and `apphosting.production.yaml`: each
-  environment's `LIBCONNECT_FIRESTORE_PROJECT_ID`, `GOOGLE_CLOUD_PROJECT`, and
+  environment's `CODECLINIC_FIRESTORE_PROJECT_ID`, `GOOGLE_CLOUD_PROJECT`, and
   secret references.
 
-Both deployed environments set `LIBCONNECT_FIRESTORE_MODE=production`.
+Both deployed environments set `CODECLINIC_FIRESTORE_MODE=production`.
+
+The Firestore configuration variables are named `CODECLINIC_FIRESTORE_MODE` and
+`CODECLINIC_FIRESTORE_PROJECT_ID`, replacing the former `LIBCONNECT_` names.
+The server MUST NOT read the former names.
 
 ### R2. Secrets
 
@@ -104,7 +108,7 @@ unaffected.
 ### R4. Continuous integration
 
 `.github/workflows/ci.yml` MUST run on every pull request and every push to
-`main`, from `src/libconnect-mp4`:
+`main`, from `src/codeclinic`:
 
 1. `npm ci`
 2. `npm test -- --watch=false` with `CI=true`
@@ -207,8 +211,8 @@ pull requests from forks.
 
 1. **Project IDs (partly resolved 2026-11-08):** the human chose two new
    Firebase projects, one for development and one for production. The existing
-   `libconnect-mp4` cloud project is not used by either deployed environment and
-   remains the local emulator project ID. The exact new project IDs are still
+   `libconnect-mp4` cloud project is not used by either deployed environment.
+   The local emulator uses `demo-codeclinic`. The exact new project IDs are still
    to be supplied by the human.
 2. **Dependency audit noise:** `react-scripts` is listed under `dependencies`,
    so `npm audit --omit=dev` will include its known transitive vulnerabilities.
@@ -231,3 +235,6 @@ pull requests from forks.
 - 2026-11-08: Drafted at the human's direction.
 - 2026-11-08: The human approved version 0.1 and approved moving build-only packages in `package.json` to `devDependencies`. Open decision 1 (project IDs) remains open.
 - 2026-11-08: The human chose two new Firebase projects for development and production; their IDs are pending.
+- 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this file were updated; requirements are unchanged.
+- 2026-11-08: v0.2 draft. The human directed renaming every remaining LibConnect name. The Firestore variables become `CODECLINIC_FIRESTORE_MODE` and `CODECLINIC_FIRESTORE_PROJECT_ID`, and the local emulator project ID becomes `demo-codeclinic`. The *Sources and current state* section still describes the repository as it was.
+- 2026-11-08: The human approved version 0.2.

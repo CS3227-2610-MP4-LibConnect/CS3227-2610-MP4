@@ -11,8 +11,9 @@ hints and helps TAs. `Overview.md` defines the product scope, and
 > it is built today, including the Member and Librarian account types and the
 > Book catalog. The approved specifications now rename the account types to
 > Student and TA and retire the Book catalog; the code changes have not been
-> made yet. The source directory `src/libconnect-mp4` and the Firebase project
-> ID `libconnect-mp4` keep their names.
+> made yet. The application directory was renamed from `src/libconnect-mp4` to
+> `src/codeclinic` on 8 Nov 2026; task evidence written before then still uses
+> the old path. The Firebase emulator project ID is still `libconnect-mp4`.
 
 ## Contents
 
@@ -32,7 +33,7 @@ hints and helps TAs. `Overview.md` defines the product scope, and
 
 ## Current application layout
 
-`src/libconnect-mp4` contains the React and TypeScript frontend, the Express API, and the Firestore-backed authentication and Book catalog stores. Express serves the built frontend on the same origin as `/api/auth/*` and `/api/member/catalog`. During development, the React server provides hot reload and proxies API calls to Express. Authentication and catalog access run through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
+`src/codeclinic` contains the React and TypeScript frontend, the Express API, and the Firestore-backed authentication and Book catalog stores. Express serves the built frontend on the same origin as `/api/auth/*` and `/api/member/catalog`. During development, the React server provides hot reload and proxies API calls to Express. Authentication and catalog access run through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
 
 ```mermaid
 flowchart LR
@@ -45,7 +46,7 @@ flowchart LR
 
 ## Running the development server
 
-Install Node.js with support for `node --env-file` (Node 20.6 or newer), npm, and the Firebase CLI. Run the following commands from `src/libconnect-mp4` in PowerShell. Install the locked npm dependencies once:
+Install Node.js with support for `node --env-file` (Node 20.6 or newer), npm, and the Firebase CLI. Run the following commands from `src/codeclinic` in PowerShell. Install the locked npm dependencies once:
 
 ```powershell
 npm ci
@@ -57,7 +58,7 @@ Use three terminals. Start the local Firestore emulator first:
 firebase emulators:start --only firestore --project libconnect-mp4
 ```
 
-For Express, create a local `.env` file in `src/libconnect-mp4` containing:
+For Express, create a local `.env` file in `src/codeclinic` containing:
 
 ```dotenv
 LIBCONNECT_FIRESTORE_MODE=local-emulator
@@ -82,11 +83,11 @@ $env:PORT = '3001'
 npm start
 ```
 
-Open `http://localhost:3001/` for login or `http://localhost:3001/register` for registration. After signing in as an active Member, open `/member/dashboard` for the catalog. The React development server proxies `/api` requests to Express on port 3000. You can use `http://localhost:3000/` to view the built app without hot reload. Express uses only the local Firestore emulator, where accounts, sessions, rate counters, Books, and BookCopies are stored; emulator data can disappear when it stops. If the emulator, project settings, or frontend build are missing or wrong, Express stops before accepting requests. The [application README](../src/libconnect-mp4/README.md#local-development-with-the-firestore-emulator) also shows a setup using PowerShell environment variables instead of `.env`.
+Open `http://localhost:3001/` for login or `http://localhost:3001/register` for registration. After signing in as an active Member, open `/member/dashboard` for the catalog. The React development server proxies `/api` requests to Express on port 3000. You can use `http://localhost:3000/` to view the built app without hot reload. Express uses only the local Firestore emulator, where accounts, sessions, rate counters, Books, and BookCopies are stored; emulator data can disappear when it stops. If the emulator, project settings, or frontend build are missing or wrong, Express stops before accepting requests. The [application README](../src/codeclinic/README.md#local-development-with-the-firestore-emulator) also shows a setup using PowerShell environment variables instead of `.env`.
 
 ### Verify the local setup
 
-From `src/libconnect-mp4`, run the regular tests and build:
+From `src/codeclinic`, run the regular tests and build:
 
 ```powershell
 $env:CI = 'true'
@@ -175,7 +176,7 @@ An empty `books` collection displays “No books found.” A populated collectio
 
 ## Running the production server
 
-The Express server in `src/libconnect-mp4/server/index.js` serves the built React app and handles registration, login, sessions, rate counters, and the read-only member catalog. Deploy it on Cloud Run with a service account that has the Firestore permissions the app needs. Set these runtime environment variables to the **actual production Firebase project ID**:
+The Express server in `src/codeclinic/server/index.js` serves the built React app and handles registration, login, sessions, rate counters, and the read-only member catalog. Deploy it on Cloud Run with a service account that has the Firestore permissions the app needs. Set these runtime environment variables to the **actual production Firebase project ID**:
 
 ```text
 LIBCONNECT_FIRESTORE_MODE=production
@@ -183,7 +184,7 @@ LIBCONNECT_FIRESTORE_PROJECT_ID=<production-project-id>
 GOOGLE_CLOUD_PROJECT=<same-production-project-id>
 ```
 
-From `src/libconnect-mp4`, build the frontend and start the server with:
+From `src/codeclinic`, build the frontend and start the server with:
 
 ```sh
 npm run build

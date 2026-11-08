@@ -14,10 +14,11 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 
 | Order | Task ID | Scope | Depends on | Owner | Spec status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | `account-registration` | Student/TA registration (role rename) | — | Shared | v0.6 approved |
+| 1 | `account-registration` | Student/TA registration (role rename, emulator project ID) | — | Shared | v0.7 approved |
 | 1 | `role-aware-login` | Student/TA login (role rename) | — | Shared | v0.3 approved |
 | 1 | `role-based-dashboards` | Student/TA dashboards (role rename) | `role-aware-login` | Shared | v0.5 approved |
-| 2 | `environments-and-deployment` | Separate dev and prod Firebase projects, per-environment secrets, GitHub Actions CI/CD | — | Shared | v0.1 approved |
+| 1 | `codeclinic-rename` | Implements the three role-rename specs, removes the retired Book catalog, renames all internal LibConnect names, moves the email helpers | — | Shared | Checklist and handoff v0.1 approved |
+| 2 | `environments-and-deployment` | Separate dev and prod Firebase projects, per-environment secrets, GitHub Actions CI/CD | — | Shared | v0.2 approved |
 | 2 | `ai-gateway` | Shared SoC LLM client: rate limits, timeouts, schema validation, redaction, token caps, fallback, usage records | — | Shared | v0.1 approved; design input in `workflow/tasks/ai-gateway/design.md` |
 | 3 | `student-tickets` | Create, edit, close, view tickets; files; reply thread | `role-based-dashboards` | Student owner | Not drafted |
 | 3 | `ta-ticket-queue` | Queue, filters, claim/unclaim, reply, resolve with fix note | `student-tickets` data model | TA owner | Not drafted |
@@ -113,3 +114,4 @@ their own module.
 - 2026-11-08: Added *Planned design details*, moved from
   `docs/DeveloperGuide.md` at the human's direction so that the Developer Guide
   describes only what is built.
+- 2026-11-08: The human chose to implement the CodeClinic code renames (user-visible text, configuration variables, cookie and storage key names, package name, emulator project ID) together with the role-rename implementation of `account-registration`, `role-aware-login`, and `role-based-dashboards`, and to start `ai-gateway` Group 1 only after that rename work.

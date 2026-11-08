@@ -74,7 +74,7 @@ The existing `/api/auth/session` endpoint returns 401 for invalid or expired ses
 
 ### R7. Shared visual theme and reusable interface elements
 
-Both role dashboards MUST follow the project interface design convention in `Overview.md` and use the same visual theme as the login page. Shared design tokens and reusable visual classes MUST be maintained in one common project stylesheet, `src/libconnect-mp4/src/theme.css`, imported once from the application entry point. The shared stylesheet SHOULD define the theme values and reusable visual patterns; page-specific stylesheets MAY define each page's layout and role-specific presentation.
+Both role dashboards MUST follow the project interface design convention in `Overview.md` and use the same visual theme as the login page. Shared design tokens and reusable visual classes MUST be maintained in one common project stylesheet, `src/codeclinic/src/theme.css`, imported once from the application entry point. The shared stylesheet SHOULD define the theme values and reusable visual patterns; page-specific stylesheets MAY define each page's layout and role-specific presentation.
 
 The login page and both dashboards MUST consume the shared theme tokens for applicable colors, typography, surfaces, controls, focus treatments, and spacing. Shared interface elements MUST be reused when their structure and behavior match; role-specific content and page layouts MUST remain appropriate to their purpose. Do not reproduce the login card layout on dashboards solely to share styling.
 
@@ -161,3 +161,7 @@ The human directed amending this specification for the CodeClinic scope. This ve
 ### 2026-11-08 — canonical specification v0.5 approved
 
 The human approved version 0.5, including the new routes without redirects from the former paths. This approval covers the specification only; checklist, handoff, grouping, implementation, commit, and merge approvals remain separate.
+
+### 2026-11-08 — application directory renamed
+
+2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this file were updated; requirements are unchanged.

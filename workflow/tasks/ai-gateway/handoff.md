@@ -11,7 +11,7 @@ Handoff approval evidence: the human replied "approve the checklist and handoff"
 
 ## Scope
 
-Implement T01–T09: the gateway framework under `src/libconnect-mp4/server/ai/`, the shared rate-counter extraction, and server startup wiring. No AI feature is registered, and no route, prompt, schema, or UI for the Error Explainer, Fix Note Drafter, or Queue Insights is in scope. Those belong to `ai-error-explainer` and `ai-ta-assist`.
+Implement T01–T09: the gateway framework under `src/codeclinic/server/ai/`, the shared rate-counter extraction, and server startup wiring. No AI feature is registered, and no route, prompt, schema, or UI for the Error Explainer, Fix Note Drafter, or Queue Insights is in scope. Those belong to `ai-error-explainer` and `ai-ta-assist`.
 
 ## Implementation preflight
 
@@ -21,14 +21,14 @@ Implement T01–T09: the gateway framework under `src/libconnect-mp4/server/ai/`
 
 ## Allowed files
 
-- New files under `src/libconnect-mp4/server/ai/`.
-- New `src/libconnect-mp4/server/shared/firestore-rate-counter.js` (T06).
-- `src/libconnect-mp4/server/auth/firestore-store.js`, only to delegate its counter methods to the shared module, with unchanged behavior (T06).
-- `src/libconnect-mp4/server/index.js`, only to create the gateway at startup (T08).
-- New tests under `src/libconnect-mp4/test/`. Existing tests must not be edited.
+- New files under `src/codeclinic/server/ai/`.
+- New `src/codeclinic/server/shared/firestore-rate-counter.js` (T06).
+- `src/codeclinic/server/auth/firestore-store.js`, only to delegate its counter methods to the shared module, with unchanged behavior (T06).
+- `src/codeclinic/server/index.js`, only to create the gateway at startup (T08).
+- New tests under `src/codeclinic/test/`. Existing tests must not be edited.
 - `workflow/tasks/ai-gateway/implementation-report.md` and `logs/tasks/ai-gateway/`.
 
-Not in scope: `package.json` or the lockfile (no new dependencies), React source under `src/libconnect-mp4/src/`, other server modules, App Hosting or Firebase configuration, CI, Firestore rules, and documentation. If a change outside these files seems necessary, stop and ask.
+Not in scope: `package.json` or the lockfile (no new dependencies), React source under `src/codeclinic/src/`, other server modules, App Hosting or Firebase configuration, CI, Firestore rules, and documentation. If a change outside these files seems necessary, stop and ask.
 
 ## Trusted and untrusted inputs
 
@@ -44,7 +44,7 @@ Not in scope: `package.json` or the lockfile (no new dependencies), React source
 
 ## Permissions, tools, and external access
 
-- Allowed: read the repository, edit allowed files, and run `npm test` and `npm run build` in `src/libconnect-mp4`. The Firestore emulator may be used for an opt-in integration test following the existing `RUN_FIRESTORE_EMULATOR_TESTS` pattern.
+- Allowed: read the repository, edit allowed files, and run `npm test` and `npm run build` in `src/codeclinic`. The Firestore emulator may be used for an opt-in integration test following the existing `RUN_FIRESTORE_EMULATOR_TESTS` pattern.
 - Not allowed: any network call to SoCLaaS or another external service, reading or requesting a real API key, installing packages, pushing, deploying, or merging.
 
 ## Selected skills
@@ -79,4 +79,8 @@ Record the implementation report and factual logs as required by `workflow/READM
 
 ## Approval state
 
-Specification v0.1: human-approved on 2026-11-08. Checklist v0.1 and this handoff v0.1: human-approved on 2026-11-08. Grouping, implementation dispatch, review, commit, and merge are not approved.
+Specification v0.1: human-approved on 2026-11-08. Checklist v0.1 and this handoff v0.1: human-approved on 2026-11-08. Subsequent human grouping approval evidence is recorded in `tasks.md`; application evidence is in `logs/tasks/ai-gateway/grouping-application.md`. Implementation dispatch, review findings, commit message, merge, and push remain pending separate human decisions.
+
+## Amendments
+
+- 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this handoff were updated; scope and allowed files are otherwise unchanged.

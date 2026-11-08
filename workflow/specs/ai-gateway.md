@@ -30,8 +30,8 @@ provider.
   pipeline, error table, and the confirmed provider limit of **90 requests per
   minute**, adapted to CodeClinic. Where they differ, this specification wins.
   That design's TypeScript and `apps/api/...` paths do not apply: the server is
-  CommonJS JavaScript under `src/libconnect-mp4/server/`.
-- `src/libconnect-mp4/package.json`: Node `>=24.12.0` provides `fetch`; there
+  CommonJS JavaScript under `src/codeclinic/server/`.
+- `src/codeclinic/package.json`: Node `>=24.12.0` provides `fetch`; there
   is no LLM SDK or schema library.
 
 ## Actors, data, and trust boundaries
@@ -58,7 +58,7 @@ provider.
 ### R1. Single provider boundary
 
 All SoCLaaS traffic MUST go through the gateway module under
-`src/libconnect-mp4/server/ai/`. Configuration, transport, rate limiting,
+`src/codeclinic/server/ai/`. Configuration, transport, rate limiting,
 redaction, prompt assembly, parsing, and usage recording MUST be separate,
 independently testable units. Other modules MUST NOT build provider requests.
 The browser bundle MUST NOT contain the API key, the provider URL, or a
@@ -244,7 +244,7 @@ or provider error bodies.
 11. Logs, errors, usage records, and test output never contain the API key, the
     `Authorization` header, prompt text, model output, or provider error
     bodies.
-12. No file under `src/libconnect-mp4/src/` references the provider URL,
+12. No file under `src/codeclinic/src/` references the provider URL,
     `SOCLAAS_*` variables, or the gateway module.
 
 ## Verification matrix
@@ -281,3 +281,4 @@ Automated tests MUST NOT call the real provider or need a real key.
 - 2026-11-08: Drafted at the human's direction, adapting
   `workflow/tasks/ai-gateway/design.md` to CodeClinic.
 - 2026-11-08: The human approved version 0.1, confirmed the per-user limits, and confirmed that SoC issued one key. The global limit is therefore 40/min per environment, at most 45.
+- 2026-11-08: The human approved renaming the application directory from `src/libconnect-mp4` to `src/codeclinic`. Path references in this file were updated; requirements are unchanged.

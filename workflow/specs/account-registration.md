@@ -1,8 +1,8 @@
 # Account registration specification
 
-Version: 0.6 (2026-11-08)  
-Approval evidence: human replied "approved" to version 0.6 on 2026-11-08; recorded at the human's request; no agent-set approval state  
-Prior approval evidence: human replied "approved" to version 0.5 on 2026-11-07, approved versions 0.4 and 0.3 on 2026-11-07 and version 0.2 on 2026-11-06; no agent-set approval state  
+Version: 0.7 (2026-11-08)  
+Approval evidence: the human replied "all aproved" to version 0.7 on 2026-11-08; recorded at the human's request; no agent-set approval state  
+Prior approval evidence: human replied "approved" to version 0.6 on 2026-11-08; human replied "approved" to version 0.5 on 2026-11-07, approved versions 0.4 and 0.3 on 2026-11-07 and version 0.2 on 2026-11-06; no agent-set approval state  
 Task ID: `account-registration`
 
 ## Purpose and scope
@@ -74,7 +74,7 @@ On success, the endpoint MUST return HTTP `201` with only the new account type a
 
 The backend MUST require an explicit Firestore mode of `local-emulator` or `production` before it constructs an Admin SDK client or serves data-changing requests. There MUST be no default mode and no automatic fallback between modes. The same selected target MUST cover registration user/key writes and login/session/rate-counter reads and writes.
 
-In `local-emulator` mode, the documented development flow MUST start the Firestore emulator and Express backend before the React frontend sends registration or login requests. The backend MUST bind the Admin SDK explicitly to the loopback emulator configured at port 8080 and project ID `libconnect-mp4`; it MUST NOT infer a target from ambient application-default credentials or CLI state. Missing, inconsistent, non-loopback, or unreachable emulator configuration MUST fail closed before any cloud Firestore operation. The local flow MUST provide a non-sensitive setup/failure message.
+In `local-emulator` mode, the documented development flow MUST start the Firestore emulator and Express backend before the React frontend sends registration or login requests. The backend MUST bind the Admin SDK explicitly to the loopback emulator configured at port 8080 and project ID `demo-codeclinic`; it MUST NOT infer a target from ambient application-default credentials or CLI state. Missing, inconsistent, non-loopback, or unreachable emulator configuration MUST fail closed before any cloud Firestore operation. The local flow MUST provide a non-sensitive setup/failure message.
 
 In `production` mode, the backend MUST require an explicit, nonempty production Firestore project ID and credentials supplied by the deployment runtime for that project. It MUST target actual production Firestore, reject any emulator host/configuration, and fail closed if the project or runtime credentials are missing, invalid, or inconsistent. It MUST NOT silently use developer application-default credentials or choose a project from local CLI state. Production rules/IAM and deployment remain separate approval gates; this requirement defines safe connection selection, not permission to contact or deploy to production. Neither mode may log or expose credential material.
 
@@ -96,7 +96,7 @@ Before submission, the registration page MUST trim surrounding whitespace from t
 10. A storage or hashing failure returns a non-sensitive retry response, leaves no partial account or session, and logs no sensitive input.
 11. A newly registered active Student can use the existing login flow with the chosen password; the stored TA cannot sign in while inactive.
 12. A failed request, malformed `201` response, or Firestore commit failure shows an error on registration and does not trigger the redirect or a login success notice.
-13. Following the documented local flow starts the Firestore emulator and Express backend for project `libconnect-mp4`; a registration creates the user/key documents in that emulator, and the existing login flow reads the same emulator records.
+13. Following the documented local flow starts the Firestore emulator and Express backend for project `demo-codeclinic`; a registration creates the user/key documents in that emulator, and the existing login flow reads the same emulator records.
 14. Starting local development without the emulator, with an invalid emulator host, or with a mismatched project fails before account/session/rate-counter data can be written; it does not use ambient cloud credentials or make a cloud Firestore request.
 15. The React-only development command is not presented as a complete registration setup; the documented local flow identifies the emulator, backend, and frontend startup sequence and how to recognize a local-target failure without revealing credentials.
 16. A deployed instance configured explicitly for `production` with a production project ID and deployment-runtime credentials selects actual Firestore and does not use an emulator; its account writes have the same schema and authorization behavior. This is verified with configuration tests or a controlled deployment gate, not by writing to a live production project during development.
@@ -137,3 +137,9 @@ The human directed amending this specification for the CodeClinic scope. This ve
 The terms follow the 2026-11-08 `Overview.md` amendment: Member → Student, Librarian → TA, manager librarian → TA Coordinator, `MEMBER` → `STUDENT`, `LIBRARIAN` → `TA`, and `memberId` → `studentId`. The `employeeId` and `isManager` field names, the Firestore project ID `libconnect-mp4`, and every security, validation, and session requirement are unchanged.
 
 Implementation impact, for the separate checklist and handoff: stored `accountType` values, the student identifier field, request validation, and UI labels and messages change. No production accounts exist, so records holding the former values in local emulator data are treated as malformed and fail closed; developers clear or re-seed emulator data rather than migrate it.
+
+### 2026-11-08 — v0.7 draft: CodeClinic internal names
+
+The human directed renaming every remaining LibConnect name to CodeClinic. This version changes only the local emulator project ID in R8 and acceptance scenario 13, from `libconnect-mp4` to `demo-codeclinic`. The `demo-` prefix marks a Firebase project ID that exists only in the emulator, so the Firebase tools cannot reach a cloud project with it; this strengthens the existing fail-closed rule. The configuration variables become `CODECLINIC_FIRESTORE_MODE` and `CODECLINIC_FIRESTORE_PROJECT_ID`, as defined in `environments-and-deployment`. The mode values, validation, and every other requirement are unchanged. Historical source notes above keep the former ID.
+
+The human approved version 0.7 on 2026-11-08.

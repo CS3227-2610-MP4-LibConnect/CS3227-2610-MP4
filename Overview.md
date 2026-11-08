@@ -299,7 +299,13 @@ student and TA experiences remain visually consistent.
   Librarians become TAs, and manager librarians become TA Coordinators. Events,
   registrations, and bookmarks are replaced by tickets, replies, optional session
   requests, and AI usage records. The product name changes from LibConnect to
-  CodeClinic; the repository, organization, source directory, and Firebase
-  project ID are unchanged. The specifications under `workflow/specs/` must be
+  CodeClinic; the repository and organization names are unchanged. The specifications under `workflow/specs/` must be
   amended and reapproved before code changes. The human replied "approved" to
   this amendment on 2026-11-08.
+
+- 2026-11-08: The human directed renaming every remaining LibConnect name to
+  CodeClinic: the application directory (`src/codeclinic`), user-visible text,
+  the Firestore configuration variables, the session cookie and browser
+  storage key names, the package name, and the local emulator project ID
+  (`demo-codeclinic`). Only the GitHub organization and repository keep their
+  names. The human approved this amendment on 2026-11-08.
