@@ -153,7 +153,6 @@ export default function MemberCatalog() {
       controller.current?.abort();
     };
     // Initial full catalog load only.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function loadPage(filters: CatalogFilters, cursor: string | null, append: boolean) {
