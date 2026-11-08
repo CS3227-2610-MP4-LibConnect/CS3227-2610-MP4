@@ -272,9 +272,10 @@ TA Coordinator is provisioned through a documented bootstrap procedure.
   when the LLM is unavailable.
 - Prompt-injection tests, cross-student isolation tests, hint-only tests, and
   model-failure fallback tests are required.
-- Development and production Firestore projects, SoC LLM credentials, and other
-  secrets must be separate. Deployment must be performed by team-owned
-  automation.
+- Development runs locally against the Firestore emulator; production runs on
+  a separate cloud Firebase project. The two must not share data, credentials,
+  or configuration, and developer machines must not hold production
+  credentials. Deployment must be performed by team-owned automation.
 
 ## Interface design convention
 
@@ -309,3 +310,9 @@ student and TA experiences remain visually consistent.
   storage key names, the package name, and the local emulator project ID
   (`demo-codeclinic`). Only the GitHub organization and repository keep their
   names. The human approved this amendment on 2026-11-08.
+
+- 2026-11-08: The human chose local development (Firestore emulator) and one
+  cloud Firebase project for production, instead of separate deployed
+  development and production projects. The deployment constraint above was
+  updated. The human approved this amendment on 2026-11-08; production is the
+  existing `libconnect-mp4` cloud project.
