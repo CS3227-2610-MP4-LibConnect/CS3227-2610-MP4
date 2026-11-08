@@ -104,6 +104,29 @@ function createFirestoreAuthStore(db) {
         return true;
       });
     },
+
+    /**
+     * Deletes every session of `userId`, optionally keeping `exceptIdHash`.
+     * With `transaction`, the session read and deletes join that transaction;
+     * the caller must finish its other reads first and commit the transaction.
+     */
+    async deleteSessionsForUser(userId, { exceptIdHash, transaction } = {}) {
+      if (typeof userId !== 'string' || userId.length === 0 || userId.length > 128) {
+        throw new TypeError('A user ID is required.');
+      }
+      const query = db.collection('loginSessions').where('userId', '==', userId);
+      const run = async (tx) => {
+        const snapshot = await tx.get(query);
+        let deleted = 0;
+        for (const doc of snapshot.docs) {
+          if (exceptIdHash && doc.id === exceptIdHash) continue;
+          tx.delete(doc.ref);
+          deleted += 1;
+        }
+        return deleted;
+      };
+      return transaction ? run(transaction) : db.runTransaction(run);
+    },
   };
 }
 

@@ -11,7 +11,7 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
 ## AM-G1 — Store and guards
 
-- [ ] **T01 — Account store and shared guards.** Add `server/account/store.js` with the Firestore operations the spec needs:
+- [x] **T01 — Account store and shared guards.** Add `server/account/store.js` with the Firestore operations the spec needs:
   - read and list accounts by type, with pagination;
   - the transactional email change that moves `emailKeys`;
   - status and password-hash updates;

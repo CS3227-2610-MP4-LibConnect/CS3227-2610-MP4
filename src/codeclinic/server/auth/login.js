@@ -116,41 +116,20 @@ function createFirestoreLoginRepository(db) {
   };
 }
 
-function createLoginApp(repository, authStore, options = {}) {
-  if (!repository || typeof repository.findEmailKeyMatches !== 'function' || typeof repository.getUserById !== 'function') {
-    throw new TypeError('A login repository adapter is required.');
+function readCookie(req, name) {
+  const header = req.headers.cookie;
+  if (typeof header !== 'string') return null;
+  for (const part of header.split(';')) {
+    const separator = part.indexOf('=');
+    if (separator < 0) continue;
+    if (part.slice(0, separator).trim() === name) return part.slice(separator + 1).trim();
   }
-  if (!authStore || typeof authStore.reserveRateSlot !== 'function' ||
-      typeof authStore.releaseRateSlot !== 'function' || typeof authStore.createSession !== 'function' ||
-      typeof authStore.getSession !== 'function' || typeof authStore.touchSession !== 'function' ||
-      typeof authStore.rotateCsrfToken !== 'function' || typeof authStore.deleteSession !== 'function' ||
-      typeof authStore.deleteSessionIfCsrfMatches !== 'function') {
-    throw new TypeError('A durable authentication store adapter is required.');
-  }
-  const now = options.now || Date.now;
-  const sessionId = options.sessionId || (() => crypto.randomBytes(32).toString('base64url'));
-  const csrfToken = options.csrfToken || (() => crypto.randomBytes(32).toString('base64url'));
+  return null;
+}
 
-  function setSessionCookie(res, value, maxAgeSeconds = Math.floor(ABSOLUTE_TIMEOUT_MS / 1000)) {
-    res.append('Set-Cookie', `${SESSION_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSeconds}`);
-  }
-
-  function clearSessionCookie(res) {
-    setSessionCookie(res, '', 0);
-  }
-
-  function readCookie(req, name) {
-    const header = req.headers.cookie;
-    if (typeof header !== 'string') return null;
-    for (const part of header.split(';')) {
-      const separator = part.indexOf('=');
-      if (separator < 0) continue;
-      if (part.slice(0, separator).trim() === name) return part.slice(separator + 1).trim();
-    }
-    return null;
-  }
-
-  async function authenticateRequest(req, res) {
+/** Session check shared by the auth routes and other authenticated routers. */
+function createSessionAuthenticator(repository, authStore, now = Date.now) {
+  return async function authenticateRequest(req, res) {
     const rawId = readCookie(req, SESSION_COOKIE);
     if (!rawId || !/^[A-Za-z0-9_-]{40,64}$/.test(rawId)) return null;
     const idHash = crypto.createHash('sha256').update(rawId, 'utf8').digest('hex');
@@ -177,7 +156,39 @@ function createLoginApp(repository, authStore, options = {}) {
     } catch (error) {
       throw error;
     }
+  };
+}
+
+/** SHA-256 hex of the submitted `X-CSRF-Token` header, or '' when absent. */
+function hashSubmittedCsrf(req) {
+  const supplied = req.get('X-CSRF-Token');
+  return typeof supplied === 'string' ? crypto.createHash('sha256').update(supplied, 'utf8').digest('hex') : '';
+}
+
+function createLoginApp(repository, authStore, options = {}) {
+  if (!repository || typeof repository.findEmailKeyMatches !== 'function' || typeof repository.getUserById !== 'function') {
+    throw new TypeError('A login repository adapter is required.');
   }
+  if (!authStore || typeof authStore.reserveRateSlot !== 'function' ||
+      typeof authStore.releaseRateSlot !== 'function' || typeof authStore.createSession !== 'function' ||
+      typeof authStore.getSession !== 'function' || typeof authStore.touchSession !== 'function' ||
+      typeof authStore.rotateCsrfToken !== 'function' || typeof authStore.deleteSession !== 'function' ||
+      typeof authStore.deleteSessionIfCsrfMatches !== 'function') {
+    throw new TypeError('A durable authentication store adapter is required.');
+  }
+  const now = options.now || Date.now;
+  const sessionId = options.sessionId || (() => crypto.randomBytes(32).toString('base64url'));
+  const csrfToken = options.csrfToken || (() => crypto.randomBytes(32).toString('base64url'));
+
+  function setSessionCookie(res, value, maxAgeSeconds = Math.floor(ABSOLUTE_TIMEOUT_MS / 1000)) {
+    res.append('Set-Cookie', `${SESSION_COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeSeconds}`);
+  }
+
+  function clearSessionCookie(res) {
+    setSessionCookie(res, '', 0);
+  }
+
+  const authenticateRequest = createSessionAuthenticator(repository, authStore, now);
 
   const app = express();
   app.disable('x-powered-by');
@@ -281,8 +292,7 @@ function createLoginApp(repository, authStore, options = {}) {
         clearSessionCookie(res);
         return res.status(401).json({ message: 'Authentication required.' });
       }
-      const supplied = req.get('X-CSRF-Token');
-      const suppliedHash = typeof supplied === 'string' ? crypto.createHash('sha256').update(supplied, 'utf8').digest('hex') : '';
+      const suppliedHash = hashSubmittedCsrf(req);
       const deleted = await authStore.deleteSessionIfCsrfMatches(auth.idHash, suppliedHash);
       if (!deleted) return res.status(403).json({ message: 'Request could not be verified.' });
       clearSessionCookie(res);
@@ -307,6 +317,7 @@ module.exports = {
   MAX_PASSWORD_BYTES,
   GENERIC_DENIAL,
   RETRY_MESSAGE,
+  SESSION_COOKIE,
   canonicalizeEmail,
   emailKeyFor,
   validateLoginBody,
@@ -314,4 +325,6 @@ module.exports = {
   verifyCredentials,
   createFirestoreLoginRepository,
   createLoginApp,
+  createSessionAuthenticator,
+  hashSubmittedCsrf,
 };
