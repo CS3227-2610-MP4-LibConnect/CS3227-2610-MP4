@@ -1,0 +1,32 @@
+Task: ui-consistency-and-feedback
+Spec/checklist/handoff: v0.1
+Role: test writer
+Date: 2026-11-08 (Asia/Singapore)
+
+Commands and results
+
+1. From src/codeclinic:
+   CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/NotificationsRoute.test.tsx test/AccountPages.test.tsx test/Notifications.test.tsx test/DashboardRoutes.integration.test.tsx test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js
+   Result: exit 1; 6 suites failed, 2 passed; 63 tests failed, 49 passed. UI failures were expected before implementation (AppHeader module does not exist; NotificationsRoute does not render a header; new session-error feedback is not implemented). Server Supertest suites could not execute assertions because their listener setup repeatedly returned `listen EPERM: operation not permitted 127.0.0.1` in this sandbox. No server test result is claimed.
+
+2. From src/codeclinic:
+   CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/NotificationsRoute.test.tsx test/AccountPages.test.tsx test/Notifications.test.tsx test/DashboardRoutes.integration.test.tsx
+   Result: exit 1; 3 suites failed, 2 passed; 6 tests failed, 44 passed. The failure categories were the expected missing AppHeader module, missing Notifications header/session-flow additions, and missing account session-error presentation. Existing DashboardRoutes and Notifications suites passed. A later small test-only revision adjusted the accessible-name selector to accept the existing bell's zero-unread accessible label and added a header-on-inbox-error assertion; the initial focused run was not repeated after that adjustment because production source remains unchanged and tests are intentionally red pending implementation.
+
+No dependencies were installed. No external service or database was accessed. No source files were edited.
+
+Follow-up requested by orchestrator
+
+Added focused cases for profile wrong-password feedback and field association, preserving name/email values, no page-load Retry, and stale field-error clearing when corrected. Added no-protected-fetch assertions for unauthenticated and forced-password Notifications sessions. Strengthened forced-password field association and asserted that an unknown profile error body is not rendered as text. Split the account-route mismatch and exhausted-rate cases so both assertions execute independently.
+
+Final focused UI command, from src/codeclinic:
+CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx test/NotificationsRoute.test.tsx
+Result: exit 1; 2 suites failed, 2 total; 8 tests failed, 8 passed. Failures match current unimplemented behavior: NotificationsRoute does not render/retain the shared header; current-password and session error bodies are shown as generic raw messages rather than scoped, field-associated safe feedback. The unauthenticated and forced-password no-protected-fetch cases passed. The two existing files' other tests were included in the run. Full details are reproducible from the command; no source changes were present during the run.
+
+The orchestrator independently reran the account server route/guard/R7 tests with local loopback permitted and reported 2 expected failures, 60 passes after the mismatch and attempt-exhaustion test cases were separated. This is an orchestrator-provided result, not a test run performed by this agent.
+
+Orchestrator correction: the sentence above conflated two runs. The first parent
+run had 2 failures/60 passes before separation; the final run after separation
+had 3 expected failures/60 passes (63 tests). The authoritative commands/results
+are in orchestrator-server-preparation.md. Earlier statements are retained as
+historical evidence; no prior failure is hidden or reclassified as a pass.

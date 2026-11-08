@@ -1,0 +1,24 @@
+{
+  "base": "66517a756bd4f477348783b97341964e36bb4c32",
+  "review_root": "/private/tmp/ui-consistency-review",
+  "sha256": {
+    "src/codeclinic/server/account/guards.js": "a15bd14f0e8bda5301c0717329d35a074615c8acd15d6def3b3ea4e03853aebb",
+    "src/codeclinic/server/account/routes.js": "8c1fdc657d50fc941cb5814ece90712c6497167b69aa30eda592a5dbec0cfb88",
+    "src/codeclinic/src/AccountPages.css": "6bf2e8f7c75bc1d134225bb89f08eabc9fc27f6c6a5f74095f1f5cbb41dadf56",
+    "src/codeclinic/src/AccountPages.tsx": "9f433e4272aa9072807da360567a580218670e6c5153b116715a0374fa695e22",
+    "src/codeclinic/src/AppHeader.css": "aac492952de232da8532274ff49873761c63bb0174e4501d7b9f01d34e902228",
+    "src/codeclinic/src/AppHeader.tsx": "6f2e2f37301155073d806abeb815bce6b1122e5db268772a68ce2551ecd01732",
+    "src/codeclinic/src/DashboardLogout.tsx": "7015114465799475529dcb64528d06c1f10a9f04ad44f457b9cc04d24ebad5d1",
+    "src/codeclinic/src/DashboardViews.css": "de6348920c86323aaa4b87703b33188c70e5a8374176e62f7106bfddd199e499",
+    "src/codeclinic/src/NotificationsRoute.tsx": "9fa105781160c9b0345ea820af9d503f2387459ba64617bfb08c8466e5e8ecae",
+    "src/codeclinic/src/accountFeedback.ts": "25df9c4362427f2cdc97432336cf6a3a6ad78c5332dc3e604761aed13611a3d8",
+    "src/codeclinic/src/notifications/Notifications.css": "24d2014e4607a7a3026ff99179c3b917299135070a883f31ba7eceb955bf9b6d",
+    "src/codeclinic/src/notifications/Notifications.tsx": "8c4c6a302ebd7ac9bf44f235ad17c9872482a25f779021aa9037e987df902ad3",
+    "src/codeclinic/test/AccountPages.test.tsx": "32bb9e54738ea3dc8f9064741b1383ff35f3eec345e5d5dfca42b739f5b3c0b8",
+    "src/codeclinic/test/AppHeader.test.tsx": "30d3890df87511d39e97affc5adda8ab17f18124a49efeb802d8b0c0ccbc0167",
+    "src/codeclinic/test/NotificationsRoute.test.tsx": "d191f17d416f20dd0e719099f29547688fd1ddc188a272fa4de6a39d82d42837",
+    "src/codeclinic/test/account-guards.test.js": "a18459e9865d44cdb16b928e8c72ea4a24aa490ddd9e9b054646d6e9e5b2b96a",
+    "src/codeclinic/test/account-r7-server.test.js": "5fc67bad0a37cdad34598698132d411606d904a4128d00587957cd0326fc5cd0",
+    "src/codeclinic/test/account-routes.test.js": "b6b2c504742d39eef18fbcb7315fbb0e17bf0bb96f40599462bbf850164412cb"
+  }
+}

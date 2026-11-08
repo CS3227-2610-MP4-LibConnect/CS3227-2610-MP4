@@ -1,0 +1,41 @@
+[
+  {
+    "inbox": "loading",
+    "header": true,
+    "navigation": [
+      "Account",
+      "Notifications"
+    ],
+    "overflow": false,
+    "status": "Loading notifications…"
+  },
+  {
+    "inbox": "error",
+    "alert": "We couldn’t load your notifications.Retry",
+    "header": true,
+    "navigation": [
+      "Account",
+      "Notifications"
+    ],
+    "overflow": false
+  },
+  {
+    "inbox": "populated",
+    "header": true,
+    "navigation": [
+      "Account",
+      "Notifications3"
+    ],
+    "overflow": false
+  },
+  {
+    "inbox": "mark-read-error",
+    "alert": "Could not mark notifications as read. Please retry.Retry",
+    "header": true,
+    "overflow": false
+  },
+  {
+    "inbox": "direct-refresh",
+    "header": true
+  }
+]

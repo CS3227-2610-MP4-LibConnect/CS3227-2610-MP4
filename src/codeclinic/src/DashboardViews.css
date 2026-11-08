@@ -1,0 +1,81 @@
+.dashboard-page {
+  display: grid;
+  width: min(100%, 960px);
+  min-height: calc(100vh - 128px);
+  align-content: start;
+  gap: var(--lc-space-page);
+  margin: 0 auto;
+  padding: var(--lc-space-16) var(--lc-space-page) 18px;
+  background:
+    radial-gradient(ellipse at 10% 0%, var(--lc-color-page-glow-dashboard), transparent 36%),
+    var(--lc-color-page);
+}
+
+.student-dashboard {
+  width: min(100%, 1180px);
+  min-height: calc(100vh - 72px);
+  padding: var(--lc-space-8) var(--lc-space-page) var(--lc-space-16);
+}
+
+/* Compatibility focus fallback retained for SharedTheme's legacy contract. */
+.student-navbar a:focus-visible,
+.student-navbar button:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
+.dashboard-page h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 2.6rem);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-panel {
+  max-width: 100%;
+  padding: var(--lc-space-7) var(--lc-space-8);
+}
+
+.dashboard-panel h2 {
+  margin: 0 0 var(--lc-space-control-gap);
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.dashboard-panel p {
+  margin: 0;
+  color: var(--lc-color-muted);
+  line-height: 1.6;
+}
+
+.dashboard-page + button {
+  display: block;
+  margin: 0 auto var(--lc-space-12);
+}
+
+@media (max-width: 520px) {
+  .dashboard-page {
+    gap: var(--lc-space-form-gap);
+    padding: var(--lc-space-8) var(--lc-space-4) var(--lc-space-4);
+  }
+
+  .student-dashboard {
+    padding: var(--lc-space-6) var(--lc-space-4) var(--lc-space-8);
+  }
+
+  .dashboard-panel {
+    padding: 22px var(--lc-space-5);
+  }
+
+  .dashboard-page + button {
+    margin-bottom: var(--lc-space-page);
+  }
+
+}
+
+@media (max-width: 360px) {
+  .dashboard-panel {
+    padding: var(--lc-space-5) var(--lc-space-4);
+  }
+}

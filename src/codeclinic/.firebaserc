@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "demo-codeclinic",
+    "prod": "libconnect-mp4"
+  }
+}

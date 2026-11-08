@@ -1,5 +1,6 @@
 # Member catalog search specification
 
+Status: **Retired (2026-11-08).** The human approved the retirement on 2026-11-08. This specification is no longer an active requirement; see the amendment at the end of this file.  
 Version: 0.2 (2026-11-08)  
 Approval evidence: the human explicitly approved specification v0.1 and the five decisions below on 2026-11-07. No agent-set approval state.  
 Task ID: `member-catalog-search` (human-confirmed)  
@@ -98,3 +99,5 @@ Session denial during catalog loading MUST hide member catalog data and follow t
 
 - 2026-11-07: The human approved canonical specification v0.1 and all five interpretations in response to the specification approval request. Checklist, handoff, grouping, implementation, and merge approvals remain separate.
 - 2026-11-08: The human directed the dashboard search styling update and removal of the synopsis expansion button. This v0.2 amendment records that requirement; the existing search, data, and authorization contracts remain in force.
+- 2026-11-08: Retirement proposed, awaiting human approval. The `Overview.md` amendment of 2026-11-08 replaces the library scope with CodeClinic, which has no Book catalog. When retirement is approved, this specification stops being an active requirement. The Book catalog endpoint, dashboard catalog view, seed script, and their tests are then removed or replaced under a separately approved task. The planned **Bug FAQ** specification (search of anonymised resolved tickets) may reuse the approved search patterns recorded here: case-insensitive substring matching, AND-combined criteria, bounded pagination, distinct empty and no-match states, stale-response suppression, and per-request server-side role checks. Until then, the existing implementation remains as built, and its evidence under `workflow/tasks/member-catalog-search/` and `logs/tasks/member-catalog-search/` is retained unchanged.
+- 2026-11-08: The human replied "approved" to the retirement proposal; recorded at the human's request. Removing or replacing the Book catalog code, seed script, and tests still requires a separately approved task.

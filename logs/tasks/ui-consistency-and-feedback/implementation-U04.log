@@ -1,0 +1,24 @@
+Task: ui-consistency-and-feedback U04
+Specification/checklist/handoff: v0.1
+Branch: codex/ui-consistency-and-feedback
+
+Preflight:
+- Read workflow/specs/ui-consistency-and-feedback.md and approved task artifacts.
+- Read openspec-apply-change skill and followed repository canonical-path adapter.
+- `command -v openspec`: no executable found; no CLI setup/install performed.
+
+Verification:
+- Initial command: `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js`
+  Result: account-routes and account-guards passed; account-r7-server had one
+  expectation failure because invalid self-password input now has the approved
+  `INVALID_REQUEST` code. Updated that response-contract expectation only.
+- Final command (from src/codeclinic):
+  `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js`
+  Result: 3 suites passed, 70 tests passed, 0 failed.
+- `git diff --check -- src/codeclinic/server/account/routes.js src/codeclinic/server/account/guards.js src/codeclinic/test/account-routes.test.js src/codeclinic/test/account-guards.test.js src/codeclinic/test/account-r7-server.test.js`
+  Result: passed, no whitespace errors.
+
+Scope: only the five assigned source/test files plus this U04 report and log.
+No external services, emulator, cloud database, credentials or secrets used.
+Build/UI verification was not assigned to U04. Runtime model and token metrics:
+unavailable; the runtime did not expose them.

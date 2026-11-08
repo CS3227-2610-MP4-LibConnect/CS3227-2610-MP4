@@ -2,7 +2,7 @@
 
 Task ID: `role-based-dashboards`
 Canonical specification: [`../../specs/role-based-dashboards.md`](../../specs/role-based-dashboards.md)
-Version: 0.3 (canonical specification approved 2026-11-07)
+Version: 0.5 (2026-11-08), approved by the human on 2026-11-08; version 0.3 was approved on 2026-11-07
 Approval evidence: the human explicitly approved canonical specification version 0.3 on 2026-11-07. Version 0.2 was also human-approved; version 0.1 included human-approved route and denial defaults. No agent-set approval state.
 
 The linked canonical specification defines the scope and acceptance criteria for this task and version 0.3 was human-approved on 2026-11-07. The human separately approved checklist v0.1 and handoff v0.1 on 2026-11-07, then approved the Group 1–4 layout and implementation dispatch for T01–T05. The human authorized a task-grouper profile change permitting the dependency-safe move of unchanged T04 ahead of T03 to represent those groups. The human subsequently approved specification, checklist, and handoff v0.2 on 2026-11-07. Checklist and handoff v0.3 remain drafts pending their separate human approvals; T07 grouping and implementation dispatch also require separate approval.
@@ -28,3 +28,7 @@ The human authorized a planning amendment for separate `MemberDashboard.tsx` and
 ### 2026-11-07 — canonical specification v0.3 approval recorded
 
 The human explicitly approved the linked canonical specification version 0.3. This does not approve the checklist or handoff, T07 grouping, implementation, commit, or merge.
+
+### 2026-11-08 — v0.5 draft: CodeClinic roles
+
+The canonical specification was amended to rename the roles, routes, and dashboard modules for CodeClinic. The human approved version 0.5 on 2026-11-08; checklist, handoff, grouping, and implementation approvals remain separate.

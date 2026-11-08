@@ -1,0 +1,35 @@
+Task: ui-consistency-and-feedback / U05
+Specification, checklist, handoff: v0.1
+Branch: codex/ui-consistency-and-feedback
+OpenSpec Apply preflight: repository path adapter checked; command -v openspec found no CLI. No installation or secondary tree created.
+
+Commands and results:
+
+1. From src/codeclinic:
+   CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx
+   Initial result: 11 passed, 2 failed. Failures exposed one generic load message and duplicate rendering for field errors. Both were corrected.
+2. From src/codeclinic:
+   CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx
+   Result after first corrections: 13 passed, 0 failed.
+3. From src/codeclinic:
+   CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx test/AppHeader.test.tsx
+   Result: 2 suites passed, 19 tests passed, 0 failed.
+   This final run included load retry isolation and attempt-limit behavior, plus orchestrator-requested session, copy, status/context, and focus handling.
+4. From repository root:
+   git diff --check -- src/codeclinic/src/AccountPages.tsx src/codeclinic/src/AccountPages.css src/codeclinic/src/accountFeedback.ts src/codeclinic/test/AccountPages.test.tsx
+   Result: passed with no output.
+5. From repository root:
+   command -v openspec
+   Result: openspec CLI unavailable.
+6. After U06 reported the production-build ESLint finding, changed actionToken to throw a typed AccountActionError (Error subclass) carrying the existing AccountFailure. Catch behavior and user-facing feedback are unchanged.
+7. From src/codeclinic:
+   node_modules/.bin/eslint src/AccountPages.tsx
+   Result: exit code 0, no output.
+
+Scoped files changed by U05:
+src/codeclinic/src/AccountPages.tsx
+src/codeclinic/src/AccountPages.css
+src/codeclinic/src/accountFeedback.ts
+src/codeclinic/test/AccountPages.test.tsx
+
+No production build or full regression rerun was performed for the lint-only correction; U06 owns those reruns. No browser inspection, external service, dependency installation, commit, push, or merge was performed. Visual/keyboard checks remain U06 work. Runtime model/token metrics: unavailable.

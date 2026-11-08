@@ -1,0 +1,596 @@
+[
+  {
+    "role": "student",
+    "emoji": false,
+    "headerHeight": 149.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/student/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/student/account",
+        "text": "Account"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 16,
+        "right": 101.7109375,
+        "text": "Account",
+        "top": 44.5
+      },
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 109.7109375,
+        "right": 255.8671875,
+        "text": "Notifications",
+        "top": 44.5
+      },
+      {
+        "bottom": 136.5,
+        "height": 42,
+        "left": 16,
+        "right": 95.34375,
+        "text": "Log out",
+        "top": 94.5
+      }
+    ],
+    "scrollWidth": 320,
+    "width": 320,
+    "withinViewport": true
+  },
+  {
+    "role": "student",
+    "emoji": false,
+    "headerHeight": 107.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/student/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/student/account",
+        "text": "Account"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 16,
+        "right": 113.7109375,
+        "text": "Account",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 121.7109375,
+        "right": 279.8671875,
+        "text": "Notifications",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 532.65625,
+        "right": 624,
+        "text": "Log out",
+        "top": 52.5
+      }
+    ],
+    "scrollWidth": 640,
+    "width": 640,
+    "withinViewport": true
+  },
+  {
+    "role": "student",
+    "emoji": false,
+    "headerHeight": 68,
+    "links": [
+      {
+        "active": null,
+        "href": "/student/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/student/account",
+        "text": "Account"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 866.7890625,
+        "right": 964.5,
+        "text": "Account",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 972.5,
+        "right": 1130.65625,
+        "text": "Notifications",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 1138.65625,
+        "right": 1230,
+        "text": "Log out",
+        "top": 12.5
+      }
+    ],
+    "scrollWidth": 1280,
+    "width": 1280,
+    "withinViewport": true
+  },
+  {
+    "role": "ta",
+    "emoji": false,
+    "headerHeight": 199.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 16,
+        "right": 101.7109375,
+        "text": "Account",
+        "top": 44.5
+      },
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 109.7109375,
+        "right": 201.40625,
+        "text": "Students",
+        "top": 44.5
+      },
+      {
+        "bottom": 136.5,
+        "height": 42,
+        "left": 16,
+        "right": 162.15625,
+        "text": "Notifications",
+        "top": 94.5
+      },
+      {
+        "bottom": 186.5,
+        "height": 42,
+        "left": 16,
+        "right": 95.34375,
+        "text": "Log out",
+        "top": 144.5
+      }
+    ],
+    "scrollWidth": 320,
+    "width": 320,
+    "withinViewport": true
+  },
+  {
+    "role": "ta",
+    "emoji": false,
+    "headerHeight": 107.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 16,
+        "right": 113.7109375,
+        "text": "Account",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 121.7109375,
+        "right": 225.40625,
+        "text": "Students",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 233.40625,
+        "right": 391.5625,
+        "text": "Notifications",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 532.65625,
+        "right": 624,
+        "text": "Log out",
+        "top": 52.5
+      }
+    ],
+    "scrollWidth": 640,
+    "width": 640,
+    "withinViewport": true
+  },
+  {
+    "role": "ta",
+    "emoji": false,
+    "headerHeight": 68,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 755.09375,
+        "right": 852.8046875,
+        "text": "Account",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 860.8046875,
+        "right": 964.5,
+        "text": "Students",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 972.5,
+        "right": 1130.65625,
+        "text": "Notifications",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 1138.65625,
+        "right": 1230,
+        "text": "Log out",
+        "top": 12.5
+      }
+    ],
+    "scrollWidth": 1280,
+    "width": 1280,
+    "withinViewport": true
+  },
+  {
+    "role": "coordinator",
+    "emoji": false,
+    "headerHeight": 199.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": null,
+        "href": "/ta/tas",
+        "text": "TAs"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 16,
+        "right": 101.7109375,
+        "text": "Account",
+        "top": 44.5
+      },
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 109.7109375,
+        "right": 201.40625,
+        "text": "Students",
+        "top": 44.5
+      },
+      {
+        "bottom": 86.5,
+        "height": 42,
+        "left": 209.40625,
+        "right": 260.0234375,
+        "text": "TAs",
+        "top": 44.5
+      },
+      {
+        "bottom": 136.5,
+        "height": 42,
+        "left": 16,
+        "right": 162.15625,
+        "text": "Notifications",
+        "top": 94.5
+      },
+      {
+        "bottom": 186.5,
+        "height": 42,
+        "left": 16,
+        "right": 95.34375,
+        "text": "Log out",
+        "top": 144.5
+      }
+    ],
+    "scrollWidth": 320,
+    "width": 320,
+    "withinViewport": true
+  },
+  {
+    "role": "coordinator",
+    "emoji": false,
+    "headerHeight": 107.5,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": null,
+        "href": "/ta/tas",
+        "text": "TAs"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 16,
+        "right": 113.7109375,
+        "text": "Account",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 121.7109375,
+        "right": 225.40625,
+        "text": "Students",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 233.40625,
+        "right": 296.0234375,
+        "text": "TAs",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 304.0234375,
+        "right": 462.1796875,
+        "text": "Notifications",
+        "top": 52.5
+      },
+      {
+        "bottom": 94.5,
+        "height": 42,
+        "left": 532.65625,
+        "right": 624,
+        "text": "Log out",
+        "top": 52.5
+      }
+    ],
+    "scrollWidth": 640,
+    "width": 640,
+    "withinViewport": true
+  },
+  {
+    "role": "coordinator",
+    "emoji": false,
+    "headerHeight": 68,
+    "links": [
+      {
+        "active": null,
+        "href": "/ta/dashboard",
+        "text": "CodeClinic"
+      },
+      {
+        "active": null,
+        "href": "/ta/account",
+        "text": "Account"
+      },
+      {
+        "active": null,
+        "href": "/ta/students",
+        "text": "Students"
+      },
+      {
+        "active": null,
+        "href": "/ta/tas",
+        "text": "TAs"
+      },
+      {
+        "active": "page",
+        "href": "/notifications",
+        "text": "Notifications"
+      }
+    ],
+    "minHeight": 42,
+    "overlap": false,
+    "rects": [
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 684.4765625,
+        "right": 782.1875,
+        "text": "Account",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 790.1875,
+        "right": 893.8828125,
+        "text": "Students",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 901.8828125,
+        "right": 964.5,
+        "text": "TAs",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 972.5,
+        "right": 1130.65625,
+        "text": "Notifications",
+        "top": 12.5
+      },
+      {
+        "bottom": 54.5,
+        "height": 42,
+        "left": 1138.65625,
+        "right": 1230,
+        "text": "Log out",
+        "top": 12.5
+      }
+    ],
+    "scrollWidth": 1280,
+    "width": 1280,
+    "withinViewport": true
+  }
+]
