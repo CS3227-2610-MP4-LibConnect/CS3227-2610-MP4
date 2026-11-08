@@ -1,14 +1,13 @@
-# LibConnect MP3 Overview
+# LibConnect MP4 Overview
 
-This overview is the product-level scope for the MP3 implementation. Detailed
-acceptance scenarios belong in the OpenSpec change artifacts. Workflows should
-remain in the workflow documents rather than being duplicated here.
-
-## Product brief
+This overview is the product-level scope for the MP4 implementation. Detailed
+acceptance scenarios belong in approved specifications under `workflow/specs/`.
+Workflows remain in the workflow documents rather than being duplicated here.
 
 ## Application context
 
-LibConnect is a web-based library management platform for tracking the library’s book catalog, physical book copies, loans, fines, reservations, and notifications.
+LibConnect is a web-based library event management platform for publishing
+events, managing registrations, and tracking attendance.
 
 The application has two account types: **Members** and **Librarians**. A
 librarian may additionally have manager privileges for librarian-account
@@ -27,26 +26,28 @@ not replace server authorization or human approval.
 
 ### Member
 
-#### Catalog and reservations
+#### Browse event catalog
 
-- As a **member**, I want to view the library’s catalog so that I can find books the library holds.
-- As a **member**, I want to view the availability of a book’s individual copies so that I can decide whether to borrow or reserve one.
-- As a **member**, I want to reserve a book when no copies are available so that I can collect one when it becomes available.
+- As a **member**, I want to browse the event catalog so that I can find library events.
+- As a **member**, I want to see remaining places for an event so that I know whether I can register.
 
-#### Loans and returns
+#### Event registration
 
-- As a **member**, I want to borrow an available book copy so that I can take it out of the library.
-- As a **member**, I want to report a borrowed book copy as returned so that the library can verify its return.
-- As a **member**, I want to report a borrowed book copy as lost so that the library can review the report.
+- As a **member**, I want to register for an event so that I can secure a place.
+- As a **member**, I want to cancel my registration if I cannot attend.
+- As a **member**, I want to check in to an event so that my attendance is recorded.
+- As a **member**, I want to bookmark an event so that I can find it and register later.
 
-#### Fines and notifications
+#### Notifications
 
-- As a **member**, I want to pay fines for overdue or lost books so that I can settle what I owe.
-- As a **member**, I want to receive and view system-generated and librarian-issued notifications so that I can stay informed about my library activity.
+- As a **member**, I want to receive and view reminders for events I have
+  registered for and messages from librarians about those events so that I can
+  stay informed before attending.
 
 #### AI assistance
 
-- As a **member**, I want to ask a catalog and borrowing assistant about books, availability, reservations, and my own current activity so that I can find information more easily.
+- As a **member**, I want to ask an event assistant about events related to my
+  interests so that I can find relevant information more easily.
 
 #### Account management
 
@@ -54,26 +55,22 @@ not replace server authorization or human approval.
 
 ### Librarian
 
-#### Catalog and inventory
+#### Event management
 
-- As a **librarian**, I want to create, view, update, and delete book records so that the catalog stays accurate.
-- As a **librarian**, I want to create, view, update, and delete book-copy records so that I can manage the library’s inventory and copy statuses.
+- As a **librarian**, I want to create, view, update, and delete events so that the catalog stays accurate.
+- As a **librarian**, I want to set event capacity so that registrations do not exceed available places.
+- As a **librarian**, I want to save an event as a draft and publish it later.
+- As a **librarian**, I want to add or remove members from an event's registrations.
 
-#### Loans and returns
+#### Notifications
 
-- As a **librarian**, I want to create loans for members and view existing loans so that I can manage lending activity.
-- As a **librarian**, I want to verify copies reported as returned and update their status to **AVAILABLE**, **RESERVED** or **DAMAGED** so that the inventory reflects their condition.
-- As a **librarian**, I want to review lost-copy reports and accept or reject them so that confirmed losses are reflected in the inventory.
-
-#### Fines, reservations, and notifications
-
-- As a **librarian**, I want to view and update issued fines so that I can waive them when appropriate.
-- As a **librarian**, I want to notify members about overdue loans, unpaid fines, and available reservations so that they know when to take action or collect a book.
+- As a **librarian**, I want to send event-related messages to registered
+  members so that they know about relevant event details or changes.
 
 #### AI assistance
 
-- As a **librarian**, I want an assistant to summarize pending return/loss reports and draft notifications so that I can review work more efficiently.
-- As a **librarian**, I want every AI-suggested state change or notification to require my explicit approval so that AI cannot make unauthorized changes.
+- As a **librarian**, I want an assistant to summarize event performance using
+  registration and attendance metrics.
 
 #### Member account support
 
@@ -101,114 +98,54 @@ librarian accounts, which are inactive until activation.
 
 The classes below describe the main data entities. Field types and validation rules should be defined in the implementation or a separate technical specification.
 
-### Book
+### Event
 
-A **Book** represents a title in the catalog, identified by its ISBN. A book may have multiple physical copies.
+An **Event** represents a library event, identified by its `eventId`.
 
-- `isbn`: ISBN that identifies the book title
-- `title`: title of the book
-- `author`: author or authors
-- `publicationYear`: year of publication
-- `publisher`: publisher’s name
-- `category`: genre or category
-- `synopsis`: short description of the book
+- `eventId`: unique identifier for the event
+- `name`: name of the event
+- `capacity`: maximum number of members who can register
+- `datetime`: date and time of the event
+- `venue`: location of the event
+- `category`: category of event
+- `description`: short description of the event
+- `code`: code used by registered members to check in at the event
+- `isDraft`: whether the event is unpublished and hidden from the member catalog
 
-### BookCopy
-A **BookCopy** represents a physical copy of a book.
+### Registration
 
-- `copyId`: unique identifier for the physical copy
-- `isbn`: ISBN of the corresponding `Book`
-- `shelfLocation`: location of the copy in the library
-- `status`: current status of the copy; one of:
-  - `AVAILABLE`: the copy is available to be borrowed
-  - `IN_TRANSIT`: the copy is awaiting librarian verification after the member reported it as returned or lost; it is not lendable
-  - `ON_LOAN`: the copy is currently loaned to a member
-  - `DAMAGED`: the copy is damaged and unavailable to be borrowed
-  - `LOST`: the copy has been confirmed as lost
-  - `RESERVED`: the copy is reserved for a member and is unavailable to be borrowed.
+A **Registration** represents a member's signup for an event.
 
-### Loan
+- `registrationId`: unique identifier for the registration
+- `eventId`: identifier of the corresponding event
+- `memberId`: identifier of the registered member
+- `createdDateTime`: date and time the registration was created
+- `status`: current status of the registration; one of:
+  - `ACTIVE`: the member has registered for the event
+  - `CANCELLED`: the member has cancelled their registration
+- `attendance`: whether the member checked in; false by default
 
-A **Loan** represents the lending of one book copy to one member.
+### Bookmark
 
-- `loanId`: unique identifier for the loan
-- `memberId`: identifier of the member who borrowed the copy
-- `copyId`: identifier of the borrowed `BookCopy`
-- `borrowDateTime`: date and time the loan was created
-- `dueDate`: date the loan is due
-- `returnDateTime`: date and time the return was confirmed, if applicable
-- `closureReportType`: `RETURNED` or `LOST` while a member report is pending; null for an active loan
-- `closureReportedDateTime`: date and time the member reported a return or loss, if applicable
-- `closureReviewedDateTime`: date and time a librarian confirmed or rejected the report, if applicable
-- `status`: loan status; one of:
-  - `ACTIVE`: the copy has not been returned or reported lost
-  - `PENDING_CLOSE`: the member has reported the copy as returned or lost, pending librarian review
-  - `CLOSED_RETURNED`: the return has been confirmed
-  - `CLOSED_LOST`: the loss has been confirmed
-- `isRenewed`: whether the loan has been renewed
+A **Bookmark** links a member to an event they want to find again.
 
-The initial due date is 30 days after the borrow date. A loan may be renewed at
-most once under the circulation policy; the renewal cutoff and extension must
-be fixed in the circulation specification before implementation.
-
-### Fine
-
-A **Fine** represents an amount owed by a member, such as for an overdue loan or a lost copy.
-
-- `fineId`: unique identifier for the fine
-- `loanId`: identifier of the related loan
-- `memberId`: identifier of the member who owes the fine
-- `bookTitle`: title associated with the fine, if stored as a snapshot
-- `amount`: amount owed
-- `reason`: reason the fine was issued
-- `status`: fine status; one of:
-  - `OUTSTANDING`: the fine has not been paid or waived
-  - `PAID`: the fine has been paid
-  - `WAIVED`: the fine has been waived
-- `issuedDateTime`: date and time the fine was issued
-- `paidDateTime`: date and time the fine was paid, if applicable
-- `waivedDateTime`: date and time the fine was waived, if applicable
+- `eventId`: identifier of the event
+- `memberId`: identifier of the member who created the bookmark
 
 ### Notification
 
-A **Notification** represents a message for a member.
+A **Notification** represents an event-related message for a member.
 
 - `notificationId`: unique identifier for the notification
 - `recipientUserId`: identifier of the intended recipient
 - `notificationType`: category of notification; one of:
-  - `OVERDUE_ALERT`: to remind users of overdue loans
-  - `RESERVATION_READY`: to notify users that a copy of their reserved book is available
-  - `FINE_ISSUED`: to notify users about a newly issued fine
-  - `FINE_UPDATED`: to notify users that a fine changed
-  - `LIBRARIAN_MESSAGE`: a librarian-issued message
-- `referenceType`: optional referenced entity type: `LOAN`, `RESERVATION`, or `FINE`
-- `referenceId`: identifier of the referenced entity, required when `referenceType` is present
+  - `EVENT_REMINDER`: a system-generated reminder for an upcoming registered event
+  - `LIBRARIAN_MESSAGE`: an event-related message issued by a librarian
+- `eventId`: identifier of the related event
+- `registrationId`: identifier of the recipient's registration, when the message concerns a specific signup
 - `message`: notification text
 - `createdAt`: date and time the notification was created
 - `read`: whether the recipient has read the notification
-
-### Reservation
-
-A **Reservation** represents a member’s request for a book title when no copies are available.
-
-- `reservationId`: unique identifier for the reservation
-- `memberId`: identifier of the member who made the reservation
-- `isbn`: ISBN of the reserved book
-- `copyId`: identifier of the book copy reserved for the reservation, initialised to null.
-- `reservationDateTime`: date and time the reservation was created
-- `expiryDate`: the date after which the reservation expires and the reserved copy is updated from `RESERVED` to `AVAILABLE`; this is set to 15 days after a copy is assigned
-- `status`: reservation status; one of:
-  - `PENDING`: awaiting availability or fulfilment
-  - `FULFILLED`: fulfilled
-  - `CANCELLED`: cancelled by the member
-  - `EXPIRED`: member did not collect the reservation by expiryDate
-
-When a copy of the book is available, it will be offered to the earliest
-pending reservation during librarian return processing. If the librarian
-assigns it, `copyId` is updated, the copy becomes `RESERVED`, and `expiryDate`
-is set to 15 days after assignment. Assignment creates a linked
-`RESERVATION_READY` notification. Expiry releases the copy to `AVAILABLE` and
-does not automatically assign it to the next reservation.
 
 ### User
 
@@ -248,7 +185,7 @@ The first manager is provisioned through a documented bootstrap procedure.
 
 - AI features are server-mediated, use allowlisted tools, and never receive
   passwords, session identifiers, or unrelated members’ records.
-- Book text, notification text, and user prompts are untrusted content and may
+- Event text, notification text, and user prompts are untrusted content and may
   not authorize tool calls.
 - AI state-changing suggestions require explicit approval by the authorized
   user and are recorded in safe audit metadata.
@@ -267,17 +204,9 @@ elements when their structure and behavior are shared, while giving each page
 the layout its function needs. New pages should follow this convention so the
 member and librarian experiences remain visually consistent.
 
-## Development context
-
-LibConnect will be developed by two developers. The assigned development areas are documented in:
-
-- [Jun Hong’s responsibilities](./workflow/responsibilities/junhong.md)
-- [Jiali’s responsibilities](./workflow/responsibilities/jiali.md)
-
-The implementation plan and capability map are specified in [`workflow/PLAN.md`](./workflow/PLAN.md).
-
-Keep the full project scope in mind when developing individual features. Design interfaces and shared code so that the separately developed parts can be integrated.
-
 ## Amendments
 
 - 2026-11-07: The human approved planning-document edits for a project-wide visual convention based on the login page, including a common CSS file and reusable interface elements where appropriate. This entry records the approved amendment request and its reason: consistent dashboard styling now and consistent future pages. The substantive convention is added separately after amendment entries are recorded in all affected planning documents.
+
+- 2026-11-08: Updated the product scope from book circulation to event management
+  for MP4, including event registrations, attendance, and event notifications.
