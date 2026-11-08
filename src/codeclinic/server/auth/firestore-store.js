@@ -1,11 +1,8 @@
 const crypto = require('crypto');
+const { createFirestoreRateCounter } = require('../shared/firestore-rate-counter');
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 const ABSOLUTE_TIMEOUT_MS = 8 * 60 * 60 * 1000;
-
-function sha256(value) {
-  return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
-}
 
 function millis(value) {
   if (typeof value === 'number') return value;
@@ -24,44 +21,18 @@ function createFirestoreAuthStore(db) {
     return db.collection('loginSessions').doc(idHash);
   }
 
-  function counterRef(kind, identifier) {
-    const key = sha256(`${kind}:${identifier}`);
-    return db.collection('loginFailureCounters').doc(key);
-  }
+  const counter = createFirestoreRateCounter(db, {
+    collection: 'loginFailureCounters',
+    countField: 'failureCount',
+  });
 
   return {
     async reserveRateSlot(kind, identifier, limit, now, windowMs) {
-      const ref = counterRef(kind, identifier);
-      return db.runTransaction(async (transaction) => {
-        const snapshot = await transaction.get(ref);
-        const data = snapshot.exists ? snapshot.data() : null;
-        const started = data && millis(data.windowStart);
-        const active = data && Number.isFinite(started) && now < started + windowMs;
-        const count = active && Number.isInteger(data.failureCount) ? data.failureCount : 0;
-        if (count >= limit) return false;
-        const windowStart = active ? started : now;
-        transaction.set(ref, {
-          kind,
-          windowStart: new Date(windowStart),
-          failureCount: count + 1,
-          expiresAt: new Date(windowStart + windowMs),
-        });
-        return true;
-      });
+      return counter.reserve(kind, identifier, limit, now, windowMs);
     },
 
     async releaseRateSlot(kind, identifier, now, windowMs) {
-      const ref = counterRef(kind, identifier);
-      return db.runTransaction(async (transaction) => {
-        const snapshot = await transaction.get(ref);
-        if (!snapshot.exists) return;
-        const data = snapshot.data();
-        const started = millis(data.windowStart);
-        if (!Number.isFinite(started) || now >= started + windowMs) return;
-        const nextCount = Math.max(0, Number.isInteger(data.failureCount) ? data.failureCount - 1 : 0);
-        if (nextCount === 0) transaction.delete(ref);
-        else transaction.update(ref, { failureCount: nextCount });
-      });
+      return counter.release(kind, identifier, now, windowMs);
     },
 
     async createSession(idHash, record) {
