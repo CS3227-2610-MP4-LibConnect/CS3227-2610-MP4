@@ -13,6 +13,7 @@ function system() {
     async createAccount(input) { created.push(input); },
   };
   const authStore = {
+    async deleteSessionsForUser() { throw new Error('Account support writes are not exercised by this registration fixture.'); },
     async reserveRateSlot(kind, source, limit, _now, windowMs) {
       expect(kind).toBe('registration-source');
       expect(limit).toBe(5);
@@ -30,7 +31,7 @@ function system() {
     async deleteSession() {},
     async deleteSessionIfCsrfMatches() { return false; },
   };
-  const db = { collection() { return { doc() { return { async get() { return { exists: false }; } }; } }; } };
+  const db = { async runTransaction() { throw new Error('Account writes are not exercised by this registration fixture.'); }, collection() { return { doc() { return { async get() { return { exists: false }; } }; } }; } };
   return { app: createServerApp(db, undefined, authStore, persistence), persistence, created, counts };
 }
 

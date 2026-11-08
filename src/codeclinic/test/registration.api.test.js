@@ -59,6 +59,7 @@ function fakeSystem() {
     },
   };
   const authStore = {
+    async deleteSessionsForUser() { throw new Error('Account support writes are not exercised by this registration fixture.'); },
     async reserveRateSlot(kind, identifier, limit, now, windowMs) {
       const key = `${kind}:${identifier}`;
       let state = rateSlots.get(key);

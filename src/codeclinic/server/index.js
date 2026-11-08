@@ -9,10 +9,17 @@ const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-
 const { configureNotify } = require('./notifications/notify');
 const { createNotificationsRouter, createFirestoreNotificationStore } = require('./notifications/route');
 const { createAiGateway } = require('./ai/gateway');
+const { createFirestoreAccountStore } = require('./account/store');
+const { createAccountRouter } = require('./account/routes');
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
   const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
   app.post('/api/auth/register', createRegistrationHandler(registrationPersistence, authStore));
+  app.use('/api', createAccountRouter({
+    accountStore: createFirestoreAccountStore(db, authStore),
+    authStore,
+    loginRepository: createFirestoreLoginRepository(db),
+  }));
   configureNotify(db);
   app.use('/api/notifications', createNotificationsRouter({
     repository: createFirestoreLoginRepository(db),

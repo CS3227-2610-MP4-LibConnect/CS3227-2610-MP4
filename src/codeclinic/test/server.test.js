@@ -4,6 +4,9 @@ const path = require('path');
 const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+// Nested Express routers need Node timers, which jsdom does not install.
+global.setImmediate = require('timers').setImmediate;
+global.clearImmediate = require('timers').clearImmediate;
 const request = require('supertest');
 const { createServerApp } = require('../server');
 
@@ -12,6 +15,7 @@ test('serves the built frontend and the login API from one origin', async () => 
   try {
     fs.writeFileSync(path.join(buildDirectory, 'index.html'), '<!doctype html><title>CodeClinic</title>');
     const db = {
+      async runTransaction() { throw new Error('Account writes are not exercised by this server smoke test.'); },
       collection(name) {
         expect(name).toBe('emailKeys');
         return { doc: () => ({ get: async () => ({ exists: false }) }) };
@@ -20,6 +24,7 @@ test('serves the built frontend and the login API from one origin', async () => 
     const counters = new Map();
     const sessions = new Map();
     const authStore = {
+      async deleteSessionsForUser() { throw new Error('Account writes are not exercised by this server smoke test.'); },
       async reserveRateSlot(kind, identifier, limit, now) {
         const key = `${kind}:${identifier}`;
         const count = counters.get(key) || 0;

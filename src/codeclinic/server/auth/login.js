@@ -159,6 +159,33 @@ function createSessionAuthenticator(repository, authStore, now = Date.now) {
   };
 }
 
+/** Enforces the R7 endpoint allow-list for temporary-password sessions. */
+function createForcedPasswordChangeGuard(repository, authStore, now = Date.now) {
+  const authenticateRequest = createSessionAuthenticator(repository, authStore, now);
+  const allowed = new Set([
+    'GET /api/auth/session', 'GET /api/auth/csrf',
+    'POST /api/auth/logout', 'POST /api/account/password',
+  ]);
+  return async function forcedPasswordChangeGuard(req, res, next) {
+    // Express matches routes case-insensitively by default. Apply the same
+    // semantics before deciding whether an API path needs the restriction.
+    const apiPath = req.path.toLowerCase();
+    if (!apiPath.startsWith('/api/')) return next();
+    if (allowed.has(`${req.method} ${apiPath}`)) return next();
+    try {
+      const auth = await authenticateRequest(req, res);
+      if (!auth) return next();
+      const user = await repository.getUserById(auth.session.userId);
+      if (user && user.mustChangePassword === true) {
+        return res.status(403).json({ code: 'PASSWORD_CHANGE_REQUIRED', message: 'Change your temporary password to continue.' });
+      }
+      return next();
+    } catch (error) {
+      return res.status(503).json({ message: RETRY_MESSAGE });
+    }
+  };
+}
+
 /** SHA-256 hex of the submitted `X-CSRF-Token` header, or '' when absent. */
 function hashSubmittedCsrf(req) {
   const supplied = req.get('X-CSRF-Token');
@@ -264,6 +291,8 @@ function createLoginApp(repository, authStore, options = {}) {
       }
       return res.status(200).json({
         accountType: auth.accountType,
+        ...((await repository.getUserById(auth.session.userId)).mustChangePassword === true
+          ? { mustChangePassword: true } : {}),
         ...(auth.accountType === 'STUDENT' && auth.name ? { name: auth.name } : {}),
       });
     } catch (error) {
@@ -302,6 +331,8 @@ function createLoginApp(repository, authStore, options = {}) {
     }
   });
 
+  app.use(createForcedPasswordChangeGuard(repository, authStore, now));
+
   app.use((error, req, res, next) => {
     if (error && (error.type === 'entity.too.large' || error.type === 'entity.parse.failed' || error.status === 400)) {
       return res.status(400).json({ message: 'Enter a valid email, password, and account type.' });
@@ -326,5 +357,6 @@ module.exports = {
   createFirestoreLoginRepository,
   createLoginApp,
   createSessionAuthenticator,
+  createForcedPasswordChangeGuard,
   hashSubmittedCsrf,
 };

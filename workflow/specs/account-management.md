@@ -163,7 +163,7 @@ Each dashboard gets an **Account** page for R2 and R3.
 5. A TA lists and deactivates a Student, and the Student's existing session is
    rejected on its next request.
 6. A TA acting on a TA, a Student acting on anyone, and a Coordinator acting on
-   themselves or on a Student all get `403`.
+   themselves all get `403`.
 7. A forged `accountType`, `isManager`, or role field in any request has no
    effect.
 8. A password reset returns a temporary password once. The target's sessions
@@ -194,3 +194,4 @@ Each dashboard gets an **Account** page for R2 and R3.
 
 - 2026-11-08: Drafted at the human's direction.
 - 2026-11-08: The human approved version 0.1 and resolved both open decisions: Coordinators keep every TA power over Students, and temporary passwords are 16 characters.
+- 2026-11-08: At the human's direction, scenario 6 no longer lists a Coordinator acting on a Student as a `403` case, matching resolved decision 1.

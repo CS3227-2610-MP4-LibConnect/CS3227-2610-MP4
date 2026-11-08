@@ -56,3 +56,18 @@ See the checklist. Every R1 status code, the R4 authorization matrix, R5 and R6 
 ## Approval state
 
 Specification v0.1 is human-approved. Checklist v0.1 and this handoff v0.1 are human-approved (2026-11-08). Grouping and dispatch are separate decisions.
+
+## Continuation test-fixture exception — 2026-11-08
+
+The human selected **Approve fixture updates** in this chat for these existing
+tests only: `DashboardRoutes.integration.test.tsx`, `server.test.js`, and
+`notifications.api.test.js`. The approved change adapts request mocks for new
+notification requests and database/auth fixtures for the mounted account store.
+Every current security assertion is preserved. This is evidence of the human's
+specific exception to the existing-test boundary, not an agent approval or
+permission to change product behavior, dependencies, deployment, or role-owned tasks.
+
+On 2026-11-08 the human additionally selected **Approve local fixture updates**
+for `registration.api.test.js` and `registration.endpoint.test.js`. This extends
+only the fake in-memory database/auth-store initialization fixtures; registration
+behavior and every existing assertion remain unchanged. No deployment is involved.

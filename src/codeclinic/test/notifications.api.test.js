@@ -5,6 +5,9 @@ const path = require('path');
 const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
+// Keep the browser-like test environment compatible with nested Express routers.
+global.setImmediate = require('timers').setImmediate;
+global.clearImmediate = require('timers').clearImmediate;
 const express = require('express');
 const request = require('supertest');
 const { createNotificationsRouter, PAGE_SIZE } = require('../server/notifications/route');
@@ -343,9 +346,13 @@ describe('POST /api/notifications/read-all', () => {
 test('createServerApp mounts the inbox API behind authentication', async () => {
   const buildDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'codeclinic-notifications-'));
   try {
-    const db = { collection: () => { throw new Error('unexpected storage access'); } };
+    const db = {
+      collection: () => { throw new Error('unexpected storage access'); },
+      runTransaction: async () => { throw new Error('unexpected account write'); },
+    };
     const authStore = {
       async reserveRateSlot() { return true; },
+      async deleteSessionsForUser() { throw new Error('unexpected account write'); },
       async releaseRateSlot() {},
       async createSession() {},
       async getSession() { return null; },
