@@ -52,6 +52,12 @@
   font-weight: 650;
 }
 
+.student-navbar a:focus-visible,
+.student-navbar button:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
 .dashboard-page h1 {
   margin: 0;
   font-size: clamp(2rem, 5vw, 2.6rem);

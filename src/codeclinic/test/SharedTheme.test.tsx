@@ -71,6 +71,7 @@ describe('shared dashboard theme', () => {
     const dashboardStyles = readOptionalSource('DashboardViews.css');
 
     expect(theme).toMatch(/\.dashboard-page\s*\+\s*button:focus-visible/);
+    expect(dashboardStyles).toMatch(/\.student-navbar a:focus-visible,\s*\.student-navbar button:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--lc-color-focus\)/);
     expect(dashboardStyles).toMatch(/@media\s*\(max-width:\s*360px\)/);
     expect(dashboardStyles).toMatch(/overflow-wrap:\s*anywhere/);
   });

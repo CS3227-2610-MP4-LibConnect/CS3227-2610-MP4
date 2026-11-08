@@ -1,5 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StudentDashboard } from '../src/StudentDashboard';
 
 let mockAppTree: React.ReactNode;
 
@@ -15,20 +16,6 @@ beforeAll(() => {
 function renderAppAt(path: string, fetchMock: jest.Mock) {
   window.history.replaceState({}, '', path);
   global.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
-    const requestUrl = typeof input === 'string' || input instanceof URL ? input.toString() : input.url;
-    if (new URL(requestUrl, window.location.origin).pathname === '/api/member/catalog') {
-      return Promise.resolve({
-        status: 200,
-        ok: true,
-        json: async () => ({
-          books: [],
-          nextCursor: null,
-          scannedAnyDocument: false,
-          scannedValidBooks: false,
-          scanComplete: true,
-        }),
-      }) as Promise<Response>;
-    }
     return fetchMock(input, init);
   }) as typeof fetch;
   return render(mockAppTree as React.ReactElement);
@@ -338,5 +325,25 @@ describe('dashboard route session guard and logout', () => {
     renderAppAt('/student/dashboard', fetchMock);
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('student dashboard navigation', () => {
+  const onLogoutConfirmed = jest.fn();
+
+  beforeEach(() => {
+    onLogoutConfirmed.mockClear();
+    window.history.replaceState({}, '', '/student/dashboard');
+  });
+
+  afterEach(() => {
+    window.history.replaceState({}, '', '/');
+  });
+
+  test('provides dashboard navigation and keeps logout available', async () => {
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+
+    expect(screen.getByRole('link', { name: /libconnect/i })).toHaveAttribute('href', '/student/dashboard');
+    expect(screen.getByRole('button', { name: /log out/i })).toBeVisible();
   });
 });

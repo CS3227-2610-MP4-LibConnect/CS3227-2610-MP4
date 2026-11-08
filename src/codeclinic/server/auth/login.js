@@ -1,7 +1,6 @@
 const crypto = require('crypto');
 const express = require('express');
 const argon2 = require('argon2');
-const { createCatalogHandler } = require('../catalog/route');
 const { canonicalizeEmail, emailKeyFor } = require('./email');
 
 const MAX_BODY_BYTES = 8 * 1024;
@@ -260,10 +259,6 @@ function createLoginApp(repository, authStore, options = {}) {
       return res.status(503).json({ message: RETRY_MESSAGE });
     }
   });
-
-  if (options.catalogDb) {
-    app.get('/api/member/catalog', createCatalogHandler(options.catalogDb, authenticateRequest));
-  }
 
   app.get('/api/auth/csrf', async (req, res) => {
     try {
