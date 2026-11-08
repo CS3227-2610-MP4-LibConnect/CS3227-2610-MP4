@@ -40,6 +40,7 @@ function setup({ failGetSession = false, failAccount = false, touch = true } = {
   app.use(express.json());
   const echo = (req, res) => res.json({ actor: req.actor, type: req.supportListType, target: req.supportTarget });
   app.get('/me', guards.requireActiveActor, guards.requireCsrf, echo);
+  app.get('/account', guards.requireActiveActor, echo);
   app.post('/me', guards.requireActiveActor, guards.requireCsrf, echo);
   app.post('/csrf-only', guards.requireCsrf, echo);
   app.get('/list', guards.requireActiveActor, guards.requireSupportListAccess, echo);
@@ -115,6 +116,16 @@ describe('requireActiveActor', () => {
     const res = await req;
     expect(res.status).toBe(401);
     expect(res.headers['set-cookie'][0]).toMatch(/Max-Age=0/);
+  });
+
+  test('uses the account session code only on self-service account routes', async () => {
+    const { app } = setup();
+    const self = await request(app).get('/account');
+    expect(self.status).toBe(401);
+    expect(self.body).toEqual({ code: 'AUTHENTICATION_REQUIRED', message: 'Your session has expired. Please sign in again.' });
+    const support = await request(app).get('/list-no-auth?type=STUDENT');
+    expect(support.status).toBe(401);
+    expect(support.body.code).toBeUndefined();
   });
 
   test('rejects and deletes the session of an inactive user', async () => {

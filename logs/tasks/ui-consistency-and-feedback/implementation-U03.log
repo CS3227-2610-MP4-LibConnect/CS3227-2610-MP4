@@ -1,0 +1,32 @@
+Task: U03, Notifications route shared-header integration
+Specification: workflow/specs/ui-consistency-and-feedback.md v0.1
+Checklist/handoff: workflow/tasks/ui-consistency-and-feedback/{tasks.md,handoff.md} v0.1
+Branch: codex/ui-consistency-and-feedback
+
+Preflight:
+- Read AGENTS.md, workflow/README.md, workflow/agents/implementer.toml, the approved specification/checklist/handoff, U01/U02 reports and the preimplementation review.
+- Read the openspec-apply-change skill. The OpenSpec CLI is unavailable; followed the repository workflow/specs/ adapter without installing tools or creating another spec tree.
+- Confirmed orchestrator dispatch for U03 after U01/U02 reconciliation. Left shared checklist checkboxes unchanged.
+- Selected skill: openspec-apply-change, adapted to the canonical repository paths.
+
+Commands and results (working directory: src/codeclinic):
+1. `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/NotificationsRoute.test.tsx test/Notifications.test.tsx test/DashboardRoutes.integration.test.tsx`
+   Initial result: failed, 4 tests failed / 46 passed. The route tests assumed JSDOM was already at `/notifications`; the manager lookup feedback assertion also needed to wait for the async lookup. No production defect was indicated by these fixture timing/path failures.
+2. Same command after setting the test URL to `/notifications` before each test and awaiting manager feedback:
+   PASS, 3 suites, 50 tests.
+
+Command and result (repository root):
+- `git diff --check -- src/codeclinic/src/NotificationsRoute.tsx src/codeclinic/test/NotificationsRoute.test.tsx`
+  PASS (exit 0).
+
+Changed implementation/test files:
+- `src/codeclinic/src/NotificationsRoute.tsx`
+- `src/codeclinic/test/NotificationsRoute.test.tsx`
+
+No build was run; the approved assignment defers build to U06. No dependencies, external services, database, secrets, commits, pushes, or merges were used. No runtime token metrics were exposed to this agent.
+
+U06 follow-up correction:
+- U06's combined production build reported ESLint `no-mixed-operators` at the session loading condition in `NotificationsRoute.tsx`.
+- Added explicit parentheses around the `state === 'ready' && !accountType` clause. This only clarifies operator grouping and does not change behavior.
+- No test/build was rerun for this parentheses-only correction; U06 will rerun the build after the scoped owners finish.
+- `git diff --check -- src/codeclinic/src/NotificationsRoute.tsx` passed after the correction.

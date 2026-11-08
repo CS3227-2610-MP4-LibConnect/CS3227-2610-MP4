@@ -1,0 +1,23 @@
+{
+  "hover": {
+    "element": "Students link",
+    "active": true,
+    "background": "rgb(239, 246, 255)",
+    "border": "rgb(29, 78, 216)"
+  },
+  "keyboardFocus": {
+    "focusVisible": true,
+    "href": "/ta/account",
+    "outline": "rgba(37, 99, 235, 0.38) solid 3px",
+    "text": "Account"
+  },
+  "profileError": {
+    "focused": true,
+    "invalid": "true",
+    "describedBy": "profile-currentPassword-error",
+    "retryButtons": 0
+  },
+  "session": {
+    "signInHref": "/"
+  }
+}

@@ -17,41 +17,7 @@
   padding: var(--lc-space-8) var(--lc-space-page) var(--lc-space-16);
 }
 
-.student-navbar {
-  position: sticky;
-  z-index: 10;
-  top: 0;
-  display: flex;
-  min-height: 68px;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--lc-space-4);
-  padding: var(--lc-space-2) max(var(--lc-space-page), calc((100vw - 1180px) / 2));
-  border-bottom: 1px solid var(--lc-color-border);
-  background: var(--lc-color-surface);
-  box-shadow: 0 4px 18px rgba(30, 64, 175, 0.06);
-}
-
-.student-navbar__brand {
-  color: var(--lc-color-navy);
-  font-family: var(--lc-font-display);
-  font-size: 1.35rem;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.student-navbar__logout {
-  min-height: 42px;
-  padding: 0 var(--lc-space-control-inline);
-  border: 1px solid var(--lc-color-control-border);
-  border-radius: var(--lc-radius-control);
-  background: var(--lc-color-surface);
-  color: var(--lc-color-blue);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 650;
-}
-
+/* Compatibility focus fallback retained for SharedTheme's legacy contract. */
 .student-navbar a:focus-visible,
 .student-navbar button:focus-visible {
   outline: 3px solid var(--lc-color-focus);
@@ -96,10 +62,6 @@
 
   .student-dashboard {
     padding: var(--lc-space-6) var(--lc-space-4) var(--lc-space-8);
-  }
-
-  .student-navbar {
-    padding-inline: var(--lc-space-4);
   }
 
   .dashboard-panel {

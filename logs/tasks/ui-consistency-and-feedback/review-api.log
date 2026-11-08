@@ -1,0 +1,49 @@
+U04 independent API review execution log
+Date: 2026-11-08
+Specification/checklist/handoff: ui-consistency-and-feedback v0.1
+Review snapshot: /private/tmp/ui-consistency-review, base 66517a756bd4f477348783b97341964e36bb4c32 plus final uncommitted overlay
+
+Snapshot integrity:
+- Compared all 18 file SHA-256 values in the original review-source-manifest.json against /private/tmp/ui-consistency-review before review.
+- Result: all 18 matched.
+- Snapshot git status: source/test/evidence overlay present as expected; HEAD matched stated base.
+
+Command:
+CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js test/account-server-wiring.test.js test/account-store.test.js test/login.credentials.test.js test/login.session.test.js
+Working directory: /private/tmp/ui-consistency-review/src/codeclinic
+Result: PASS; 7 test suites passed, 135 tests passed, 0 snapshots; 4.882 seconds.
+
+Command:
+git diff --check
+Working directory: /private/tmp/ui-consistency-review
+Result: PASS; no whitespace errors in tracked diff.
+
+Ad hoc probe:
+A one-off Node/Supertest request for PATCH /api/account/profile with {currentPassword: null} was attempted to demonstrate the malformed optional-field response. It could not start a temporary listener under the default sandbox: `listen EPERM: operation not permitted 127.0.0.1`. No source or test files were changed for this probe. Static trace confirms the validation helper returns `currentPassword`, and the handler maps that value to CURRENT_PASSWORD_REQUIRED before it knows whether email is being changed.
+
+Review artifacts written in the original repository:
+- workflow/tasks/ui-consistency-and-feedback/review-api.md
+- logs/tasks/ui-consistency-and-feedback/review-api.log
+
+No production code, tests, shared checklist, implementation report, commits, external services, emulator, or credentials were changed/accessed. Runtime model and token counts: unavailable.
+
+Correction follow-up (2026-11-08):
+The initial static assessment was incorrect. The `profileValidationError` branch at routes.js:64 returns a field only when it is not currentPassword; malformed optional currentPassword is therefore general INVALID_REQUEST. The earlier failed direct probe was retried with authorized `require_escalated` local-loopback permission.
+
+Command (run from /private/tmp/ui-consistency-review/src/codeclinic):
+node <<'JS'
+const express=require('express'),crypto=require('crypto'),request=require('supertest');
+const {createAccountRouter}=require('./server/account/routes');
+const RAW='s'.repeat(43), CSRF='c'.repeat(43), hash=x=>crypto.createHash('sha256').update(x).digest('hex');
+const user={userId:'u',name:'Ada',email:'ada@example.edu',canonicalEmailKey:'ada@example.edu',passwordHash:'x',accountType:'STUDENT',accountStatus:'ACTIVE'};
+const session={userId:'u',accountTypeAtIssue:'STUDENT',csrfTokenHash:hash(CSRF),issuedAt:Date.now(),lastSeenAt:Date.now(),expiresAt:Date.now()+60000};
+const accountStore={getAccount:async()=>user,updateProfile:async()=>{}};
+const authStore={getSession:async()=>session,touchSession:async()=>true,deleteSession:async()=>{},reserveRateSlot:async()=>true,releaseRateSlot:async()=>true};
+const app=express().use('/api',createAccountRouter({accountStore,authStore,loginRepository:{}}));
+(async()=>{for(const body of [{currentPassword:null},{currentPassword:'é'.repeat(513)}]){const r=await request(app).patch('/api/account/profile').set('Cookie',`__Host-codeclinic_session=${RAW}`).set('X-CSRF-Token',CSRF).send(body);console.log(JSON.stringify({input:Object.keys(body)[0]+':'+typeof Object.values(body)[0],status:r.status,body:r.body}));}})();
+JS
+Result: PASS for both malformed and oversized optional-password cases; each returned HTTP 400 `{code:"INVALID_REQUEST", message:"Enter valid account details."}`. The probe used only a synthetic local session and in-memory mock stores.
+
+GET /api/account compatibility clarification: the additive AUTHENTICATION_REQUIRED code is within the approved allowance for additive account API error fields; no byte-for-byte GET response compatibility requirement exists, and support response compatibility is retained. This is not a finding.
+
+Revised final review verdict: pass. No production finding remains. Initial assessment preserved above for audit history, then withdrawn based on exact branch and executed evidence. Runtime model/token metrics unavailable.

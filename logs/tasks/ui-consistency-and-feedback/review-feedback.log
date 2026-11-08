@@ -1,0 +1,35 @@
+Independent UI feedback review — 2026-11-08
+Task/spec/checklist: ui-consistency-and-feedback v0.1
+Scope: U05 account feedback and U06 verification evidence.
+
+Snapshot identity
+- Reviewed worktree: /private/tmp/ui-consistency-review
+- HEAD: 66517a756bd4f477348783b97341964e36bb4c32
+- Compared all 18 SHA-256 entries from logs/tasks/ui-consistency-and-feedback/review-source-manifest.json against the detached snapshot: 18 matched, 0 mismatches.
+- No source or test changes made. Build output was generated only in the detached worktree.
+
+Inspected
+- Approved spec, checklist and handoff v0.1; reviewer profile and repository instructions.
+- U05/U06 implementation reports and execution logs.
+- AccountPages.tsx, AccountPages.css, accountFeedback.ts, AccountPages.test.tsx.
+- U06 viewport/form/inbox/focus JSON measurements, visual-verification.md, and local synthetic screenshots.
+- U06's recorded initial combined suite failure-free result (14 suites/239 tests before two lint-only fixes), post-fix focused suite (2 suites/27 tests), and post-fix production build pass.
+
+Commands run from /private/tmp/ui-consistency-review/src/codeclinic
+1. CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx test/AppHeader.test.tsx test/NotificationsRoute.test.tsx
+   PASS: 3 suites, 31 tests, 0 snapshots.
+2. CI=true npm run build
+   PASS: optimized production build compiled successfully. Node emitted the recorded DEP0176 fs.F_OK deprecation warning; it was non-fatal.
+
+Review result
+- No production or test changes made; no review-only tests added.
+- U05 review: field errors are attached only to the relevant form/field, use aria-invalid and aria-describedby, and focus the field or form alert; editing clears the stale field error, resubmission clears stale action errors, non-secret profile values remain, and form failures do not expose a page-load Retry button. Session and attempt-limit codes are distinguished from password mismatch by code/status/context. Local safe copy is used for unknown, malformed, network, service, CSRF, and mismatched-status failures. Forced-password mismatch copy and restricted mode are retained. Confirmation, pending protection, success feedback, and one-time temporary-password display behavior remain present in implementation and existing focused tests.
+- U06 evidence review: all three role/viewport header measurements show no horizontal overflow, control overlap, clipping, emoji, or sub-42px controls; form measurements and screenshots cover the specified widths and error placement; inbox state evidence covers loading, empty, populated, error, mark-read error, and direct reload. Visual interactions used synthetic local mock content per the recorded evidence.
+- Verification boundary: this reviewer reran the three focused UI suites and build on the exact hash-verified snapshot. The full 14-suite combined command is evidenced by U06 before its two reported lint-only fixes; post-fix focused tests cover AccountPages and NotificationsRoute, and this review independently passed all three UI suites. No live backend/cloud behavior was tested or required.
+- Runtime model/token metrics: unavailable to this reviewer runtime; no estimates made.
+
+Final combined regression rerun — 2026-11-08
+- Ran the exact 14-suite command from approved tasks.md from the unchanged /private/tmp/ui-consistency-review/src/codeclinic snapshot. Local Supertest loopback permission was granted for this command; no external service was contacted.
+- Command: CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/NotificationsRoute.test.tsx test/AccountPages.test.tsx test/Notifications.test.tsx test/DashboardRoutes.integration.test.tsx test/SharedTheme.test.tsx test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js test/account-server-wiring.test.js test/account-store.test.js test/notifications.api.test.js test/login.credentials.test.js test/login.session.test.js
+- Result: PASS, 14/14 suites, 239/239 tests, 0 snapshots, 9.628 seconds.
+- Final verdict: pass; the post-fix combined test gap is resolved. Prior records of the pre-fix combined run remain unchanged as chronology.

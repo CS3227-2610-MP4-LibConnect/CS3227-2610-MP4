@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NotificationBell } from './notifications/Notifications';
+import AppHeader from './AppHeader';
 
 type LogoutState = 'ready' | 'pending' | 'error';
 
@@ -69,14 +69,7 @@ export default function DashboardLogout({ onConfirmed, children, studentNavigati
   }
 
   return <>
-    <header className="student-navbar">
-      <a className="student-navbar__brand" href={studentNavigation ? '/student/dashboard' : '/ta/dashboard'}>CodeClinic</a>
-      {studentNavigation ? <a href="/student/account">Account</a> : <>
-        <a href="/ta/account">Account</a><a href="/ta/students">Students</a>{isManager && <a href="/ta/tas">TAs</a>}
-      </>}
-      <NotificationBell />
-      <button className="student-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
-    </header>
+    <AppHeader accountType={studentNavigation ? 'STUDENT' : 'TA'} isManager={isManager} onLogout={() => { void logout(); }} />
     {children}
   </>;
 }

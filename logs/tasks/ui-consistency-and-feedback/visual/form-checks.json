@@ -1,0 +1,121 @@
+{
+  "studentError": [
+    {
+      "error": "Your current password is incorrect. Please try again.",
+      "fieldVisible": true,
+      "scrollWidth": 320,
+      "width": 320
+    },
+    {
+      "error": "Your current password is incorrect. Please try again.",
+      "fieldVisible": true,
+      "scrollWidth": 640,
+      "width": 640
+    }
+  ],
+  "otherRoles": [
+    {
+      "role": "ta",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 12,
+          "right": 308
+        },
+        {
+          "left": 12,
+          "right": 308
+        }
+      ],
+      "scrollWidth": 320,
+      "width": 320
+    },
+    {
+      "role": "ta",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 12,
+          "right": 628
+        },
+        {
+          "left": 12,
+          "right": 628
+        }
+      ],
+      "scrollWidth": 640,
+      "width": 640
+    },
+    {
+      "role": "ta",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 180,
+          "right": 1100
+        },
+        {
+          "left": 180,
+          "right": 1100
+        }
+      ],
+      "scrollWidth": 1280,
+      "width": 1280
+    },
+    {
+      "role": "coordinator",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 12,
+          "right": 308
+        },
+        {
+          "left": 12,
+          "right": 308
+        }
+      ],
+      "scrollWidth": 320,
+      "width": 320
+    },
+    {
+      "role": "coordinator",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 12,
+          "right": 628
+        },
+        {
+          "left": 12,
+          "right": 628
+        }
+      ],
+      "scrollWidth": 640,
+      "width": 640
+    },
+    {
+      "role": "coordinator",
+      "controlsInside": true,
+      "forms": [
+        {
+          "left": 180,
+          "right": 1100
+        },
+        {
+          "left": 180,
+          "right": 1100
+        }
+      ],
+      "scrollWidth": 1280,
+      "width": 1280
+    }
+  ],
+  "focus": {
+    "focusVisible": true,
+    "href": "/ta/account",
+    "outline": "rgba(37, 99, 235, 0.38) solid 3px",
+    "text": "Account"
+  },
+  "retainedInput": "Confirmed visually in screenshot; value attributes are redacted by browser DOM scope."
+}

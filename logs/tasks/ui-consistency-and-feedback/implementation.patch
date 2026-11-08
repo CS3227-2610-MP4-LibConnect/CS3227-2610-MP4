@@ -1,0 +1,1587 @@
+diff --git a/src/codeclinic/server/account/guards.js b/src/codeclinic/server/account/guards.js
+index 7d5d8fb..7f2a341 100644
+--- a/src/codeclinic/server/account/guards.js
++++ b/src/codeclinic/server/account/guards.js
+@@ -12,6 +12,12 @@ const FORBIDDEN = 'You do not have permission to do that.';
+ const NOT_FOUND = 'Account not found.';
+ const INVALID = 'Enter valid details.';
+ const RETRY = 'Account service is temporarily unavailable. Please try again.';
++const ACCOUNT_AUTH = 'Your session has expired. Please sign in again.';
++
++function isSelfAccountPath(req) {
++  const path = typeof req.path === 'string' ? req.path.toLowerCase().replace(/\/+$/, '') : '';
++  return ['/account', '/account/profile', '/account/password'].includes(path);
++}
+ 
+ function hashesMatch(a, b) {
+   return typeof a === 'string' && typeof b === 'string' && HASH_PATTERN.test(a) && HASH_PATTERN.test(b) &&
+@@ -58,15 +64,22 @@ function createAccountGuards({ authStore, accountStore, now = Date.now } = {}) {
+     return res.status(401).json({ message: AUTH_REQUIRED });
+   }
+ 
++  function unauthenticatedRequest(req, res) {
++    clearSessionCookie(res);
++    return isSelfAccountPath(req)
++      ? res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', message: ACCOUNT_AUTH })
++      : res.status(401).json({ message: AUTH_REQUIRED });
++  }
++
+   async function requireActiveActor(req, res, next) {
+     try {
+       const auth = await authenticateRequest(req, res);
+-      if (!auth) return unauthenticated(res);
++      if (!auth) return unauthenticatedRequest(req, res);
+       const { idHash, session } = auth;
+       // Reload for fields the shared check does not return (`isManager`, `mustChangePassword`).
+       const user = await accountStore.getAccount(session.userId);
+       if (!user || user.userId !== session.userId || user.accountStatus !== 'ACTIVE' ||
+-          user.accountType !== auth.accountType) return unauthenticated(res);
++          user.accountType !== auth.accountType) return unauthenticatedRequest(req, res);
+       req.actor = Object.freeze({
+         userId: user.userId,
+         accountType: user.accountType,
+@@ -84,12 +97,12 @@ function createAccountGuards({ authStore, accountStore, now = Date.now } = {}) {
+   async function requireCsrf(req, res, next) {
+     if (SAFE_METHODS.includes(req.method)) return next();
+     const idHash = sessionHashes.get(req);
+-    if (!idHash || !req.actor) return unauthenticated(res);
++    if (!idHash || !req.actor) return unauthenticatedRequest(req, res);
+     try {
+       const suppliedHash = hashSubmittedCsrf(req);
+       if (!suppliedHash) return res.status(403).json({ message: NOT_VERIFIED });
+       const session = await authStore.getSession(idHash);
+-      if (!session || session.userId !== req.actor.userId) return unauthenticated(res);
++      if (!session || session.userId !== req.actor.userId) return unauthenticatedRequest(req, res);
+       if (!hashesMatch(suppliedHash, session.csrfTokenHash)) {
+         return res.status(403).json({ message: NOT_VERIFIED });
+       }
+diff --git a/src/codeclinic/server/account/routes.js b/src/codeclinic/server/account/routes.js
+index b33d81e..b3f906c 100644
+--- a/src/codeclinic/server/account/routes.js
++++ b/src/codeclinic/server/account/routes.js
+@@ -10,13 +10,31 @@ const NAME_BYTES = 200;
+ const EMAIL_BYTES = 254;
+ const TEMP_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+ const INVALID = 'Enter valid account details.';
+-const DENIED = 'Unable to verify those details.';
+ const RETRY = 'Account service is temporarily unavailable. Please try again.';
+ const FORBIDDEN = 'You do not have permission to do that.';
++const ACCOUNT_ERRORS = Object.freeze({
++  AUTHENTICATION_REQUIRED: 'Your session has expired. Please sign in again.',
++  CURRENT_PASSWORD_INCORRECT: 'Your current password is incorrect. Please try again.',
++  CURRENT_PASSWORD_REQUIRED: 'Enter your current password to change your email address.',
++  PASSWORD_ATTEMPTS_EXCEEDED: 'Too many password attempts. Please try again later.',
++  INVALID_NAME: `Enter a non-empty name within ${NAME_BYTES} UTF-8 bytes.`,
++  INVALID_EMAIL: `Enter a valid email address within ${EMAIL_BYTES} UTF-8 bytes.`,
++  EMAIL_UNAVAILABLE: 'This email is unavailable. Use a different email address.',
++  INVALID_NEW_PASSWORD: `Use a password with at least 8 characters and no more than ${MAX_PASSWORD_BYTES} UTF-8 bytes.`,
++  INVALID_REQUEST: INVALID,
++});
++
++function accountError(res, status, code, field) {
++  return res.status(status).json({ code, ...(field ? { field } : {}), message: ACCOUNT_ERRORS[code] });
++}
++function isSelfAccountPath(path) {
++  const normalized = typeof path === 'string' ? path.toLowerCase().replace(/\/+$/, '') : '';
++  return normalized === '/account/profile' || normalized === '/account/password';
++}
+ 
+ function isObject(value) { return Boolean(value) && typeof value === 'object' && !Array.isArray(value); }
+ function boundedText(value, maxBytes) { return typeof value === 'string' && value.trim().length > 0 && Buffer.byteLength(value.trim(), 'utf8') <= maxBytes; }
+-function validEmail(value) { const e = value.trim(); return boundedText(e, EMAIL_BYTES) && REGISTRATION_EMAIL_FORMAT.test(e); }
++function validEmail(value) { if (typeof value !== 'string') return false; const e = value.trim(); return boundedText(e, EMAIL_BYTES) && REGISTRATION_EMAIL_FORMAT.test(e); }
+ function validPassword(value) { return typeof value === 'string' && value.length >= 8 && Buffer.byteLength(value, 'utf8') <= MAX_PASSWORD_BYTES; }
+ function makeTemporaryPassword(randomInt = crypto.randomInt) {
+   let result = '';
+@@ -37,6 +55,15 @@ function validatePassword(body) {
+   if (typeof body.currentPassword !== 'string' || Buffer.byteLength(body.currentPassword, 'utf8') > MAX_PASSWORD_BYTES || !validPassword(body.newPassword)) return null;
+   return body;
+ }
++function profileValidationError(body) {
++  if (!isObject(body) || !Object.keys(body).length || Object.keys(body).some((key) => !['name', 'email', 'currentPassword'].includes(key))) return null;
++  const invalid = [];
++  if (body.name !== undefined && !boundedText(body.name, NAME_BYTES)) invalid.push('name');
++  if (body.email !== undefined && !validEmail(body.email)) invalid.push('email');
++  if (body.currentPassword !== undefined && (typeof body.currentPassword !== 'string' || Buffer.byteLength(body.currentPassword, 'utf8') > MAX_PASSWORD_BYTES)) invalid.push('currentPassword');
++  if (invalid.length === 1 && invalid[0] !== 'currentPassword') return invalid[0];
++  return null;
++}
+ function sendError(res, error) {
+   if (error && error.code === 'INVALID') return res.status(400).json({ message: INVALID });
+   if (error && error.code === 'NOT_FOUND') return res.status(404).json({ message: 'Account not found.' });
+@@ -60,25 +87,39 @@ function createAccountRouter({ accountStore, authStore, loginRepository, now = D
+ 
+   router.patch('/account/profile', ...protectedRoute, async (req, res) => {
+     const input = validateProfile(req.body);
+-    if (!input) return res.status(400).json({ message: INVALID });
++    if (!input) {
++      const field = profileValidationError(req.body);
++      if (field === 'currentPassword') return accountError(res, 400, 'CURRENT_PASSWORD_REQUIRED', field);
++      if (field === 'name') return accountError(res, 400, 'INVALID_NAME', field);
++      if (field === 'email') return accountError(res, 400, 'INVALID_EMAIL', field);
++      return accountError(res, 400, 'INVALID_REQUEST');
++    }
+     try {
+       const current = await accountStore.getAccount(req.actor.userId);
+-      if (!current) return res.status(401).json({ message: 'Authentication required.' });
++      if (!current) return accountError(res, 401, 'AUTHENTICATION_REQUIRED');
+       if (input.email !== undefined) {
+         if (canonicalizeEmail(input.email) !== current.canonicalEmailKey) {
+-          if (typeof input.currentPassword !== 'string') return res.status(400).json({ message: INVALID });
+-          if (!await argon2.verify(current.passwordHash, input.currentPassword)) return res.status(401).json({ message: DENIED });
++          if (typeof input.currentPassword !== 'string') return accountError(res, 400, 'CURRENT_PASSWORD_REQUIRED', 'currentPassword');
++          if (!await argon2.verify(current.passwordHash, input.currentPassword)) return accountError(res, 401, 'CURRENT_PASSWORD_INCORRECT', 'currentPassword');
+         }
+       }
+       await accountStore.updateProfile(req.actor.userId, { ...(input.name !== undefined ? { name: input.name } : {}), ...(input.email !== undefined ? { email: input.email } : {}) });
+       const updated = await accountStore.getAccount(req.actor.userId);
+       return res.json({ name: updated.name, email: updated.email, accountType: updated.accountType, isManager: updated.accountType === 'TA' && updated.isManager === true });
+-    } catch (error) { return sendError(res, error); }
++    } catch (error) {
++      if (error && error.code === 'ALREADY_EXISTS') return accountError(res, 409, 'EMAIL_UNAVAILABLE', 'email');
++      return sendError(res, error);
++    }
+   });
+ 
+   router.post('/account/password', ...protectedRoute, async (req, res) => {
+     const input = validatePassword(req.body);
+-    if (!input) return res.status(400).json({ message: INVALID });
++    if (!input) {
++      const validCurrent = isObject(req.body) && Object.hasOwn(req.body, 'currentPassword') && typeof req.body.currentPassword === 'string' && Buffer.byteLength(req.body.currentPassword, 'utf8') <= MAX_PASSWORD_BYTES;
++      const validShape = isObject(req.body) && Object.keys(req.body).length === 2 && Object.hasOwn(req.body, 'currentPassword') && Object.hasOwn(req.body, 'newPassword');
++      if (validShape && validCurrent) return accountError(res, 400, 'INVALID_NEW_PASSWORD', 'newPassword');
++      return accountError(res, 400, 'INVALID_REQUEST');
++    }
+     let reserved = false;
+     const user = await accountStore.getAccount(req.actor.userId).catch(() => null);
+     if (!user) return res.status(503).json({ message: RETRY });
+@@ -86,7 +127,7 @@ function createAccountRouter({ accountStore, authStore, loginRepository, now = D
+     try {
+       const key = user.canonicalEmailKey;
+       reserved = await authStore.reserveRateSlot('email', key, 5, now(), 15 * 60 * 1000);
+-      if (!reserved) return res.status(401).json({ message: DENIED });
++      if (!reserved) return accountError(res, 401, 'PASSWORD_ATTEMPTS_EXCEEDED');
+       let matches;
+       try { matches = await argon2.verify(user.passwordHash, input.currentPassword); }
+       catch (error) {
+@@ -94,7 +135,7 @@ function createAccountRouter({ accountStore, authStore, loginRepository, now = D
+         reserved = false;
+         throw error;
+       }
+-      if (!matches) return res.status(401).json({ message: DENIED });
++      if (!matches) return accountError(res, 401, 'CURRENT_PASSWORD_INCORRECT', 'currentPassword');
+       passwordMatched = true;
+       const hash = await passwordHash(input.newPassword);
+       await accountStore.setPasswordHash(user.userId, hash, { mustChangePassword: false, keepSessionIdHash: req.actor.sessionIdHash });
+@@ -135,7 +176,10 @@ function createAccountRouter({ accountStore, authStore, loginRepository, now = D
+   });
+ 
+   router.use((error, req, res, next) => {
+-    if (error && (error.type === 'entity.too.large' || error.type === 'entity.parse.failed' || error.status === 400)) return res.status(400).json({ message: INVALID });
++    if (error && (error.type === 'entity.too.large' || error.type === 'entity.parse.failed' || error.status === 400)) {
++      if (isSelfAccountPath(req.path)) return accountError(res, 400, 'INVALID_REQUEST');
++      return res.status(400).json({ message: INVALID });
++    }
+     return res.status(503).json({ message: RETRY });
+   });
+   return router;
+diff --git a/src/codeclinic/src/AccountPages.css b/src/codeclinic/src/AccountPages.css
+index 39b7676..9eee8e3 100644
+--- a/src/codeclinic/src/AccountPages.css
++++ b/src/codeclinic/src/AccountPages.css
+@@ -1,6 +1,4 @@
+ .account-page { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
+-.student-navbar { flex-wrap: wrap; gap: 8px; }
+-.student-navbar > * { min-width: 0; }
+ .account-page, .account-panel, .account-form, .account-list li, .account-list li div { min-width: 0; }
+ .account-page, .account-list li span, .account-list strong { overflow-wrap: anywhere; }
+ .account-page h1 { font-family: var(--lc-font-display); color: var(--lc-color-navy); }
+@@ -16,4 +14,8 @@
+ .account-page button { min-height: 40px; padding: 8px 12px; border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: var(--lc-color-surface); color: var(--lc-color-blue); cursor: pointer; font: inherit; }
+ .account-page button:disabled { opacity: .6; cursor: wait; }
+ .account-page [role="alert"] { color: var(--lc-color-error); }
+-@media (max-width: 640px) { .student-navbar { justify-content: flex-start; padding-right: 12px; padding-left: 12px; } .account-page { width: calc(100% - 24px); margin: 24px auto; } .account-panel { padding: 18px; } .account-list li { align-items: stretch; flex-direction: column; } }
++.account-form-error, .account-field-error { color: var(--lc-color-error); }
++.account-form-error:focus, .account-form-error [href]:focus { outline: 3px solid var(--lc-color-focus, #2563eb); outline-offset: 2px; }
++.account-field-error { margin: -10px 0 0; font-size: .95rem; }
++.account-form input[aria-invalid="true"] { border-color: var(--lc-color-error); }
++@media (max-width: 640px) { .account-page { width: calc(100% - 24px); margin: 24px auto; } .account-panel { padding: 18px; } .account-list li { align-items: stretch; flex-direction: column; } }
+diff --git a/src/codeclinic/src/AccountPages.tsx b/src/codeclinic/src/AccountPages.tsx
+index 6ba71ac..462dbd9 100644
+--- a/src/codeclinic/src/AccountPages.tsx
++++ b/src/codeclinic/src/AccountPages.tsx
+@@ -1,17 +1,32 @@
+-import React, { FormEvent, useCallback, useEffect, useState } from 'react';
++import React, { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+ import './AccountPages.css';
+-import { NotificationBell } from './notifications/Notifications';
++import AppHeader from './AppHeader';
++import { AccountFailure, AccountField, csrfFailure, readFailure, sessionFailure } from './accountFeedback';
+ 
+ type Account = { name: string; email: string; accountType: 'STUDENT' | 'TA'; isManager?: boolean };
+ type Entry = { userId: string; name: string; email: string; accountType: 'STUDENT' | 'TA'; accountStatus: 'ACTIVE' | 'INACTIVE'; registrationDateTime: string | null };
+ type Props = { mode: 'account' | 'students' | 'tas' | 'password-change' };
++type Feedback = AccountFailure | null;
++class AccountActionError extends Error {
++  constructor(readonly accountFailure: AccountFailure) {
++    super(accountFailure.message);
++    this.name = 'AccountActionError';
++  }
++}
+ 
+-async function csrf() {
++async function csrf(): Promise<string> {
+   const response = await fetch('/api/auth/csrf', { credentials: 'same-origin' });
+-  const body = await response.json();
+-  if (!response.ok || typeof body.csrfToken !== 'string') throw new Error('Could not verify this request.');
+-  return body.csrfToken as string;
++  if (response.status === 401) throw new Error('session');
++  let body: { csrfToken?: unknown };
++  try { body = await response.json(); } catch { throw new Error('csrf'); }
++  if (!response.ok || typeof body.csrfToken !== 'string' || !body.csrfToken) throw new Error('csrf');
++  return body.csrfToken;
+ }
++const actionFallback = (action: 'profile' | 'password' | 'support'): AccountFailure => ({
++  message: action === 'profile' ? 'Could not save your profile. Please try again.'
++    : action === 'password' ? 'Could not change your password. Please try again.'
++      : 'Could not complete this support action. Please try again.',
++});
+ 
+ export default function AccountPages({ mode }: Props) {
+   const [account, setAccount] = useState<Account | null>(null);
+@@ -19,11 +34,27 @@ export default function AccountPages({ mode }: Props) {
+   const [nextCursor, setNextCursor] = useState<string | null>(null);
+   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+   const [message, setMessage] = useState('');
+-  const [error, setError] = useState('');
++  const [loadError, setLoadError] = useState('');
++  const [loadRetry, setLoadRetry] = useState<'account' | 'support' | 'session'>('account');
++  const [profileError, setProfileError] = useState<Feedback>(null);
++  const [passwordError, setPasswordError] = useState<Feedback>(null);
++  const [supportError, setSupportError] = useState<Feedback>(null);
++  const [logoutError, setLogoutError] = useState('');
+   const [busy, setBusy] = useState(false);
+   const [loading, setLoading] = useState(true);
++  const loadAlert = useRef<HTMLParagraphElement>(null);
++  const profileAlert = useRef<HTMLDivElement>(null);
++  const passwordAlert = useRef<HTMLDivElement>(null);
++  const supportAlert = useRef<HTMLDivElement>(null);
++  const profileFields = useRef<Record<string, HTMLInputElement | null>>({});
++  const passwordFields = useRef<Record<string, HTMLInputElement | null>>({});
+   const type = mode === 'students' ? 'STUDENT' : 'TA';
+ 
++  async function actionToken(action: 'profile' | 'password' | 'support') {
++    try { return await csrf(); } catch (error) {
++      throw new AccountActionError(error instanceof Error && error.message === 'session' ? sessionFailure() : csrfFailure(action));
++    }
++  }
+   const loadAccount = useCallback(async () => {
+     const response = await fetch('/api/account', { credentials: 'same-origin' });
+     if (!response.ok) throw new Error('Could not load your account.');
+@@ -32,16 +63,16 @@ export default function AccountPages({ mode }: Props) {
+   const loadEntries = useCallback(async (cursor?: string) => {
+     const query = new URLSearchParams({ type, limit: '50', ...(cursor ? { cursor } : {}) });
+     const response = await fetch(`/api/support/accounts?${query}`, { credentials: 'same-origin' });
++    if (!response.ok) throw new Error('Could not load accounts.');
+     const body = await response.json();
+-    if (!response.ok) throw new Error(body.message || 'Could not load accounts.');
+     setEntries((previous) => cursor ? [...previous, ...body.accounts] : body.accounts);
+     setNextCursor(body.nextCursor || null);
+   }, [type]);
+-  const loadPage = useCallback(async () => {
+-    setLoading(true);
+-    setError('');
++  const loadPage = useCallback(async (retry?: 'account' | 'support' | 'session') => {
++    setLoading(true); setLoadError('');
+     try {
+       if (mode === 'password-change') {
++        setLoadRetry('session');
+         const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
+         if (response.status === 401) { window.location.assign('/'); return; }
+         if (!response.ok) throw new Error('Could not verify your session.');
+@@ -49,62 +80,87 @@ export default function AccountPages({ mode }: Props) {
+         setAccount(session);
+         if (!session.mustChangePassword) window.location.assign(session.accountType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard');
+       } else {
+-        await Promise.all([loadAccount(), ...(mode === 'students' || mode === 'tas' ? [loadEntries()] : [])]);
++        if (retry === 'support') {
++          setLoadRetry('support');
++          await loadEntries();
++        } else {
++          setLoadRetry('account');
++          await loadAccount();
++          if (mode === 'students' || mode === 'tas') {
++            setLoadRetry('support');
++            await loadEntries();
++          }
++        }
+       }
+-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not load account details.'); }
++    } catch (error) { setLoadError(error instanceof Error && error.message === 'Could not load accounts.' ? error.message
++      : error instanceof Error && error.message === 'Could not load your account.' ? error.message
++        : mode === 'password-change' ? 'Could not verify your session.' : 'Could not load account details.'); }
+     finally { setLoading(false); }
+   }, [loadAccount, loadEntries, mode]);
+   useEffect(() => { void loadPage(); }, [loadPage]);
++  useEffect(() => { if (loadError) loadAlert.current?.focus(); }, [loadError]);
++  useEffect(() => {
++    if (profileError) (profileError.field ? profileFields.current[profileError.field] : profileAlert.current)?.focus();
++  }, [profileError]);
++  useEffect(() => {
++    if (passwordError) (passwordError.field ? passwordFields.current[passwordError.field] : passwordAlert.current)?.focus();
++  }, [passwordError]);
++  useEffect(() => { if (supportError) supportAlert.current?.focus(); }, [supportError]);
+ 
+   const submitProfile = async (event: FormEvent<HTMLFormElement>) => {
+-    event.preventDefault(); setBusy(true); setError(''); setMessage('');
++    event.preventDefault();
++    setBusy(true); setProfileError(null); setMessage('');
+     const form = new FormData(event.currentTarget);
+     const body: Record<string, string> = {};
+-    for (const key of ['name', 'email', 'currentPassword']) {
+-      const value = String(form.get(key) || ''); if (value) body[key] = value;
+-    }
++    for (const key of ['name', 'email', 'currentPassword']) { const value = String(form.get(key) || ''); if (value) body[key] = value; }
+     try {
+-      const response = await fetch('/api/account/profile', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await csrf() }, body: JSON.stringify(body) });
+-      const result = await response.json();
+-      if (!response.ok) throw new Error(result.message || 'Could not update your account.');
+-      setAccount(result); setMessage('Account details updated.');
+-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update your account.'); }
++      const token = await actionToken('profile');
++      const response = await fetch('/api/account/profile', { method: 'PATCH', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify(body) });
++      if (!response.ok) { setProfileError(await readFailure(response, 'profile')); return; }
++      setAccount(await response.json()); setMessage('Account details updated.');
++    } catch (error) { setProfileError(error instanceof AccountActionError ? error.accountFailure : actionFallback('profile')); }
+     finally { setBusy(false); }
+   };
+ 
+   const submitPassword = async (event: FormEvent<HTMLFormElement>) => {
+-    event.preventDefault(); setBusy(true); setError(''); setMessage('');
++    event.preventDefault();
++    setBusy(true); setPasswordError(null); setMessage('');
+     const form = new FormData(event.currentTarget);
+     try {
+-      const response = await fetch('/api/account/password', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await csrf() }, body: JSON.stringify({ currentPassword: form.get('currentPassword'), newPassword: form.get('newPassword') }) });
+-      if (!response.ok) { const body = await response.json(); throw new Error(body.message || 'Could not change your password.'); }
++      const token = await actionToken('password');
++      const response = await fetch('/api/account/password', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify({ currentPassword: form.get('currentPassword'), newPassword: form.get('newPassword') }) });
++      if (!response.ok) { setPasswordError(await readFailure(response, 'password', mode === 'password-change')); return; }
+       setTemporaryPassword(null); setMessage('Password changed.');
+       if (mode === 'password-change') window.location.assign(account?.accountType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard');
+-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not change your password.'); }
++    } catch (error) { setPasswordError(error instanceof AccountActionError ? error.accountFailure : actionFallback('password')); }
+     finally { setBusy(false); }
+   };
+ 
+   const changeStatus = async (entry: Entry) => {
+     const next = entry.accountStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+     if (next === 'INACTIVE' && !window.confirm(`Deactivate ${entry.name}? They will be signed out.`)) return;
+-    setBusy(true); setError(''); setMessage('');
++    setBusy(true); setSupportError(null); setMessage('');
+     try {
+-      const response = await fetch(`/api/support/accounts/${encodeURIComponent(entry.userId)}/status`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await csrf() }, body: JSON.stringify({ accountStatus: next }) });
+-      if (!response.ok) { const body = await response.json(); throw new Error(body.message || 'Could not update account status.'); }
++      const token = await actionToken('support');
++      const response = await fetch(`/api/support/accounts/${encodeURIComponent(entry.userId)}/status`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: JSON.stringify({ accountStatus: next }) });
++      if (!response.ok) { setSupportError(await readFailure(response, 'support')); return; }
+       await loadEntries(); setMessage(`${entry.name} is now ${next.toLowerCase()}.`);
+-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not update account status.'); }
++    } catch (error) { setSupportError(error instanceof AccountActionError ? error.accountFailure : actionFallback('support')); }
+     finally { setBusy(false); }
+   };
+ 
+   const resetPassword = async (entry: Entry) => {
+     if (!window.confirm(`Issue a temporary password for ${entry.name}?`)) return;
+-    setBusy(true); setError(''); setMessage(''); setTemporaryPassword(null);
++    setBusy(true); setSupportError(null); setMessage(''); setTemporaryPassword(null);
+     try {
+-      const response = await fetch(`/api/support/accounts/${encodeURIComponent(entry.userId)}/password-reset`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': await csrf() }, body: '{}' });
+-      const body = await response.json();
+-      if (!response.ok || typeof body.temporaryPassword !== 'string') throw new Error(body.message || 'Could not reset password.');
++      const token = await actionToken('support');
++      const response = await fetch(`/api/support/accounts/${encodeURIComponent(entry.userId)}/password-reset`, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }, body: '{}' });
++      if (!response.ok) { setSupportError(await readFailure(response, 'support')); return; }
++      let body: { temporaryPassword?: unknown } = {};
++      try { body = await response.json(); } catch { /* use the local fallback below */ }
++      if (typeof body.temporaryPassword !== 'string') { setSupportError(actionFallback('support')); return; }
+       setTemporaryPassword(body.temporaryPassword); setMessage(`Temporary password for ${entry.name}. Copy it now; it will not be shown again.`);
+-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not reset password.'); }
++    } catch (error) { setSupportError(error instanceof AccountActionError ? error.accountFailure : actionFallback('support')); }
+     finally { setBusy(false); }
+   };
+ 
+@@ -113,40 +169,62 @@ export default function AccountPages({ mode }: Props) {
+       const token = await csrf();
+       const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': token } });
+       if (response.status === 204 || response.status === 401) { window.location.assign('/'); return; }
+-      setError('Could not confirm sign out. Please retry.');
+-    } catch { setError('Could not confirm sign out. Please retry.'); }
++      setLogoutError('Could not confirm sign out. Please try again.');
++    } catch { setLogoutError('Could not confirm sign out. Please try again.'); }
++  };
++  const fieldProps = (action: 'profile' | 'password', field: AccountField) => {
++    const feedback = action === 'profile' ? profileError : passwordError;
++    const invalid = feedback?.field === field;
++    return { id: `${action}-${field}`, ref: (element: HTMLInputElement | null) => { (action === 'profile' ? profileFields : passwordFields).current[field] = element; },
++      'aria-invalid': invalid ? true : undefined, 'aria-describedby': invalid ? `${action}-${field}-error` : undefined,
++      onChange: () => { if (invalid) action === 'profile' ? setProfileError(null) : setPasswordError(null); } };
+   };
++  const feedbackBox = (feedback: Feedback, id: string, ref: React.RefObject<HTMLDivElement | null>) => feedback && !feedback.field && <div id={id} className="account-form-error" role="alert" tabIndex={-1} ref={ref}>
++    <p>{feedback.message}</p>{feedback.signIn && <> <a href="/">Sign in</a></>}
++  </div>;
+ 
+-  return <><header className="student-navbar"><a className="student-navbar__brand" href={account?.accountType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard'}>CodeClinic</a>{mode !== 'password-change' && <><a href={account?.accountType === 'STUDENT' ? '/student/account' : '/ta/account'}>Account</a>{account?.accountType === 'TA' && <a href="/ta/students">Students</a>}{account?.isManager && <a href="/ta/tas">TAs</a>}<NotificationBell /></>}<button type="button" className="student-navbar__logout" onClick={() => void logout()}>Log out</button></header><main className="account-page">
++  return <>{account && <AppHeader accountType={account.accountType} isManager={account.isManager} activePath={window.location.pathname} restricted={mode === 'password-change'} onLogout={() => void logout()} />}<main className="account-page">
+     <p className="eyebrow">CodeClinic account</p>
+     <h1>{mode === 'account' ? 'Account' : mode === 'students' ? 'Students' : mode === 'tas' ? 'TAs' : 'Change your password'}</h1>
+-    {error && <p role="alert">{error} <button type="button" onClick={() => void loadPage()}>Retry</button></p>}{message && <p role="status">{message}</p>}{loading && <p role="status" aria-busy="true">Loading account details…</p>}
++    {logoutError && <p role="alert">{logoutError}</p>}
++    {loadError && <p role="alert" tabIndex={-1} ref={loadAlert}>{loadError} <button type="button" onClick={() => void loadPage(loadRetry)}>Retry</button></p>}
++    {message && <p role="status">{message}</p>}{loading && <p role="status" aria-busy="true">Loading account details…</p>}
+     {mode === 'account' && <>
+-      <form key={`${account?.name || ''}:${account?.email || ''}`} className="account-panel account-form" onSubmit={submitProfile}>
+-        <h2>Profile</h2><label>Name<input name="name" defaultValue={account?.name || ''} maxLength={200} required /></label>
+-        <label>Email<input name="email" type="email" defaultValue={account?.email || ''} maxLength={254} required /></label>
+-        <label>Current password <span>(required when changing email)</span><input name="currentPassword" type="password" autoComplete="current-password" /></label>
++      <form className="account-panel account-form" onSubmit={submitProfile}>
++        <h2>Profile</h2>{feedbackBox(profileError, 'profile-error', profileAlert)}
++        <label htmlFor="profile-name">Name<input {...fieldProps('profile', 'name')} name="name" defaultValue={account?.name || ''} maxLength={200} required /></label>
++        {profileError?.field === 'name' && <p id="profile-name-error" className="account-field-error" role="alert">{profileError.message}</p>}
++        <label htmlFor="profile-email">Email<input {...fieldProps('profile', 'email')} name="email" type="email" defaultValue={account?.email || ''} maxLength={254} required /></label>
++        {profileError?.field === 'email' && <p id="profile-email-error" className="account-field-error" role="alert">{profileError.message}</p>}
++        <label htmlFor="profile-currentPassword">Current password <span>(required when changing email)</span><input {...fieldProps('profile', 'currentPassword')} name="currentPassword" type="password" autoComplete="current-password" /></label>
++        {profileError?.field === 'currentPassword' && <p id="profile-currentPassword-error" className="account-field-error" role="alert">{profileError.message}</p>}
+         <button className="submit-button" disabled={busy}>Save profile</button>
+       </form>
+       <form className="account-panel account-form" onSubmit={submitPassword}>
+-        <h2>Password</h2><label>Current password<input name="currentPassword" type="password" autoComplete="current-password" required /></label>
+-        <label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={8} maxLength={1024} required /></label>
++        <h2>Password</h2>{feedbackBox(passwordError, 'password-error', passwordAlert)}
++        <label htmlFor="password-currentPassword">Current password<input {...fieldProps('password', 'currentPassword')} name="currentPassword" type="password" autoComplete="current-password" required /></label>
++        {passwordError?.field === 'currentPassword' && <p id="password-currentPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
++        <label htmlFor="password-newPassword">New password<input {...fieldProps('password', 'newPassword')} name="newPassword" type="password" autoComplete="new-password" minLength={8} maxLength={1024} required /></label>
++        {passwordError?.field === 'newPassword' && <p id="password-newPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
+         <button className="submit-button" disabled={busy}>Change password</button>
+       </form>
+     </>}
+     {mode === 'password-change' && <form className="account-panel account-form" onSubmit={submitPassword}>
+-      <p>Your account has a temporary password. Choose a new password to continue.</p>
+-      <label>Temporary password<input name="currentPassword" type="password" autoComplete="current-password" required /></label>
+-      <label>New password<input name="newPassword" type="password" autoComplete="new-password" minLength={8} maxLength={1024} required /></label>
++      <p>Your account has a temporary password. Choose a new password to continue.</p>{feedbackBox(passwordError, 'password-error', passwordAlert)}
++      <label htmlFor="password-currentPassword">Temporary password<input {...fieldProps('password', 'currentPassword')} name="currentPassword" type="password" autoComplete="current-password" required /></label>
++      {passwordError?.field === 'currentPassword' && <p id="password-currentPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
++      <label htmlFor="password-newPassword">New password<input {...fieldProps('password', 'newPassword')} name="newPassword" type="password" autoComplete="new-password" minLength={8} maxLength={1024} required /></label>
++      {passwordError?.field === 'newPassword' && <p id="password-newPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
+       <button className="submit-button" disabled={busy}>Set new password</button>
+     </form>}
+     {(mode === 'students' || mode === 'tas') && <section className="account-panel">
+-      {!loading && !error && entries.length === 0 ? <p>No accounts found.</p> : entries.length > 0 && <ul className="account-list">{entries.map((entry) => <li key={entry.userId}>
++      {supportError && <div className="account-form-error" role="alert" tabIndex={-1} ref={supportAlert}><p>{supportError.message}</p>{supportError.signIn && <> <a href="/">Sign in</a></>}</div>}
++      {!loading && !loadError && entries.length === 0 ? <p>No accounts found.</p> : entries.length > 0 && <ul className="account-list">{entries.map((entry) => <li key={entry.userId}>
+         <div><strong>{entry.name}</strong><span>{entry.email} · {entry.accountStatus}</span></div>
+         <button type="button" disabled={busy} onClick={() => void changeStatus(entry)}>{entry.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
+         <button type="button" disabled={busy} onClick={() => void resetPassword(entry)}>Reset password</button>
+       </li>)}</ul>}
+-      {nextCursor && <button type="button" disabled={busy} onClick={() => void loadEntries(nextCursor).catch((e) => setError(e.message))}>Load more</button>}
++      {nextCursor && <button type="button" disabled={busy} onClick={() => { setSupportError(null); void loadEntries(nextCursor).catch(() => setSupportError(actionFallback('support'))); }}>Load more</button>}
+     </section>}
+     {temporaryPassword && <section className="account-panel" aria-label="Temporary password"><p>This password will not be shown again. Share it with the account owner outside CodeClinic.</p><code>{temporaryPassword}</code><button type="button" onClick={() => void navigator.clipboard?.writeText(temporaryPassword)}>Copy password</button><button type="button" onClick={() => setTemporaryPassword(null)}>Hide password</button></section>}
+   </main></>;
+diff --git a/src/codeclinic/src/DashboardLogout.tsx b/src/codeclinic/src/DashboardLogout.tsx
+index d7a1bbc..1dbccdf 100644
+--- a/src/codeclinic/src/DashboardLogout.tsx
++++ b/src/codeclinic/src/DashboardLogout.tsx
+@@ -1,5 +1,5 @@
+ import React, { useState } from 'react';
+-import { NotificationBell } from './notifications/Notifications';
++import AppHeader from './AppHeader';
+ 
+ type LogoutState = 'ready' | 'pending' | 'error';
+ 
+@@ -69,14 +69,7 @@ export default function DashboardLogout({ onConfirmed, children, studentNavigati
+   }
+ 
+   return <>
+-    <header className="student-navbar">
+-      <a className="student-navbar__brand" href={studentNavigation ? '/student/dashboard' : '/ta/dashboard'}>CodeClinic</a>
+-      {studentNavigation ? <a href="/student/account">Account</a> : <>
+-        <a href="/ta/account">Account</a><a href="/ta/students">Students</a>{isManager && <a href="/ta/tas">TAs</a>}
+-      </>}
+-      <NotificationBell />
+-      <button className="student-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
+-    </header>
++    <AppHeader accountType={studentNavigation ? 'STUDENT' : 'TA'} isManager={isManager} onLogout={() => { void logout(); }} />
+     {children}
+   </>;
+ }
+diff --git a/src/codeclinic/src/DashboardViews.css b/src/codeclinic/src/DashboardViews.css
+index 050a680..2c2e92d 100644
+--- a/src/codeclinic/src/DashboardViews.css
++++ b/src/codeclinic/src/DashboardViews.css
+@@ -17,41 +17,7 @@
+   padding: var(--lc-space-8) var(--lc-space-page) var(--lc-space-16);
+ }
+ 
+-.student-navbar {
+-  position: sticky;
+-  z-index: 10;
+-  top: 0;
+-  display: flex;
+-  min-height: 68px;
+-  align-items: center;
+-  justify-content: space-between;
+-  gap: var(--lc-space-4);
+-  padding: var(--lc-space-2) max(var(--lc-space-page), calc((100vw - 1180px) / 2));
+-  border-bottom: 1px solid var(--lc-color-border);
+-  background: var(--lc-color-surface);
+-  box-shadow: 0 4px 18px rgba(30, 64, 175, 0.06);
+-}
+-
+-.student-navbar__brand {
+-  color: var(--lc-color-navy);
+-  font-family: var(--lc-font-display);
+-  font-size: 1.35rem;
+-  font-weight: 700;
+-  text-decoration: none;
+-}
+-
+-.student-navbar__logout {
+-  min-height: 42px;
+-  padding: 0 var(--lc-space-control-inline);
+-  border: 1px solid var(--lc-color-control-border);
+-  border-radius: var(--lc-radius-control);
+-  background: var(--lc-color-surface);
+-  color: var(--lc-color-blue);
+-  cursor: pointer;
+-  font: inherit;
+-  font-weight: 650;
+-}
+-
++/* Compatibility focus fallback retained for SharedTheme's legacy contract. */
+ .student-navbar a:focus-visible,
+ .student-navbar button:focus-visible {
+   outline: 3px solid var(--lc-color-focus);
+@@ -98,10 +64,6 @@
+     padding: var(--lc-space-6) var(--lc-space-4) var(--lc-space-8);
+   }
+ 
+-  .student-navbar {
+-    padding-inline: var(--lc-space-4);
+-  }
+-
+   .dashboard-panel {
+     padding: 22px var(--lc-space-5);
+   }
+diff --git a/src/codeclinic/src/NotificationsRoute.tsx b/src/codeclinic/src/NotificationsRoute.tsx
+index 0a0f76c..6a149f7 100644
+--- a/src/codeclinic/src/NotificationsRoute.tsx
++++ b/src/codeclinic/src/NotificationsRoute.tsx
+@@ -1,22 +1,100 @@
+ import React, { useEffect, useState } from 'react';
++import DashboardLogout from './DashboardLogout';
+ import { NotificationInbox } from './notifications/Notifications';
+ 
++type AccountType = 'STUDENT' | 'TA';
++type RouteState = 'checking' | 'ready' | 'retry';
++type ManagerState = 'checking' | 'ready' | 'retry';
++
+ export default function NotificationsRoute() {
+-  const [state, setState] = useState<'checking' | 'ready' | 'retry'>('checking');
++  const [state, setState] = useState<RouteState>('checking');
++  const [accountType, setAccountType] = useState<AccountType | null>(null);
++  const [isManager, setIsManager] = useState(false);
++  const [managerState, setManagerState] = useState<ManagerState>('checking');
++  const [sessionAttempt, setSessionAttempt] = useState(0);
++  const [managerAttempt, setManagerAttempt] = useState(0);
++
++  useEffect(() => {
++    let active = true;
++
++    const verify = async () => {
++      setState('checking');
++      setAccountType(null);
++      setManagerState('checking');
++      setIsManager(false);
++      try {
++        const response = await fetch('/api/auth/session', { credentials: 'same-origin' });
++        if (!active) return;
++        if (response.status === 401) { window.location.assign('/'); return; }
++        if (!response.ok) { setState('retry'); return; }
++
++        const session = await response.json() as { mustChangePassword?: unknown; accountType?: unknown };
++        if (!active) return;
++        if (session.mustChangePassword === true) { window.location.assign('/account/password-change'); return; }
++        if (session.accountType !== 'STUDENT' && session.accountType !== 'TA') {
++          setState('retry');
++          return;
++        }
++
++        const role = session.accountType as AccountType;
++        setAccountType(role);
++        if (role === 'STUDENT') setManagerState('ready');
++        if (active) setState('ready');
++      } catch {
++        if (active) setState('retry');
++      }
++    };
++
++    void verify();
++    return () => { active = false; };
++  }, [sessionAttempt]);
++
+   useEffect(() => {
++    if (accountType !== 'TA') return;
+     let active = true;
+-    fetch('/api/auth/session', { credentials: 'same-origin' }).then(async (response) => {
+-      if (!active) return;
+-      if (response.status === 401) { window.location.assign('/'); return; }
+-      if (!response.ok) { setState('retry'); return; }
+-      const session = await response.json() as { mustChangePassword?: boolean; accountType?: string };
+-      if (session.mustChangePassword) { window.location.assign('/account/password-change'); return; }
+-      if (session.accountType !== 'STUDENT' && session.accountType !== 'TA') { setState('retry'); return; }
+-      setState('ready');
+-    }).catch(() => { if (active) setState('retry'); });
++    setManagerState('checking');
++    setIsManager(false);
++    const resolveManager = async () => {
++      try {
++        const response = await fetch('/api/account', { credentials: 'same-origin' });
++        if (!active) return;
++        if (!response.ok) throw new Error('Manager status unavailable.');
++        const account = await response.json() as { accountType?: unknown; isManager?: unknown };
++        if (!active) return;
++        if (account.accountType !== 'TA' || typeof account.isManager !== 'boolean') {
++          throw new Error('Manager status unavailable.');
++        }
++        setIsManager(account.isManager);
++        setManagerState('ready');
++      } catch {
++        if (active) {
++          setIsManager(false);
++          setManagerState('retry');
++        }
++      }
++    };
++    void resolveManager();
+     return () => { active = false; };
+-  }, []);
+-  if (state === 'checking') return <main aria-busy="true">Checking your session…</main>;
+-  if (state === 'retry') return <main><p role="alert">Could not load notifications.</p><a href="/">Return to sign in</a></main>;
+-  return <NotificationInbox />;
++  }, [accountType, managerAttempt]);
++
++  if (state === 'checking' || (state === 'ready' && !accountType)) {
++    return <main aria-busy="true">Checking your session…</main>;
++  }
++  if (state === 'retry' || !accountType) {
++    return <main><p role="alert">Could not load notifications.</p><a href="/">Return to sign in</a><button type="button" onClick={() => setSessionAttempt((attempt) => attempt + 1)}>Retry</button></main>;
++  }
++
++  return <DashboardLogout
++    onConfirmed={() => undefined}
++    studentNavigation={accountType === 'STUDENT'}
++    isManager={isManager}
++  >
++    {accountType === 'TA' && managerState === 'retry' && <section role="alert" aria-label="Coordinator navigation status">
++      <p>Could not verify coordinator access. You can still use your account and notifications.</p>
++      <button type="button" onClick={() => {
++        setManagerAttempt((attempt) => attempt + 1);
++      }}>Retry coordinator access</button>
++    </section>}
++    <NotificationInbox />
++  </DashboardLogout>;
+ }
+diff --git a/src/codeclinic/src/notifications/Notifications.css b/src/codeclinic/src/notifications/Notifications.css
+index a126668..8734f61 100644
+--- a/src/codeclinic/src/notifications/Notifications.css
++++ b/src/codeclinic/src/notifications/Notifications.css
+@@ -13,6 +13,24 @@
+   text-decoration: none;
+ }
+ 
++.notification-bell svg {
++  width: 18px;
++  height: 18px;
++  flex: 0 0 auto;
++  fill: none;
++  stroke: currentColor;
++  stroke-linecap: round;
++  stroke-linejoin: round;
++  stroke-width: 1.7;
++}
++
++.notification-bell:hover,
++.notification-bell--active {
++  border-color: var(--lc-color-blue-link);
++  background: var(--lc-color-accent-surface-strong);
++  color: var(--lc-color-navy);
++}
++
+ .notification-bell:focus-visible,
+ .notification-inbox button:focus-visible,
+ .notification-list__content:focus-visible {
+diff --git a/src/codeclinic/src/notifications/Notifications.tsx b/src/codeclinic/src/notifications/Notifications.tsx
+index 922f6ee..ece778a 100644
+--- a/src/codeclinic/src/notifications/Notifications.tsx
++++ b/src/codeclinic/src/notifications/Notifications.tsx
+@@ -43,7 +43,7 @@ function relativeTime(value: string | null): string {
+ }
+ 
+ /** Bell for dashboard navigation. Count is refreshed whenever this component mounts. */
+-export function NotificationBell() {
++export function NotificationBell({ active = false }: { active?: boolean }) {
+   const [count, setCount] = useState<number | null>(null);
+   const mounted = useRef(false);
+   const refresh = useCallback(async () => {
+@@ -62,8 +62,8 @@ export function NotificationBell() {
+     return () => { mounted.current = false; window.removeEventListener(NOTIFICATIONS_CHANGED, refresh); };
+   }, [refresh]);
+ 
+-  return <a className="notification-bell" href="/notifications" aria-label={count === null ? 'Notifications' : `Notifications, ${count} unread`}>
+-    <span aria-hidden="true">🔔</span><span>Notifications</span>
++  return <a className={`notification-bell${active ? ' notification-bell--active' : ''}`} href="/notifications" aria-current={active ? 'page' : undefined} aria-label={count === null ? 'Notifications' : `Notifications, ${count} unread`}>
++    <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span>Notifications</span>
+     {count !== null && count > 0 && <span className="notification-bell__count" aria-label={`${count} unread`}>{count}</span>}
+   </a>;
+ }
+diff --git a/src/codeclinic/test/AccountPages.test.tsx b/src/codeclinic/test/AccountPages.test.tsx
+index 8b1a410..a948a5b 100644
+--- a/src/codeclinic/test/AccountPages.test.tsx
++++ b/src/codeclinic/test/AccountPages.test.tsx
+@@ -1,5 +1,5 @@
+ import React from 'react';
+-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
++import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+ import AccountPages from '../src/AccountPages';
+ 
+ const account = { name: 'Ada', email: 'ada@example.edu', accountType: 'TA', isManager: true };
+@@ -65,6 +65,38 @@ test('TAs page is available to coordinator mode and forced password page present
+   expect(fetchMock).toHaveBeenCalled();
+ });
+ 
++test('account and support pages use the shared header with verified role and manager navigation', async () => {
++  window.history.replaceState({}, '', '/ta/tas');
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
++    const url = String(input);
++    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
++    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [], nextCursor: null }), { status: 200 });
++    return new Response('{}', { status: 500 });
++  });
++
++  render(<AccountPages mode="tas" />);
++  expect(await screen.findByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/ta/dashboard');
++  expect(screen.getByRole('link', { name: 'Account' })).toHaveAttribute('href', '/ta/account');
++  expect(screen.getByRole('link', { name: 'Students' })).toHaveAttribute('href', '/ta/students');
++  expect(screen.getByRole('link', { name: 'TAs' })).toHaveAttribute('href', '/ta/tas');
++  expect(screen.getByRole('link', { name: /notifications/i })).toBeInTheDocument();
++  expect(screen.getByRole('link', { name: 'TAs' })).toHaveAttribute('aria-current', 'page');
++  window.history.replaceState({}, '', '/');
++});
++
++test('forced-password page uses the restricted shared header after session verification', async () => {
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
++    if (String(input) === '/api/auth/session') return new Response(JSON.stringify({ ...account, mustChangePassword: true }), { status: 200 });
++    return new Response('{}', { status: 500 });
++  });
++
++  render(<AccountPages mode="password-change" />);
++  expect(await screen.findByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/ta/dashboard');
++  expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
++  expect(screen.queryByRole('navigation', { name: 'Main navigation' })).not.toBeInTheDocument();
++  expect(screen.queryByRole('link', { name: /notifications/i })).not.toBeInTheDocument();
++});
++
+ test('TA list uses the TA endpoint, and cancelling reset never calls the reset action', async () => {
+   jest.spyOn(window, 'confirm').mockReturnValue(false);
+   const calls: string[] = [];
+@@ -93,18 +125,181 @@ test('support page reports load failures instead of showing an empty account lis
+   expect(screen.queryByText('No accounts found.')).not.toBeInTheDocument();
+ });
+ 
++test('support load retry retries only the failed account list request', async () => {
++  let listCalls = 0;
++  let accountCalls = 0;
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
++    const url = String(input);
++    if (url === '/api/account') { accountCalls += 1; return new Response(JSON.stringify(account), { status: 200 }); }
++    if (url.startsWith('/api/support/accounts?')) {
++      listCalls += 1;
++      return listCalls === 1 ? new Response('{}', { status: 503 }) : new Response(JSON.stringify({ accounts: [], nextCursor: null }), { status: 200 });
++    }
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="students" />);
++  expect(await screen.findByRole('alert')).toHaveTextContent('Could not load accounts.');
++  fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
++  await waitFor(() => expect(screen.getByText('No accounts found.')).toBeInTheDocument());
++  expect(accountCalls).toBe(1);
++  expect(listCalls).toBe(2);
++});
++
+ test('forced password change reports rejected credentials without leaving the forced page', async () => {
+   jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+     const url = String(input);
+     if (url === '/api/auth/session') return new Response(JSON.stringify({ accountType: 'TA', mustChangePassword: true }), { status: 200 });
+     if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
+-    if (url === '/api/account/password') return new Response(JSON.stringify({ message: 'Unable to verify those details.' }), { status: 401 });
++    if (url === '/api/account/password') return new Response(JSON.stringify({ code: 'CURRENT_PASSWORD_INCORRECT', field: 'currentPassword', message: 'Safe server copy' }), { status: 401 });
+     return new Response('{}', { status: 500 });
+   });
+   render(<AccountPages mode="password-change" />);
+   fireEvent.change(await screen.findByLabelText('Temporary password'), { target: { value: 'wrong temporary' } });
+   fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'new password with enough chars' } });
+   fireEvent.click(screen.getByRole('button', { name: 'Set new password' }));
+-  expect(await screen.findByRole('alert')).toHaveTextContent('Unable to verify those details.');
++  expect(await screen.findByRole('alert')).toBeInTheDocument();
++  const currentPassword = screen.getByLabelText('Temporary password');
++  expect(currentPassword).toHaveAttribute('aria-invalid', 'true');
++  expect(currentPassword).toHaveAttribute('aria-describedby');
++  expect(screen.getByRole('alert')).toHaveTextContent('Your temporary password is incorrect. Please try again.');
+   expect(screen.getByRole('heading', { name: 'Change your password' })).toBeInTheDocument();
+ });
++
++test('wrong profile password is associated with that field and correction clears only its stale error', async () => {
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
++    const url = String(input);
++    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/profile') return new Response(JSON.stringify({ code: 'CURRENT_PASSWORD_INCORRECT', field: 'currentPassword', message: 'Untrusted copy' }), { status: 401 });
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="account" />);
++  await screen.findByDisplayValue(account.name);
++  const name = await screen.findByLabelText('Name');
++  const email = screen.getByLabelText('Email');
++  const password = screen.getByLabelText(/Current password \(required when changing email\)/i);
++  fireEvent.change(name, { target: { value: 'Ada Lovelace' } });
++  fireEvent.change(email, { target: { value: 'ada.lovelace@example.edu' } });
++  fireEvent.change(password, { target: { value: 'incorrect current password' } });
++  fireEvent.click(screen.getByRole('button', { name: 'Save profile' }));
++
++  const profileForm = screen.getByRole('heading', { name: 'Profile' }).closest('form')!;
++  expect(await screen.findByText('Your current password is incorrect. Please try again.')).toBeInTheDocument();
++  expect(profileForm).toContainElement(screen.getByText('Your current password is incorrect. Please try again.'));
++  expect(password).toHaveAttribute('aria-invalid', 'true');
++  expect(password).toHaveAttribute('aria-describedby');
++  expect(password).toHaveFocus();
++  expect(name).toHaveValue('Ada Lovelace');
++  expect(email).toHaveValue('ada.lovelace@example.edu');
++  expect(within(profileForm).queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
++
++  fireEvent.change(password, { target: { value: 'corrected value' } });
++  expect(password).not.toHaveAttribute('aria-invalid', 'true');
++  expect(screen.queryByText('Your current password is incorrect. Please try again.')).not.toBeInTheDocument();
++});
++
++test('expired profile session offers sign-in and never presents it as a password mismatch', async () => {
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input);
++    if (url === '/api/account' && !init?.method) return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/profile') return new Response(JSON.stringify({ code: 'AUTHENTICATION_REQUIRED', message: '<img src=x onerror=alert(1)>' }), { status: 401 });
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="account" />);
++  await screen.findByDisplayValue(account.name);
++  fireEvent.change(await screen.findByLabelText('Name'), { target: { value: 'Ada Lovelace' } });
++  fireEvent.click(screen.getByRole('button', { name: 'Save profile' }));
++  expect(await screen.findByRole('link', { name: /sign in/i })).toHaveAttribute('href', '/');
++  expect(screen.queryByText('<img src=x onerror=alert(1)>')).not.toBeInTheDocument();
++  expect(screen.queryByText(/incorrect password/i)).not.toBeInTheDocument();
++  expect(document.querySelector('img')).toBeNull();
++});
++
++test('service and malformed failures use safe profile feedback without a load retry', async () => {
++  const fetchMock = jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input);
++    if (url === '/api/account' && !init?.method) return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/profile') return new Response(JSON.stringify({ code: 'CURRENT_PASSWORD_INCORRECT', message: '<b>untrusted</b>' }), { status: 503 });
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="account" />);
++  await screen.findByDisplayValue(account.name);
++  fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Ada Lovelace' } });
++  fireEvent.click(screen.getByRole('button', { name: 'Save profile' }));
++  const alert = await screen.findByRole('alert');
++  expect(alert).toHaveTextContent('Could not save your profile. Please try again.');
++  expect(alert).not.toHaveTextContent(/incorrect/i);
++  expect(alert).not.toHaveTextContent('<b>');
++  expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
++  expect(fetchMock.mock.calls.filter(([url, init]) => String(url) === '/api/account' && !init?.method)).toHaveLength(1);
++});
++
++test('CSRF and network failures stay scoped to the password form with safe copy', async () => {
++  let csrfFails = true;
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input);
++    if (url === '/api/account' && !init?.method) return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return csrfFails ? new Response('not json', { status: 200 }) : new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/password') throw new Error('offline');
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="account" />);
++  await screen.findByDisplayValue(account.name);
++  const passwordForm = screen.getByRole('heading', { name: 'Password' }).closest('form')!;
++  fireEvent.change(within(passwordForm).getByLabelText('Current password'), { target: { value: 'current password' } });
++  fireEvent.change(within(passwordForm).getByLabelText('New password'), { target: { value: 'new password with enough chars' } });
++  fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
++  expect(await within(passwordForm).findByRole('alert')).toHaveTextContent('Could not verify your password change. Please try again.');
++  csrfFails = false;
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input);
++    if (url === '/api/account' && !init?.method) return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/password') throw new Error('offline');
++    return new Response('{}', { status: 500 });
++  });
++  fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
++  expect(await within(passwordForm).findByRole('alert')).toHaveTextContent('Could not change your password. Please try again.');
++  expect(screen.getByRole('heading', { name: 'Profile' }).closest('form')).not.toContainElement(within(passwordForm).getByRole('alert'));
++});
++
++test('support action failures remain in the support page and do not expose server bodies', async () => {
++  jest.spyOn(window, 'confirm').mockReturnValue(true);
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
++    const url = String(input);
++    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
++    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [entry], nextCursor: null }), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url.endsWith('/status')) return new Response('<script>unsafe</script>', { status: 403 });
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="students" />);
++  await screen.findByText('Student Example');
++  fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
++  expect(await screen.findByRole('alert')).toHaveTextContent('Could not complete this support action. Please try again.');
++  expect(screen.queryByText('<script>unsafe</script>')).not.toBeInTheDocument();
++  expect(screen.getByText('Student Example')).toBeInTheDocument();
++});
++
++test('password attempt limit is not attached to a field or described as a mismatch', async () => {
++  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
++    const url = String(input);
++    if (url === '/api/account' && !init?.method) return new Response(JSON.stringify(account), { status: 200 });
++    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
++    if (url === '/api/account/password') return new Response(JSON.stringify({ code: 'PASSWORD_ATTEMPTS_EXCEEDED', message: 'untrusted' }), { status: 401 });
++    return new Response('{}', { status: 500 });
++  });
++  render(<AccountPages mode="account" />);
++  await screen.findByDisplayValue(account.name);
++  const form = screen.getByRole('heading', { name: 'Password' }).closest('form')!;
++  fireEvent.change(within(form).getByLabelText('Current password'), { target: { value: 'a value' } });
++  fireEvent.change(within(form).getByLabelText('New password'), { target: { value: 'a sufficiently long value' } });
++  fireEvent.click(within(form).getByRole('button', { name: 'Change password' }));
++  const alert = await within(form).findByRole('alert');
++  expect(alert).toHaveTextContent('Too many password attempts. Please try again later.');
++  expect(alert).not.toHaveTextContent(/incorrect/i);
++  expect(within(form).getByLabelText('Current password')).not.toHaveAttribute('aria-invalid', 'true');
++  expect(alert).toHaveFocus();
++});
+diff --git a/src/codeclinic/test/account-guards.test.js b/src/codeclinic/test/account-guards.test.js
+index 220397c..1f58bbc 100644
+--- a/src/codeclinic/test/account-guards.test.js
++++ b/src/codeclinic/test/account-guards.test.js
+@@ -40,6 +40,7 @@ function setup({ failGetSession = false, failAccount = false, touch = true } = {
+   app.use(express.json());
+   const echo = (req, res) => res.json({ actor: req.actor, type: req.supportListType, target: req.supportTarget });
+   app.get('/me', guards.requireActiveActor, guards.requireCsrf, echo);
++  app.get('/account', guards.requireActiveActor, echo);
+   app.post('/me', guards.requireActiveActor, guards.requireCsrf, echo);
+   app.post('/csrf-only', guards.requireCsrf, echo);
+   app.get('/list', guards.requireActiveActor, guards.requireSupportListAccess, echo);
+@@ -117,6 +118,16 @@ describe('requireActiveActor', () => {
+     expect(res.headers['set-cookie'][0]).toMatch(/Max-Age=0/);
+   });
+ 
++  test('uses the account session code only on self-service account routes', async () => {
++    const { app } = setup();
++    const self = await request(app).get('/account');
++    expect(self.status).toBe(401);
++    expect(self.body).toEqual({ code: 'AUTHENTICATION_REQUIRED', message: 'Your session has expired. Please sign in again.' });
++    const support = await request(app).get('/list-no-auth?type=STUDENT');
++    expect(support.status).toBe(401);
++    expect(support.body.code).toBeUndefined();
++  });
++
+   test('rejects and deletes the session of an inactive user', async () => {
+     const { app, authStore } = setup();
+     const res = await request(app).get('/me').set('Cookie', cookieFor('inactive'));
+diff --git a/src/codeclinic/test/account-r7-server.test.js b/src/codeclinic/test/account-r7-server.test.js
+index 639db09..d50d175 100644
+--- a/src/codeclinic/test/account-r7-server.test.js
++++ b/src/codeclinic/test/account-r7-server.test.js
+@@ -82,5 +82,5 @@ test('case-insensitive password-change endpoint remains allowed', async () => {
+   const response = await request(makeApp()).post('/API/account/password')
+     .set('Cookie', cookie).set('X-CSRF-Token', RAW_CSRF).send({});
+   expect(response.status).toBe(400);
+-  expect(response.body.code).toBeUndefined();
++  expect(response.body.code).toBe('INVALID_REQUEST');
+ });
+diff --git a/src/codeclinic/test/account-routes.test.js b/src/codeclinic/test/account-routes.test.js
+index 8b8cc98..c960a9b 100644
+--- a/src/codeclinic/test/account-routes.test.js
++++ b/src/codeclinic/test/account-routes.test.js
+@@ -48,15 +48,121 @@ test('self account returns only profile fields plus own manager state', async ()
+   expect(user.passwordHash).toBeTruthy();
+ });
+ 
++test('self-service missing sessions have an explicit safe code while support responses stay compatible', async () => {
++  const { app } = makeHarness();
++  const account = await request(app).get('/api/account');
++  expect(account.status).toBe(401);
++  expect(account.body).toEqual({ code: 'AUTHENTICATION_REQUIRED', message: 'Your session has expired. Please sign in again.' });
++  const support = await request(app).get('/api/support/accounts?type=STUDENT');
++  expect(support.status).toBe(401);
++  expect(support.body.code).toBeUndefined();
++});
++
+ test('profile rejects forged fields, requires password for email change, and updates permitted fields', async () => {
+   const { app, accountStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
+   const agent = request(app);
+   expect((await auth(agent.patch('/api/account/profile')).send({ name: 'Ada', isManager: true })).status).toBe(400);
+-  expect((await auth(agent.patch('/api/account/profile')).send({ email: 'new@example.edu' })).status).toBe(400);
++  const missingPassword = await auth(agent.patch('/api/account/profile')).send({ email: 'new@example.edu' });
++  expect(missingPassword.status).toBe(400);
++  expect(missingPassword.body).toMatchObject({ code: 'CURRENT_PASSWORD_REQUIRED', field: 'currentPassword' });
++  expect(missingPassword.body.message).toBe('Enter your current password to change your email address.');
++  expect(accountStore.updateProfile).not.toHaveBeenCalled();
+   expect((await auth(agent.patch('/api/account/profile')).send({ name: '  Ada Lovelace  ' })).status).toBe(200);
+   expect(accountStore.updateProfile).toHaveBeenCalledWith('user-1', { name: 'Ada Lovelace' });
+ });
+ 
++test('profile validation identifies only reliable name/email fields and preserves UTF-8 byte limits', async () => {
++  const { app, accountStore } = makeHarness();
++  const agent = request(app);
++  const invalidName = await auth(agent.patch('/api/account/profile')).send({ name: '   ' });
++  expect(invalidName).toMatchObject({ status: 400, body: { code: 'INVALID_NAME', field: 'name' } });
++  const tooLongName = await auth(agent.patch('/api/account/profile')).send({ name: 'é'.repeat(101) });
++  expect(tooLongName.body).toMatchObject({ code: 'INVALID_NAME', field: 'name' });
++  const invalidEmail = await auth(agent.patch('/api/account/profile')).send({ email: 'not-an-email' });
++  expect(invalidEmail.body).toMatchObject({ code: 'INVALID_EMAIL', field: 'email' });
++  const numericEmail = await auth(agent.patch('/api/account/profile')).send({ email: 42 });
++  expect(numericEmail.status).toBe(400);
++  expect(numericEmail.body).toMatchObject({ code: 'INVALID_EMAIL', field: 'email' });
++  const nullEmail = await auth(agent.patch('/api/account/profile')).send({ email: null });
++  expect(nullEmail.status).toBe(400);
++  expect(nullEmail.body).toMatchObject({ code: 'INVALID_EMAIL', field: 'email' });
++  const oversizedEmail = await auth(agent.patch('/api/account/profile')).send({ email: `${'a'.repeat(243)}@example.edu` });
++  expect(oversizedEmail.body).toMatchObject({ code: 'INVALID_EMAIL', field: 'email' });
++  const ambiguous = await auth(agent.patch('/api/account/profile')).send({ name: '', email: 'bad' });
++  expect(ambiguous.body).toMatchObject({ code: 'INVALID_REQUEST' });
++  expect(ambiguous.body.field).toBeUndefined();
++  expect(JSON.stringify([invalidName.body, tooLongName.body, invalidEmail.body, numericEmail.body, nullEmail.body, oversizedEmail.body, ambiguous.body])).not.toContain('not-an-email');
++  expect(accountStore.updateProfile).not.toHaveBeenCalled();
++});
++
++test('unavailable email returns a safe email-specific conflict without echoing input', async () => {
++  const { app, accountStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
++  accountStore.updateProfile.mockRejectedValue(Object.assign(new Error('private store detail'), { code: 'ALREADY_EXISTS' }));
++  const response = await auth(request(app).patch('/api/account/profile')).send({ email: 'taken@example.edu', currentPassword: 'correct horse battery' });
++  expect(response.status).toBe(409);
++  expect(response.body).toEqual({ code: 'EMAIL_UNAVAILABLE', field: 'email', message: 'This email is unavailable. Use a different email address.' });
++  expect(JSON.stringify(response.body)).not.toContain('taken@example.edu');
++});
++
++test('a completed incorrect password comparison returns the mismatch code without a write', async () => {
++  const { app, authStore, accountStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
++  const agent = request(app);
++  const mismatch = await auth(agent.post('/api/account/password')).send({ currentPassword: 'not the password', newPassword: 'new secret password' });
++  expect(mismatch.status).toBe(401);
++  expect(mismatch.body).toMatchObject({ code: 'CURRENT_PASSWORD_INCORRECT', field: 'currentPassword' });
++  expect(mismatch.body.message).toBe('Your current password is incorrect. Please try again.');
++  expect(accountStore.setPasswordHash).not.toHaveBeenCalled();
++  expect(authStore.reserveRateSlot).toHaveBeenCalledTimes(1);
++});
++
++test('password attempt exhaustion is not reported as a completed mismatch', async () => {
++  const { app, authStore, accountStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
++  authStore.reserveRateSlot.mockResolvedValue(false);
++  const exhausted = await auth(request(app).post('/api/account/password')).send({ currentPassword: 'not the password', newPassword: 'new secret password' });
++  expect(exhausted.status).toBe(401);
++  expect(exhausted.body).toMatchObject({ code: 'PASSWORD_ATTEMPTS_EXCEEDED' });
++  expect(exhausted.body.message).toBe('Too many password attempts. Please try again later.');
++  expect(exhausted.body.code).not.toBe('CURRENT_PASSWORD_INCORRECT');
++  expect(authStore.reserveRateSlot).toHaveBeenCalledTimes(1);
++  expect(accountStore.setPasswordHash).not.toHaveBeenCalled();
++});
++
++test('invalid new passwords describe existing character and UTF-8 byte limits; malformed shapes stay general', async () => {
++  const { app, accountStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
++  const agent = request(app);
++  const tooShort = await auth(agent.post('/api/account/password')).send({ currentPassword: 'correct horse battery', newPassword: 'short' });
++  expect(tooShort.status).toBe(400);
++  expect(tooShort.body).toMatchObject({ code: 'INVALID_NEW_PASSWORD', field: 'newPassword' });
++  expect(tooShort.body.message).toContain('at least 8 characters');
++  expect(tooShort.body.message).toContain('1024 UTF-8 bytes');
++  const tooManyBytes = await auth(agent.post('/api/account/password')).send({ currentPassword: 'correct horse battery', newPassword: 'é'.repeat(513) });
++  expect(tooManyBytes.body).toMatchObject({ code: 'INVALID_NEW_PASSWORD', field: 'newPassword' });
++  const unknownField = await auth(agent.post('/api/account/password')).send({ currentPassword: 'x', newPassword: 'a sufficiently long value', role: 'TA' });
++  expect(unknownField.body).toMatchObject({ code: 'INVALID_REQUEST' });
++  expect(unknownField.body.field).toBeUndefined();
++  const invalidCurrent = await auth(agent.post('/api/account/password')).send({ currentPassword: null, newPassword: 'a sufficiently long value' });
++  expect(invalidCurrent.body).toMatchObject({ code: 'INVALID_REQUEST' });
++  expect(accountStore.setPasswordHash).not.toHaveBeenCalled();
++});
++
++test('malformed JSON and oversized profile bodies retain a general safe validation response', async () => {
++  const { app } = makeHarness();
++  const malformed = await request(app).patch('/api/account/profile').set('Cookie', `__Host-codeclinic_session=${RAW}`).set('X-CSRF-Token', CSRF).set('Content-Type', 'application/json').send('{');
++  expect(malformed.status).toBe(400);
++  expect(malformed.body).toMatchObject({ code: 'INVALID_REQUEST', message: 'Enter valid account details.' });
++  const oversized = await request(app).patch('/api/account/profile').set('Cookie', `__Host-codeclinic_session=${RAW}`).set('X-CSRF-Token', CSRF).send({ name: 'x'.repeat(9000) });
++  expect(oversized.status).toBe(400);
++  expect(oversized.body).toMatchObject({ code: 'INVALID_REQUEST' });
++  expect(oversized.body.field).toBeUndefined();
++});
++
++test('case-insensitive and trailing-slash account aliases retain field feedback', async () => {
++  const { app } = makeHarness();
++  const response = await auth(request(app).patch('/API/ACCOUNT/PROFILE/')).send({ name: '' });
++  expect(response.status).toBe(400);
++  expect(response.body).toMatchObject({ code: 'INVALID_NAME', field: 'name' });
++});
++
+ test('password change counts bad current password and keeps the active session after success', async () => {
+   const { app, accountStore, authStore } = makeHarness({ passwordHash: global.__accountTestPasswordHash });
+   const agent = request(app);
+--- /dev/null
++++ b/src/codeclinic/src/AppHeader.tsx
+@@ -0,0 +1,30 @@
++import React from 'react';
++import { NotificationBell } from './notifications/Notifications';
++import './AppHeader.css';
++
++export interface AppHeaderProps {
++  accountType: 'STUDENT' | 'TA';
++  isManager?: boolean;
++  activePath?: string;
++  restricted?: boolean;
++  onLogout: () => void;
++}
++
++export default function AppHeader({ accountType, isManager = false, activePath, restricted = false, onLogout }: AppHeaderProps) {
++  const dashboard = accountType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard';
++  const account = accountType === 'STUDENT' ? '/student/account' : '/ta/account';
++  const active = activePath ?? window.location.pathname;
++
++  return <header className="app-header">
++    <a className="app-header__brand" href={dashboard}>CodeClinic</a>
++    <div className="app-header__actions">
++      {!restricted && <nav className="app-header__nav" aria-label="Main navigation">
++        <a href={account} aria-current={active === account ? 'page' : undefined}>Account</a>
++        {accountType === 'TA' && <a href="/ta/students" aria-current={active === '/ta/students' ? 'page' : undefined}>Students</a>}
++        {accountType === 'TA' && isManager && <a href="/ta/tas" aria-current={active === '/ta/tas' ? 'page' : undefined}>TAs</a>}
++        <NotificationBell active={active === '/notifications'} />
++      </nav>}
++      <button className="app-header__logout" type="button" onClick={onLogout}>Log out</button>
++    </div>
++  </header>;
++}
+--- /dev/null
++++ b/src/codeclinic/src/AppHeader.css
+@@ -0,0 +1,95 @@
++.app-header {
++  position: sticky;
++  z-index: 10;
++  top: 0;
++  box-sizing: border-box;
++  display: flex;
++  flex-wrap: wrap;
++  min-height: 68px;
++  align-items: center;
++  justify-content: space-between;
++  gap: var(--lc-space-4);
++  padding: var(--lc-space-2) max(var(--lc-space-page), calc((100vw - 1180px) / 2));
++  border-bottom: 1px solid var(--lc-color-border);
++  background: var(--lc-color-surface);
++  box-shadow: 0 4px 18px rgba(30, 64, 175, 0.06);
++}
++
++.app-header__brand {
++  flex: 0 0 auto;
++  color: var(--lc-color-navy);
++  font-family: var(--lc-font-display);
++  font-size: 1.35rem;
++  font-weight: 700;
++  text-decoration: none;
++}
++
++.app-header__actions,
++.app-header__nav {
++  display: flex;
++  min-width: 0;
++  align-items: center;
++  justify-content: flex-end;
++  gap: var(--lc-space-2);
++}
++
++.app-header__actions { flex: 1 1 520px; }
++.app-header__nav { flex: 1 1 auto; flex-wrap: wrap; }
++
++.app-header__nav > a,
++.app-header__logout {
++  box-sizing: border-box;
++  display: inline-flex;
++  min-height: 42px;
++  align-items: center;
++  justify-content: center;
++  gap: var(--lc-space-2);
++  padding: 0 var(--lc-space-4);
++  border: 1px solid var(--lc-color-control-border);
++  border-radius: var(--lc-radius-control);
++  background: var(--lc-color-surface);
++  color: var(--lc-color-blue);
++  font: inherit;
++  font-weight: 650;
++  text-decoration: none;
++  white-space: nowrap;
++}
++
++.app-header__nav > a:hover,
++.app-header__logout:hover {
++  border-color: var(--lc-color-blue-link);
++  background: var(--lc-color-accent-surface);
++}
++
++.app-header__nav > a[aria-current="page"] {
++  border-color: var(--lc-color-blue-link);
++  background: var(--lc-color-accent-surface-strong);
++  color: var(--lc-color-navy);
++}
++
++.app-header__logout { cursor: pointer; }
++
++.app-header a:focus-visible,
++.app-header button:focus-visible {
++  outline: 3px solid var(--lc-color-focus);
++  outline-offset: 3px;
++}
++
++@media (max-width: 640px) {
++  .app-header {
++    align-items: flex-start;
++    flex-wrap: wrap;
++    padding: var(--lc-space-3) var(--lc-space-4);
++  }
++
++  .app-header__actions { flex: 1 1 100%; justify-content: space-between; }
++  .app-header__nav { justify-content: flex-start; }
++}
++
++@media (max-width: 380px) {
++  .app-header { gap: var(--lc-space-2); }
++  .app-header__actions { align-items: flex-start; flex-wrap: wrap; }
++  .app-header__nav { flex: 1 1 100%; }
++  .app-header__nav > a,
++  .app-header__logout { padding-inline: 10px; }
++}
+--- /dev/null
++++ b/src/codeclinic/src/accountFeedback.ts
+@@ -0,0 +1,64 @@
++export type AccountField = 'name' | 'email' | 'currentPassword' | 'newPassword';
++export type AccountFailure = { message: string; field?: AccountField; signIn?: boolean };
++
++type FailureContext = 'profile' | 'password' | 'support';
++
++const codeCopy: Record<string, string> = {
++  AUTHENTICATION_REQUIRED: 'Your session has expired. Please sign in again.',
++  CURRENT_PASSWORD_INCORRECT: 'Your current password is incorrect. Please try again.',
++  CURRENT_PASSWORD_REQUIRED: 'Enter your current password to change your email address.',
++  PASSWORD_ATTEMPTS_EXCEEDED: 'Too many password attempts. Please try again later.',
++  INVALID_NAME: 'Enter a non-empty name within 200 UTF-8 bytes.',
++  INVALID_EMAIL: 'Enter a valid email address within 254 UTF-8 bytes.',
++  EMAIL_UNAVAILABLE: 'This email is unavailable. Use a different email address.',
++  INVALID_NEW_PASSWORD: 'Use a password with at least 8 characters and no more than 1024 UTF-8 bytes.',
++  INVALID_REQUEST: 'Check the information and try again.',
++};
++const fields = new Set<AccountField>(['name', 'email', 'currentPassword', 'newPassword']);
++
++export async function readFailure(response: Response, context: FailureContext, temporaryPassword = false): Promise<AccountFailure> {
++  const fallback = context === 'profile' ? 'Could not save your profile. Please try again.'
++    : context === 'password' ? 'Could not change your password. Please try again.'
++      : 'Could not complete this support action. Please try again.';
++  if (context === 'support' && response.status === 401) return sessionFailure();
++  let body: unknown;
++  try { body = await response.json(); } catch { return { message: fallback }; }
++  if (!body || typeof body !== 'object') return { message: fallback };
++  const data = body as { code?: unknown; field?: unknown };
++  if (typeof data.code !== 'string' || !Object.prototype.hasOwnProperty.call(codeCopy, data.code)) {
++    return { message: fallback };
++  }
++  const allowedCodes: Record<FailureContext, string[]> = {
++    profile: ['AUTHENTICATION_REQUIRED', 'CURRENT_PASSWORD_INCORRECT', 'CURRENT_PASSWORD_REQUIRED', 'INVALID_NAME', 'INVALID_EMAIL', 'EMAIL_UNAVAILABLE', 'INVALID_REQUEST'],
++    password: ['AUTHENTICATION_REQUIRED', 'CURRENT_PASSWORD_INCORRECT', 'PASSWORD_ATTEMPTS_EXCEEDED', 'INVALID_NEW_PASSWORD', 'INVALID_REQUEST'],
++    support: ['AUTHENTICATION_REQUIRED'],
++  };
++  if (!allowedCodes[context].includes(data.code)) return { message: fallback };
++  const expectedStatus: Record<string, number> = {
++    AUTHENTICATION_REQUIRED: 401, CURRENT_PASSWORD_INCORRECT: 401, PASSWORD_ATTEMPTS_EXCEEDED: 401,
++    CURRENT_PASSWORD_REQUIRED: 400, INVALID_NAME: 400, INVALID_EMAIL: 400, INVALID_NEW_PASSWORD: 400,
++    EMAIL_UNAVAILABLE: 409, INVALID_REQUEST: 400,
++  };
++  if (response.status !== expectedStatus[data.code]) return { message: fallback };
++  let field = fields.has(data.field as AccountField) ? data.field as AccountField : undefined;
++  // A server code is authoritative for the field it can safely identify.
++  if (data.code === 'CURRENT_PASSWORD_INCORRECT' || data.code === 'CURRENT_PASSWORD_REQUIRED') field = 'currentPassword';
++  if (data.code === 'INVALID_NAME') field = 'name';
++  if (data.code === 'INVALID_EMAIL' || data.code === 'EMAIL_UNAVAILABLE') field = 'email';
++  if (data.code === 'INVALID_NEW_PASSWORD') field = 'newPassword';
++  if (data.code === 'AUTHENTICATION_REQUIRED' || data.code === 'PASSWORD_ATTEMPTS_EXCEEDED' || data.code === 'INVALID_REQUEST') field = undefined;
++  let message = codeCopy[data.code];
++  if (temporaryPassword && data.code === 'CURRENT_PASSWORD_INCORRECT') {
++    message = 'Your temporary password is incorrect. Please try again.';
++  }
++  return { message, field, signIn: data.code === 'AUTHENTICATION_REQUIRED' };
++}
++
++export function csrfFailure(context: FailureContext): AccountFailure {
++  return { message: context === 'profile' ? 'Could not verify your profile update. Please try again.'
++    : context === 'password' ? 'Could not verify your password change. Please try again.'
++      : 'Could not verify this support action. Please try again.' };
++}
++export function sessionFailure(): AccountFailure {
++  return { message: codeCopy.AUTHENTICATION_REQUIRED, signIn: true };
++}
+--- /dev/null
++++ b/src/codeclinic/test/AppHeader.test.tsx
+@@ -0,0 +1,36 @@
++import React from 'react';
++import { render, screen } from '@testing-library/react';
++import AppHeader from '../src/AppHeader';
++
++const logout = jest.fn();
++const bellResponse = { ok: true, status: 200, json: async () => ({ unreadCount: 124 }) };
++
++describe('shared authenticated header contract', () => {
++  beforeEach(() => { logout.mockClear(); global.fetch = jest.fn().mockResolvedValue(bellResponse) as typeof fetch; });
++
++  test.each([
++    ['STUDENT', false, ['/student/dashboard', '/student/account', '/notifications']],
++    ['TA', false, ['/ta/dashboard', '/ta/account', '/ta/students', '/notifications']],
++    ['TA', true, ['/ta/dashboard', '/ta/account', '/ta/students', '/ta/tas', '/notifications']],
++  ] as const)('shows only verified %s navigation (manager=%s)', async (accountType, isManager, destinations) => {
++    render(<AppHeader accountType={accountType} isManager={isManager} activePath="/notifications" onLogout={logout} />);
++    expect(screen.getByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', destinations[0]);
++    destinations.slice(1).forEach((href) => expect(document.querySelector(`a[href="${href}"]`)).toBeInTheDocument());
++    expect(await screen.findByRole('link', { name: 'Notifications, 99 unread' })).toHaveAttribute('aria-current', 'page');
++    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
++    if (isManager) expect(screen.getByRole('link', { name: 'TAs' })).toHaveAttribute('href', '/ta/tas');
++    else expect(screen.queryByRole('link', { name: 'TAs' })).not.toBeInTheDocument();
++    expect(screen.getByLabelText('99 unread')).toHaveTextContent('99');
++    expect(document.querySelector('svg[aria-hidden="true"]')).toBeInTheDocument();
++  });
++
++  test('restricted mode keeps dashboard brand and logout without navigation or unread request', () => {
++    const fetchMock = jest.fn();
++    global.fetch = fetchMock as typeof fetch;
++    render(<AppHeader accountType="STUDENT" isManager={false} activePath="/account/password-change" restricted onLogout={logout} />);
++    expect(screen.getByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/student/dashboard');
++    expect(screen.getByRole('button', { name: 'Log out' })).toBeInTheDocument();
++    expect(screen.queryByRole('link', { name: /notifications/i })).not.toBeInTheDocument();
++    expect(fetchMock).not.toHaveBeenCalled();
++  });
++});
+--- /dev/null
++++ b/src/codeclinic/test/NotificationsRoute.test.tsx
+@@ -0,0 +1,198 @@
++import React from 'react';
++import { fireEvent, render, screen, waitFor } from '@testing-library/react';
++import NotificationsRoute from '../src/NotificationsRoute';
++
++const jsonResponse = (body: unknown, status = 200) => ({ ok: status >= 200 && status < 300, status, json: async () => body });
++
++describe('notifications route session and persistent header', () => {
++  beforeEach(() => { window.history.replaceState({}, '', '/notifications'); });
++  afterEach(() => jest.restoreAllMocks());
++
++  test.each([
++    ['STUDENT', '/student/dashboard', ['/student/account', '/notifications']],
++    ['TA', '/ta/dashboard', ['/ta/account', '/ta/students', '/notifications']],
++  ])('renders verified %s navigation above the inbox', async (role, dashboard, links) => {
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: role }));
++      if (url === '/api/account') return Promise.resolve(jsonResponse({ accountType: role, isManager: false }));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', dashboard);
++    expect(screen.getByRole('link', { name: /^Notifications(?:,.*)?$/ })).toHaveAttribute('aria-current', 'page');
++    links.forEach((href) => expect(document.querySelector(`a[href="${href}"]`)).toBeInTheDocument());
++    expect(await screen.findByText(/all caught up/i)).toBeInTheDocument();
++  });
++
++  test('does not request account or inbox data before session verification', async () => {
++    let resolveSession!: (value: ReturnType<typeof jsonResponse>) => void;
++    const pending = new Promise<ReturnType<typeof jsonResponse>>((resolve) => { resolveSession = resolve; });
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return pending;
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(screen.getByText(/checking your session/i)).toBeInTheDocument();
++    expect(fetchMock).toHaveBeenCalledWith('/api/auth/session', { credentials: 'same-origin' });
++    expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(['/api/auth/session']);
++    resolveSession(jsonResponse({ accountType: 'STUDENT' }));
++    await waitFor(() => expect(fetchMock.mock.calls.map(([url]) => String(url))).toEqual(expect.arrayContaining(['/api/notifications/unread-count', '/api/notifications'])));
++  });
++
++  test('fails closed on an unknown role without requesting inbox data', async () => {
++    const fetchMock = jest.fn().mockResolvedValue(jsonResponse({ accountType: 'COORDINATOR' }));
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('alert')).toHaveTextContent(/could not load notifications/i);
++    expect(fetchMock).toHaveBeenCalledTimes(1);
++    expect(screen.queryByRole('link', { name: /notifications/i })).not.toBeInTheDocument();
++  });
++
++  test('TA manager lookup failure preserves ordinary links and hides coordinator link', async () => {
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'TA' }));
++      if (url === '/api/account') return Promise.resolve(jsonResponse({}, 503));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/ta/dashboard');
++    expect(document.querySelector('a[href="/ta/account"]')).toBeInTheDocument();
++    expect(document.querySelector('a[href="/ta/students"]')).toBeInTheDocument();
++    expect(document.querySelector('a[href="/ta/tas"]')).not.toBeInTheDocument();
++    expect(await screen.findByRole('alert')).toBeInTheDocument();
++  });
++
++  test('shows coordinator navigation only after a matching TA account confirms manager status', async () => {
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'TA' }));
++      if (url === '/api/account') return Promise.resolve(jsonResponse({ accountType: 'TA', isManager: true }));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('link', { name: 'TAs' })).toHaveAttribute('href', '/ta/tas');
++  });
++
++  test('manager retry keeps verified header and inbox mounted while lookup is pending', async () => {
++    let resolveRetry!: (response: ReturnType<typeof jsonResponse>) => void;
++    let accountCalls = 0;
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'TA' }));
++      if (url === '/api/account') {
++        accountCalls += 1;
++        if (accountCalls === 1) return Promise.resolve(jsonResponse({}, 503));
++        return new Promise<ReturnType<typeof jsonResponse>>((resolve) => { resolveRetry = resolve; });
++      }
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByText(/all caught up/i)).toBeInTheDocument();
++    fireEvent.click(await screen.findByRole('button', { name: /retry coordinator access/i }));
++    await waitFor(() => expect(accountCalls).toBe(2));
++    expect(screen.getByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/ta/dashboard');
++    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
++    expect(screen.getByText(/all caught up/i)).toBeInTheDocument();
++    expect(screen.queryByRole('link', { name: 'TAs' })).not.toBeInTheDocument();
++    resolveRetry(jsonResponse({ accountType: 'TA', isManager: true }));
++    expect(await screen.findByRole('link', { name: 'TAs' })).toBeInTheDocument();
++  });
++
++  test('retains the header during inbox loading and a failed mark-read action', async () => {
++    let resolveInbox!: (response: ReturnType<typeof jsonResponse>) => void;
++    const fetchMock = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'STUDENT' }));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 1 }));
++      if (url === '/api/notifications') return new Promise<ReturnType<typeof jsonResponse>>((resolve) => { resolveInbox = resolve; });
++      if (url === '/api/auth/csrf') return Promise.resolve(jsonResponse({ csrfToken: 'test-token' }));
++      if (url === '/api/notifications/item-1/read' && init?.method === 'POST') return Promise.resolve(jsonResponse({}, 503));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/student/dashboard');
++    expect(screen.getByText(/loading notifications/i)).toBeInTheDocument();
++    resolveInbox(jsonResponse({ notifications: [{ notificationId: 'item-1', notificationType: 'TICKET_REPLY', ticketId: 'ticket-1', message: 'A reply arrived', createdAt: null, read: false }], nextCursor: null }));
++    fireEvent.click(await screen.findByRole('button', { name: /mark as read/i }));
++    expect(await screen.findByText(/could not mark this notification as read/i)).toBeInTheDocument();
++    expect(screen.getByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/student/dashboard');
++    expect(screen.getByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
++  });
++
++  test('hides inbox content while logout is pending and keeps it hidden after unconfirmed logout', async () => {
++    let resolveCsrf!: (response: ReturnType<typeof jsonResponse>) => void;
++    const fetchMock = jest.fn((input: RequestInfo | URL, init?: RequestInit) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'STUDENT' }));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.resolve(jsonResponse({ notifications: [], nextCursor: null }));
++      if (url === '/api/auth/csrf' && init?.method === 'GET') return new Promise<ReturnType<typeof jsonResponse>>((resolve) => { resolveCsrf = resolve; });
++      if (url === '/api/auth/logout') return Promise.resolve(jsonResponse({}, 503));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByText(/all caught up/i)).toBeInTheDocument();
++    fireEvent.click(screen.getByRole('button', { name: /log out/i }));
++    expect(await screen.findByText(/signing out/i)).toBeInTheDocument();
++    expect(screen.queryByText(/all caught up/i)).not.toBeInTheDocument();
++    resolveCsrf(jsonResponse({ csrfToken: 'test-token' }));
++    expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
++    expect(screen.queryByText(/all caught up/i)).not.toBeInTheDocument();
++    expect(window.location.pathname).toBe('/notifications');
++  });
++
++  test('keeps the header visible when the inbox request fails', async () => {
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      const url = String(input);
++      if (url === '/api/auth/session') return Promise.resolve(jsonResponse({ accountType: 'STUDENT' }));
++      if (url === '/api/notifications/unread-count') return Promise.resolve(jsonResponse({ unreadCount: 0 }));
++      if (url === '/api/notifications') return Promise.reject(new Error('offline'));
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    render(<NotificationsRoute />);
++    expect(await screen.findByRole('alert')).toHaveTextContent(/couldn’t load/i);
++    expect(screen.getByRole('link', { name: 'CodeClinic' })).toHaveAttribute('href', '/student/dashboard');
++  });
++
++  test.each([
++    ['unauthenticated', jsonResponse({}, 401)],
++    ['forced-password', jsonResponse({ accountType: 'STUDENT', mustChangePassword: true })],
++  ])('%s session cannot trigger account, unread-count, or inbox requests', async (_label, sessionResponse) => {
++    const fetchMock = jest.fn((input: RequestInfo | URL) => {
++      if (String(input) === '/api/auth/session') return Promise.resolve(sessionResponse);
++      return Promise.resolve(jsonResponse({}, 500));
++    });
++    global.fetch = fetchMock as typeof fetch;
++    const navigationError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
++    render(<NotificationsRoute />);
++    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith('/api/auth/session', { credentials: 'same-origin' }));
++    await new Promise((resolve) => setTimeout(resolve, 0));
++    const requestedUrls = fetchMock.mock.calls.map(([url]) => String(url));
++    expect(requestedUrls).toEqual(['/api/auth/session']);
++    expect(requestedUrls).not.toContain('/api/account');
++    expect(requestedUrls).not.toContain('/api/notifications/unread-count');
++    expect(requestedUrls).not.toContain('/api/notifications');
++    navigationError.mockRestore();
++  });
++});

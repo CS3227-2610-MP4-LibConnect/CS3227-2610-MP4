@@ -1,0 +1,29 @@
+Task: ui-consistency-and-feedback U02
+Spec/checklist: v0.1
+Branch: codex/ui-consistency-and-feedback
+
+Preflight:
+- Read AGENTS.md, workflow/README.md, workflow/agents/implementer.toml, workflow/specs/ui-consistency-and-feedback.md, task checklist, handoff, and U01 report.
+- Applied openspec-apply-change via workflow/specs/ adapter. CLI absence was established in handoff/assignment; no installation or second tree.
+- Verified U02 is Group 2, depends on U01, dispatch authorized by orchestrator, and scoped files. Did not update checklist checkbox.
+- Read-only existing-change inspection found U04/U05 work already present in shared AccountPages.test.tsx; U02 added only two scoped header cases and did not edit the pending feedback assertions.
+
+Verification commands (cwd: src/codeclinic):
+1. CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/DashboardRoutes.integration.test.tsx test/SharedTheme.test.tsx
+   Result: exit 0. PASS 3 suites, 37 tests; 0 snapshots. Dashboard logout CSRF/confirmed redirect and pending/unconfirmed protected-content tests passed.
+2. CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx --testNamePattern='account and support pages use the shared header|forced-password page uses the restricted shared header'
+   Initial result: exit 1; one active-link assertion failed because JSDOM location was `/`, not `/ta/tas`. This exposed test setup only. Test setup was changed to set the expected synthetic route.
+   Rerun result: exit 0. PASS 2 matching U02 tests; 8 other AccountPages tests skipped by pattern.
+3. git diff --check (repository root)
+   Result: exit 0; no whitespace errors.
+
+Not run: full AccountPages suite (includes existing U05 pending error-feedback expectations); production build and broad regression suite are assigned to U06. No browser viewport inspection in U02.
+
+Scoped source/test files changed by this task:
+- src/codeclinic/src/DashboardLogout.tsx
+- src/codeclinic/src/AccountPages.tsx
+- src/codeclinic/src/DashboardViews.css
+- src/codeclinic/src/AccountPages.css
+- src/codeclinic/test/AccountPages.test.tsx (two additive U02 cases only; pre-existing U04/U05 edits were not changed)
+
+Risks/remaining: actual responsive layout and focus/hover browser verification remain for U06. AccountPages logout flow was left intact and inspected; no dedicated AccountPages logout test was run. Runtime model/token metrics: unavailable (not exposed to this agent).

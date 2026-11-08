@@ -43,7 +43,7 @@ function relativeTime(value: string | null): string {
 }
 
 /** Bell for dashboard navigation. Count is refreshed whenever this component mounts. */
-export function NotificationBell() {
+export function NotificationBell({ active = false }: { active?: boolean }) {
   const [count, setCount] = useState<number | null>(null);
   const mounted = useRef(false);
   const refresh = useCallback(async () => {
@@ -62,8 +62,8 @@ export function NotificationBell() {
     return () => { mounted.current = false; window.removeEventListener(NOTIFICATIONS_CHANGED, refresh); };
   }, [refresh]);
 
-  return <a className="notification-bell" href="/notifications" aria-label={count === null ? 'Notifications' : `Notifications, ${count} unread`}>
-    <span aria-hidden="true">🔔</span><span>Notifications</span>
+  return <a className={`notification-bell${active ? ' notification-bell--active' : ''}`} href="/notifications" aria-current={active ? 'page' : undefined} aria-label={count === null ? 'Notifications' : `Notifications, ${count} unread`}>
+    <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg><span>Notifications</span>
     {count !== null && count > 0 && <span className="notification-bell__count" aria-label={`${count} unread`}>{count}</span>}
   </a>;
 }

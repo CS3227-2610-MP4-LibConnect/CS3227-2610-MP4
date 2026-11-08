@@ -82,5 +82,5 @@ test('case-insensitive password-change endpoint remains allowed', async () => {
   const response = await request(makeApp()).post('/API/account/password')
     .set('Cookie', cookie).set('X-CSRF-Token', RAW_CSRF).send({});
   expect(response.status).toBe(400);
-  expect(response.body.code).toBeUndefined();
+  expect(response.body.code).toBe('INVALID_REQUEST');
 });
