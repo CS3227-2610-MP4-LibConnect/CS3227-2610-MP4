@@ -76,6 +76,10 @@ test('serves the built frontend and the login API from one origin', async () => 
       expect(former.headers.location).toBeUndefined();
     }
 
+    const retiredCatalog = await request(app).get('/api/member/catalog');
+    expect(retiredCatalog.status).toBe(404);
+    expect(retiredCatalog.text).not.toContain('<title>LibConnect</title>');
+
     const login = await request(app).post('/api/auth/login').send({
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'STUDENT',
     });

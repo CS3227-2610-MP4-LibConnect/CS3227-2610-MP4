@@ -8,7 +8,7 @@ const { createFirestoreRegistrationPersistence } = require('./auth/firestore-reg
 const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-target');
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
-  const app = createLoginApp(createFirestoreLoginRepository(db), authStore, { catalogDb: db });
+  const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
   app.post('/api/auth/register', createRegistrationHandler(registrationPersistence, authStore));
   if (fs.existsSync(path.join(buildDirectory, 'index.html'))) {
     app.use(express.static(buildDirectory));

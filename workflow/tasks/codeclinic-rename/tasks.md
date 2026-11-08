@@ -31,7 +31,7 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
 
 ## Group 3 — Remove the Book catalog
 
-- [ ] **T04 — Remove the retired Book catalog.**
+- [x] **T04 — Remove the retired Book catalog.**
   - Delete `server/catalog/`, the catalog mount and `catalogDb` option in `server/auth/login.js` and `server/index.js`, `src/MemberCatalog.tsx`, `src/MemberCatalog.css`, `scripts/seed-local-books.js`, and their tests (`test/member-catalog.*`, `test/MemberCatalog*`, `test/seed-local-books.test.js`).
   - The student dashboard becomes a basic landing view with the name greeting, consistent with the TA dashboard and the shared theme.
   - `GET /api/member/catalog` no longer exists.
