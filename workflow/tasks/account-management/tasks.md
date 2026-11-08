@@ -21,7 +21,7 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
 ## AM-G2 — Self-service API and bootstrap (parallel)
 
-- [ ] **T02 — Self-service API.** Add `GET /api/account`, `PATCH /api/account/profile`, and `POST /api/account/password` (R2, R3), including:
+- [x] **T02 — Self-service API.** Add `GET /api/account`, `PATCH /api/account/profile`, and `POST /api/account/password` (R2, R3), including:
   - the current-password checks;
   - rate-limit counting through the existing login failure counter;
   - deletion of the user's other sessions;
@@ -29,22 +29,22 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
   Test every status code, the transaction rollback on collision, and the session effects. (Scenarios 1–4, 7, 9, 11.)
 
-- [ ] **T05 — Bootstrap script.** Add `scripts/bootstrap-coordinator.js` with an explicit `--project`, the refusal rules, and output that does not show the full email address or any credentials. Test it against fakes, including the refusal cases. (Spec R8; scenario 10.)
+- [x] **T05 — Bootstrap script.** Add `scripts/bootstrap-coordinator.js` with an explicit `--project`, the refusal rules, and output that does not show the full email address or any credentials. Test it against fakes, including the refusal cases. (Spec R8; scenario 10.)
 
 ## AM-G3 — Support API and forced password change (parallel)
 
-- [ ] **T03 — Support API.** Add the list, status, and password-reset support endpoints (R1, R4–R6):
+- [x] **T03 — Support API.** Add the list, status, and password-reset support endpoints (R1, R4–R6):
   - session deletion on deactivation and on reset;
   - the temporary password generator: 16 characters from an unambiguous alphabet, using `crypto.randomInt`;
   - `Cache-Control: no-store` on the reset response.
 
   Test the full authorization matrix, including that a Coordinator may act on Students and other TAs but not on themselves. (Scenarios 5, 6, 8, 9.)
 
-- [ ] **T04 — Forced password change.** In the session check in `server/auth/login.js`, allow only the R7 endpoints while `mustChangePassword` is `true`, and return `403 PASSWORD_CHANGE_REQUIRED` otherwise. Test that it applies to every other protected route and clears after a successful change. (Spec R7; scenario 8.)
+- [x] **T04 — Forced password change.** In the session check in `server/auth/login.js`, allow only the R7 endpoints while `mustChangePassword` is `true`, and return `403 PASSWORD_CHANGE_REQUIRED` otherwise. Test that it applies to every other protected route and clears after a successful change. (Spec R7; scenario 8.)
 
 ## AM-G4 — Pages
 
-- [ ] **T06 — Account and support pages.**
+- [x] **T06 — Account and support pages.**
   - Add an **Account** page for both roles.
   - Add a **Students** page for TAs and Coordinators, and a **TAs** page for Coordinators.
   - Deactivation and reset ask for confirmation, and the temporary password is shown once with a copy button.
@@ -55,7 +55,7 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
 ## AM-G5 — Guides and evidence
 
-- [ ] **T07 — Guides and evidence.**
+- [x] **T07 — Guides and evidence.**
   - Update `docs/UserGuide.md` and `docs/DeveloperGuide.md` for these features and the bootstrap procedure.
   - Run the full suite and build.
   - Record `implementation-report.md`, `security-review.md`, and the logs under `logs/tasks/account-management/`, with the token table.

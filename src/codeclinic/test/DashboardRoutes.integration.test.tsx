@@ -16,6 +16,14 @@ beforeAll(() => {
 function renderAppAt(path: string, fetchMock: jest.Mock) {
   window.history.replaceState({}, '', path);
   global.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    // Keep the existing auth sequence/assertions scoped to auth requests.
+    // Notification behavior is independently covered by Notifications.test.tsx.
+    if (input === '/api/notifications/unread-count') {
+      return Promise.resolve({ status: 200, ok: true, json: async () => ({ unreadCount: 0 }) });
+    }
+    if (input === '/api/account') {
+      return Promise.resolve({ status: 200, ok: true, json: async () => ({ accountType: 'TA', isManager: false }) });
+    }
     return fetchMock(input, init);
   }) as typeof fetch;
   return render(mockAppTree as React.ReactElement);

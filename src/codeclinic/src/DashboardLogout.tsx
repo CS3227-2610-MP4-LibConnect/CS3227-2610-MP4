@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { NotificationBell } from './notifications/Notifications';
 
 type LogoutState = 'ready' | 'pending' | 'error';
 
@@ -6,9 +7,10 @@ interface DashboardLogoutProps {
   onConfirmed: () => void;
   children: React.ReactNode;
   studentNavigation?: boolean;
+  isManager?: boolean;
 }
 
-export default function DashboardLogout({ onConfirmed, children, studentNavigation = false }: DashboardLogoutProps) {
+export default function DashboardLogout({ onConfirmed, children, studentNavigation = false, isManager = false }: DashboardLogoutProps) {
   const [state, setState] = useState<LogoutState>('ready');
 
   const logout = async () => {
@@ -67,11 +69,14 @@ export default function DashboardLogout({ onConfirmed, children, studentNavigati
   }
 
   return <>
-    {studentNavigation && <header className="student-navbar">
-      <a className="student-navbar__brand" href="/student/dashboard">CodeClinic</a>
+    <header className="student-navbar">
+      <a className="student-navbar__brand" href={studentNavigation ? '/student/dashboard' : '/ta/dashboard'}>CodeClinic</a>
+      {studentNavigation ? <a href="/student/account">Account</a> : <>
+        <a href="/ta/account">Account</a><a href="/ta/students">Students</a>{isManager && <a href="/ta/tas">TAs</a>}
+      </>}
+      <NotificationBell />
       <button className="student-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
-    </header>}
+    </header>
     {children}
-    {!studentNavigation && <button type="button" onClick={() => { void logout(); }}>Log out</button>}
   </>;
 }

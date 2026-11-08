@@ -1,0 +1,46 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watch=false --runInBand
+
+PASS test/RegistrationPage.test.tsx
+PASS test/login.session.test.js
+PASS test/registration.api.test.js
+PASS test/login.credentials.test.js
+PASS test/LoginPage.integration.test.tsx
+PASS test/LoginPage.test.tsx
+PASS test/DashboardRoutes.integration.test.tsx
+PASS test/Notifications.test.tsx
+PASS test/account-guards.test.js
+PASS test/AccountPages.test.tsx
+PASS test/account-routes.test.js
+PASS test/ai-redact.test.js
+PASS test/notifications.api.test.js
+PASS test/server.test.js
+PASS test/registration.endpoint.test.js
+PASS test/SharedTheme.test.tsx
+PASS test/RegistrationNavigation.test.tsx
+PASS test/account-r7-server.test.js
+PASS test/account-store.test.js
+PASS test/account-server-wiring.test.js
+PASS test/firestore-rate-counter.test.js
+PASS test/email.test.js
+PASS test/firestore-target.test.js
+PASS test/ai-transport.test.js
+PASS test/ai-config.test.js
+PASS test/ai-prompt.test.js
+PASS test/ai-rate-limit.test.js
+PASS test/ai-features.test.js
+PASS test/ai-gateway.test.js
+PASS test/ai-usage-store.test.js
+PASS test/bootstrap-coordinator.test.js
+PASS test/ai-transport-hardening.test.js
+PASS test/ai-parse.test.js
+PASS test/notifications.notify.test.js
+PASS test/ai-browser-boundary.test.js
+PASS test/firestore-store.test.js
+
+Test Suites: 3 skipped, 36 passed, 36 of 39 total
+Tests:       3 skipped, 645 passed, 648 total
+Snapshots:   0 total
+Time:        11.962 s, estimated 20 s
+Ran all test suites.

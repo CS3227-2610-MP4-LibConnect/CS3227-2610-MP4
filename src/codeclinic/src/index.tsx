@@ -5,6 +5,8 @@ import './theme.css';
 import LoginPage from './LoginPage';
 import RegistrationPage from './RegistrationPage';
 import DashboardRouteGuard from './DashboardRouteGuard';
+import AccountPages from './AccountPages';
+import NotificationsRoute from './NotificationsRoute';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -21,6 +23,10 @@ function App() {
   if (path === '/register') return <RegistrationPage />;
   if (path === '/student/dashboard') return <DashboardRouteGuard accountType="STUDENT" />;
   if (path === '/ta/dashboard') return <DashboardRouteGuard accountType="TA" />;
+  if (path === '/student/account') return <DashboardRouteGuard accountType="STUDENT" />;
+  if (path === '/ta/account' || path === '/ta/students' || path === '/ta/tas') return <DashboardRouteGuard accountType="TA" />;
+  if (path === '/account/password-change') return <AccountPages mode="password-change" />;
+  if (path === '/notifications') return <NotificationsRoute />;
   return <LoginPage />;
 }
 

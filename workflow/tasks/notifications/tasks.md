@@ -17,11 +17,11 @@ Cross-task schedule with `notifications` (shared files `server/index.js`, `src/i
 
 ## N-G2 — Bell and inbox page
 
-- [ ] **T03 — Bell and inbox page.** Add the bell with the unread count to both dashboards' navigation, and an inbox page with plain-text items, **Mark all as read**, per-item read on open, and empty, loading, and error-with-retry states. Use the shared theme, and test at a width of 320 CSS pixels. Component tests cover each state and plain-text rendering. (Spec R3; scenarios 4, 5.)
+- [x] **T03 — Bell and inbox page.** Add the bell with the unread count to both dashboards' navigation, and an inbox page with plain-text items, **Mark all as read**, per-item read on open, and empty, loading, and error-with-retry states. Use the shared theme, and test at a width of 320 CSS pixels. Component tests cover each state and plain-text rendering. (Spec R3; scenarios 4, 5.)
 
 ## N-G3 — Guides and evidence
 
-- [ ] **T04 — Guides and evidence.** Update the User Guide and Developer Guide. Run the full suite and build. Record `implementation-report.md` and the logs under `logs/tasks/notifications/`, with the token table.
+- [x] **T04 — Guides and evidence.** Update the User Guide and Developer Guide. Run the full suite and build. Record `implementation-report.md` and the logs under `logs/tasks/notifications/`, with the token table.
 
 ## Approval boundary
 
