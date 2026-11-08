@@ -13,6 +13,24 @@
   text-decoration: none;
 }
 
+.notification-bell svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.notification-bell:hover,
+.notification-bell--active {
+  border-color: var(--lc-color-blue-link);
+  background: var(--lc-color-accent-surface-strong);
+  color: var(--lc-color-navy);
+}
+
 .notification-bell:focus-visible,
 .notification-inbox button:focus-visible,
 .notification-list__content:focus-visible {

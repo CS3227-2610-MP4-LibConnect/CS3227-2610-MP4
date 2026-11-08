@@ -1,0 +1,53 @@
+# U06 factual verification log — 2026-11-08
+
+Working tree: `codex/ui-consistency-and-feedback`; base branch/worktree status was recorded in `implementation-orchestration.md`.
+Specification/checklist/handoff: v0.1.
+
+## Combined regression command
+
+Working directory: `src/codeclinic`
+
+```sh
+CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/NotificationsRoute.test.tsx test/AccountPages.test.tsx test/Notifications.test.tsx test/DashboardRoutes.integration.test.tsx test/SharedTheme.test.tsx test/account-routes.test.js test/account-guards.test.js test/account-r7-server.test.js test/account-server-wiring.test.js test/account-store.test.js test/notifications.api.test.js test/login.credentials.test.js test/login.session.test.js
+```
+
+Result: PASS, 14/14 suites, 239/239 tests, 0 snapshots, 7.043 seconds. Supertest loopback permission was requested with the approved `npm test` prefix; command completed successfully.
+
+## Production build
+
+Working directory: `src/codeclinic`
+
+```sh
+CI=true npm run build
+```
+
+Result: FAIL during ESLint compile (CI treats warnings as errors):
+- `src/AccountPages.tsx:49:7`: `no-throw-literal` — expected an error object to be thrown.
+- `src/NotificationsRoute.tsx:80:28` and `:80:49`: `no-mixed-operators` — `||` and `&&` require explicit grouping.
+- Node emitted `[DEP0176] fs.F_OK is deprecated`; the fatal result was the listed ESLint diagnostics.
+
+No source/test files were changed by U06. Build fix is returned to the relevant implementation owners. Build has not been rerun pending source correction.
+
+## Visual evidence and metrics
+
+Browser/viewport/keyboard inspection is owned by the orchestrator in the existing local synthetic loopback preview (port 4174). Awaiting orchestrator's visual evidence path/results. Runtime model and token counts are unavailable to this agent; no estimates made.
+
+## Build rerun after scoped corrections
+
+The U05 owner changed the `AccountActionError` token to an `Error` subclass in `AccountPages.tsx`; the U03 owner parenthesized the mixed boolean expression in `NotificationsRoute.tsx`. These were narrow corrections outside U06 ownership. The orchestrator inspected source/diffcheck and authorized this rerun.
+
+Command: `CI=true npm run build` (working directory `src/codeclinic`).
+Result: PASS, optimized production build compiled successfully. Gzip output: JS 77.97 kB (+47 B), CSS 3.6 kB. CRA emitted a Node `[DEP0176] fs.F_OK is deprecated` warning, which did not fail the build.
+
+## Orchestrator visual and keyboard verification
+
+Result: all performed checks passed in the mock-only local production preview. Full matrix and artifacts are in [visual-verification.md](visual-verification.md), with measurements and screenshots under `visual/`.
+
+Coverage included Student, TA, and Coordinator headers at 320/640/1280 CSS px; nine viewport measurements showed no horizontal overflow, overlap, clipping, or emoji, with controls at least 42 px high and role-specific links/active state. TA/Coordinator account forms were checked across all three widths; Student wrong-password feedback was checked at all three widths. Keyboard focus showed a visible 3 px outline; hover styling was visible. Wrong-password error placement, ARIA association, focus, correction behavior, and absence of Retry were inspected, along with session Sign in feedback. Loading, empty, populated, inbox failure, mark-read failure, and direct reload retained the header.
+
+Limit: all browser network responses were synthetic mock fixtures; this is not live backend/cloud verification. Manager retry and protected logout were verified by integration tests, not browser actions. One read-only DOM value-attribute equality probe was inconclusive; screenshot evidence showed the edited non-secret email remained visible. No production corrections followed visual inspection.
+
+## Focused regression rerun after build corrections
+
+Command: `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AccountPages.test.tsx test/NotificationsRoute.test.tsx` (working directory `src/codeclinic`).
+Result: PASS, 2/2 suites, 27/27 tests, 0 snapshots, 3.134 seconds. This validates the two suites covering the corrected files on the post-correction snapshot.

@@ -12,6 +12,12 @@ const FORBIDDEN = 'You do not have permission to do that.';
 const NOT_FOUND = 'Account not found.';
 const INVALID = 'Enter valid details.';
 const RETRY = 'Account service is temporarily unavailable. Please try again.';
+const ACCOUNT_AUTH = 'Your session has expired. Please sign in again.';
+
+function isSelfAccountPath(req) {
+  const path = typeof req.path === 'string' ? req.path.toLowerCase().replace(/\/+$/, '') : '';
+  return ['/account', '/account/profile', '/account/password'].includes(path);
+}
 
 function hashesMatch(a, b) {
   return typeof a === 'string' && typeof b === 'string' && HASH_PATTERN.test(a) && HASH_PATTERN.test(b) &&
@@ -58,15 +64,22 @@ function createAccountGuards({ authStore, accountStore, now = Date.now } = {}) {
     return res.status(401).json({ message: AUTH_REQUIRED });
   }
 
+  function unauthenticatedRequest(req, res) {
+    clearSessionCookie(res);
+    return isSelfAccountPath(req)
+      ? res.status(401).json({ code: 'AUTHENTICATION_REQUIRED', message: ACCOUNT_AUTH })
+      : res.status(401).json({ message: AUTH_REQUIRED });
+  }
+
   async function requireActiveActor(req, res, next) {
     try {
       const auth = await authenticateRequest(req, res);
-      if (!auth) return unauthenticated(res);
+      if (!auth) return unauthenticatedRequest(req, res);
       const { idHash, session } = auth;
       // Reload for fields the shared check does not return (`isManager`, `mustChangePassword`).
       const user = await accountStore.getAccount(session.userId);
       if (!user || user.userId !== session.userId || user.accountStatus !== 'ACTIVE' ||
-          user.accountType !== auth.accountType) return unauthenticated(res);
+          user.accountType !== auth.accountType) return unauthenticatedRequest(req, res);
       req.actor = Object.freeze({
         userId: user.userId,
         accountType: user.accountType,
@@ -84,12 +97,12 @@ function createAccountGuards({ authStore, accountStore, now = Date.now } = {}) {
   async function requireCsrf(req, res, next) {
     if (SAFE_METHODS.includes(req.method)) return next();
     const idHash = sessionHashes.get(req);
-    if (!idHash || !req.actor) return unauthenticated(res);
+    if (!idHash || !req.actor) return unauthenticatedRequest(req, res);
     try {
       const suppliedHash = hashSubmittedCsrf(req);
       if (!suppliedHash) return res.status(403).json({ message: NOT_VERIFIED });
       const session = await authStore.getSession(idHash);
-      if (!session || session.userId !== req.actor.userId) return unauthenticated(res);
+      if (!session || session.userId !== req.actor.userId) return unauthenticatedRequest(req, res);
       if (!hashesMatch(suppliedHash, session.csrfTokenHash)) {
         return res.status(403).json({ message: NOT_VERIFIED });
       }

@@ -1,0 +1,33 @@
+Task: ui-consistency-and-feedback U01
+Specification/checklist/handoff: v0.1
+Branch: codex/ui-consistency-and-feedback
+Runtime model and token metrics: unavailable (not exposed to this agent)
+
+Preflight:
+- Read AGENTS.md, workflow/README.md, workflow/agents/implementer.toml, approved spec, checklist, handoff, preimplementation review and test coverage report.
+- Read openspec-apply-change skill and followed the repository's workflow/specs adapter. Per the approved handoff/orchestrator, OpenSpec CLI absence was already established; did not install it or create a second tree.
+- Verified U01 remains unchecked; did not edit checklist or shared handoff because orchestrator owns checkbox updates.
+- Existing source/tests contain concurrent U04 work in disjoint server files and test-writer artifacts; preserved them.
+
+Changed files:
+- src/codeclinic/src/AppHeader.tsx
+- src/codeclinic/src/AppHeader.css
+- src/codeclinic/src/notifications/Notifications.tsx
+- src/codeclinic/src/notifications/Notifications.css
+
+Commands and results (run from src/codeclinic unless stated):
+- `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/Notifications.test.tsx` — PASS; 2 suites, 13 tests.
+- `CI=true npm run build` — PASS; optimized production build compiled successfully. Existing Node deprecation warning for `fs.F_OK` appeared.
+- `git diff --check` — PASS; no whitespace errors.
+- Scoped `git status` confirmed only the four assigned source files were modified/created by this implementation. Existing concurrent and previously untracked work was left intact.
+- Follow-up responsive CSS refinement requested by orchestrator: allow header flex wrapping at intermediate widths, shrink/wrap the nav, and wrap actions/logout in the compact layout. Reran `CI=true npm test -- --watchAll=false --runInBand --runTestsByPath test/AppHeader.test.tsx test/Notifications.test.tsx` — PASS; 2 suites, 13 tests.
+
+Acceptance status:
+- Role-specific link sets / destinations and coordinator-only TAs: implemented; AppHeader test passed.
+- Active Notifications uses `aria-current`; logout remains a button: implemented; AppHeader test passed.
+- Decorative outline SVG, readable label, capped unread badge and existing refresh mechanism: implemented; AppHeader and Notifications tests passed.
+- Restricted mode hides normal links and avoids unread requests: implemented; AppHeader test passed.
+- Shared focus/hover/active styles and >=42px controls: implemented in CSS; build passed. Browser keyboard/dimension measurement belongs to U06 and is pending.
+- No browser storage/query based privilege or authorization changes: implementation uses supplied presentation props only.
+
+Deviations/failures: none. Residual verification: U06 browser checks at 320/640/1280 CSS pixels and independent review remain pending. Runtime model/input/output/total token metrics: unavailable.

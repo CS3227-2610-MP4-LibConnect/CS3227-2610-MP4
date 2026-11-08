@@ -1,6 +1,4 @@
 .account-page { width: min(920px, calc(100% - 32px)); margin: 40px auto; }
-.student-navbar { flex-wrap: wrap; gap: 8px; }
-.student-navbar > * { min-width: 0; }
 .account-page, .account-panel, .account-form, .account-list li, .account-list li div { min-width: 0; }
 .account-page, .account-list li span, .account-list strong { overflow-wrap: anywhere; }
 .account-page h1 { font-family: var(--lc-font-display); color: var(--lc-color-navy); }
@@ -16,4 +14,8 @@
 .account-page button { min-height: 40px; padding: 8px 12px; border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: var(--lc-color-surface); color: var(--lc-color-blue); cursor: pointer; font: inherit; }
 .account-page button:disabled { opacity: .6; cursor: wait; }
 .account-page [role="alert"] { color: var(--lc-color-error); }
-@media (max-width: 640px) { .student-navbar { justify-content: flex-start; padding-right: 12px; padding-left: 12px; } .account-page { width: calc(100% - 24px); margin: 24px auto; } .account-panel { padding: 18px; } .account-list li { align-items: stretch; flex-direction: column; } }
+.account-form-error, .account-field-error { color: var(--lc-color-error); }
+.account-form-error:focus, .account-form-error [href]:focus { outline: 3px solid var(--lc-color-focus, #2563eb); outline-offset: 2px; }
+.account-field-error { margin: -10px 0 0; font-size: .95rem; }
+.account-form input[aria-invalid="true"] { border-color: var(--lc-color-error); }
+@media (max-width: 640px) { .account-page { width: calc(100% - 24px); margin: 24px auto; } .account-panel { padding: 18px; } .account-list li { align-items: stretch; flex-direction: column; } }
