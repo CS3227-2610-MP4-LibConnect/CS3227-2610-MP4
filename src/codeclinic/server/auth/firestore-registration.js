@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const argon2 = require('argon2');
-const { canonicalizeEmail, emailKeyFor } = require('./login');
+const { canonicalizeEmail, emailKeyFor } = require('./email');
 
 function createFirestoreRegistrationPersistence(db) {
   if (!db || typeof db.collection !== 'function' || typeof db.runTransaction !== 'function') {

@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { LibrarianDashboard } from './LibrarianDashboard';
-import { MemberDashboard } from './MemberDashboard';
+import { TADashboard } from './TADashboard';
+import { StudentDashboard } from './StudentDashboard';
 
-type AccountType = 'MEMBER' | 'LIBRARIAN';
+type AccountType = 'STUDENT' | 'TA';
 type GuardState = 'checking' | 'ready' | 'denied' | 'retry';
 
 function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
@@ -45,13 +45,13 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
       if (!isCurrentRequest()) return;
       const returnedType = (body as { accountType?: unknown } | null)?.accountType;
       const returnedName = (body as { name?: unknown } | null)?.name;
-      if (returnedType !== 'MEMBER' && returnedType !== 'LIBRARIAN') {
+      if (returnedType !== 'STUDENT' && returnedType !== 'TA') {
         setState('retry');
         return;
       }
       if (returnedType === accountType) {
         setVerifiedAccountType(returnedType);
-        setVerifiedName(returnedType === 'MEMBER' && typeof returnedName === 'string' &&
+        setVerifiedName(returnedType === 'STUDENT' && typeof returnedName === 'string' &&
           returnedName.trim().length > 0 && returnedName.length <= 200 ? returnedName.trim() : null);
         setState('ready');
       } else {
@@ -93,8 +93,8 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
   }
 
   if (state === 'denied' && verifiedAccountType && verifiedAccountType !== accountType) {
-    const verifiedRoute = verifiedAccountType === 'MEMBER' ? '/member/dashboard' : '/librarian/dashboard';
-    const verifiedLabel = verifiedAccountType === 'MEMBER' ? 'Member' : 'Librarian';
+    const verifiedRoute = verifiedAccountType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard';
+    const verifiedLabel = verifiedAccountType === 'STUDENT' ? 'Student' : 'TA';
     return (
       <main>
         <h1>Access denied</h1>
@@ -113,9 +113,9 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
     setVerifiedName(null);
     setState('checking');
   };
-  return accountType === 'MEMBER'
-    ? <MemberDashboard onLogoutConfirmed={clearVerifiedAccount} name={verifiedName} />
-    : <LibrarianDashboard onLogoutConfirmed={clearVerifiedAccount} />;
+  return accountType === 'STUDENT'
+    ? <StudentDashboard onLogoutConfirmed={clearVerifiedAccount} name={verifiedName} />
+    : <TADashboard onLogoutConfirmed={clearVerifiedAccount} />;
 }
 
 export default DashboardRouteGuard;

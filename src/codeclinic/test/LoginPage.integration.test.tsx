@@ -148,7 +148,7 @@ describe('T05 React to Express login integration', () => {
       fill(` ${librarianEmail.toUpperCase()} `, librarianPassword);
       submit();
 
-      await waitFor(() => expect(assign).toHaveBeenCalledWith('/librarian/dashboard'));
+      await waitFor(() => expect(assign).toHaveBeenCalledWith('/ta/dashboard'));
       expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
       expect(bridge.calls[0]).toEqual(expect.objectContaining({
         url: '/api/auth/login', method: 'POST',

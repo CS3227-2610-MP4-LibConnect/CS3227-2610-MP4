@@ -19,8 +19,8 @@ function App() {
   }, []);
 
   if (path === '/register') return <RegistrationPage />;
-  if (path === '/member/dashboard') return <DashboardRouteGuard accountType="MEMBER" />;
-  if (path === '/librarian/dashboard') return <DashboardRouteGuard accountType="LIBRARIAN" />;
+  if (path === '/student/dashboard') return <DashboardRouteGuard accountType="STUDENT" />;
+  if (path === '/ta/dashboard') return <DashboardRouteGuard accountType="TA" />;
   return <LoginPage />;
 }
 

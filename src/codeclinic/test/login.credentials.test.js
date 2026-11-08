@@ -6,10 +6,10 @@ const argon2 = require('argon2');
 const {
   GENERIC_DENIAL,
   RETRY_MESSAGE,
-  emailKeyFor,
   verifyCredentials,
   createLoginApp,
 } = require('../server/auth/login');
+const { emailKeyFor } = require('../server/auth/email');
 
 const email = 'reader@example.test';
 const canonicalEmail = 'reader@example.test';

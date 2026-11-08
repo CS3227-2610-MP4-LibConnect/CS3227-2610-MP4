@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
-import { MemberDashboard } from '../src/MemberDashboard';
-import { LibrarianDashboard } from '../src/LibrarianDashboard';
+import { StudentDashboard } from '../src/StudentDashboard';
+import { TADashboard } from '../src/TADashboard';
 
 const sourcePath = (name: string) => resolve(__dirname, '../src', name);
 const readSource = (name: string) => readFileSync(sourcePath(name), 'utf8');
@@ -13,14 +13,14 @@ describe('shared dashboard theme', () => {
   test('both role views retain semantic headings, main content, and the shared logout control', () => {
     const onLogoutConfirmed = jest.fn();
 
-    const { rerender } = render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    const { rerender } = render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: /member dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /student dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log out/i })).toBeVisible();
 
-    rerender(<LibrarianDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    rerender(<TADashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(screen.getByRole('main')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 1, name: /librarian dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: /ta dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /log out/i })).toBeVisible();
   });
 
@@ -30,9 +30,9 @@ describe('shared dashboard theme', () => {
     const theme = readSource('theme.css');
     const dashboardPageStyles = readOptionalSource('DashboardViews.css');
     const dashboardStyles = `${theme}\n${dashboardPageStyles}`;
-    const memberMarkup = readSource('MemberDashboard.tsx');
-    const librarianMarkup = readSource('LibrarianDashboard.tsx');
-    const dashboardMarkup = `${memberMarkup}\n${librarianMarkup}`;
+    const studentMarkup = readSource('StudentDashboard.tsx');
+    const taMarkup = readSource('TADashboard.tsx');
+    const dashboardMarkup = `${studentMarkup}\n${taMarkup}`;
 
     expect(entry.match(/['"]\.\/theme\.css['"]/g)).toHaveLength(1);
 
@@ -54,15 +54,15 @@ describe('shared dashboard theme', () => {
   test('the route guard imports each role view from its dedicated shared-style module', () => {
     const routeGuard = readSource('DashboardRouteGuard.tsx');
     const appEntry = readSource('index.tsx');
-    const memberMarkup = readSource('MemberDashboard.tsx');
-    const librarianMarkup = readSource('LibrarianDashboard.tsx');
+    const studentMarkup = readSource('StudentDashboard.tsx');
+    const taMarkup = readSource('TADashboard.tsx');
 
-    expect(routeGuard).toMatch(/from ['"]\.\/MemberDashboard['"]/);
-    expect(routeGuard).toMatch(/from ['"]\.\/LibrarianDashboard['"]/);
-    for (const moduleSource of [memberMarkup, librarianMarkup]) {
+    expect(routeGuard).toMatch(/from ['"]\.\/StudentDashboard['"]/);
+    expect(routeGuard).toMatch(/from ['"]\.\/TADashboard['"]/);
+    for (const moduleSource of [studentMarkup, taMarkup]) {
       expect(moduleSource).toMatch(/from ['"]\.\/DashboardLogout['"]/);
     }
-    expect(`${memberMarkup}\n${librarianMarkup}\n${routeGuard}\n${appEntry}`)
+    expect(`${studentMarkup}\n${taMarkup}\n${routeGuard}\n${appEntry}`)
       .toMatch(/['"]\.\/DashboardViews\.css['"]/);
   });
 

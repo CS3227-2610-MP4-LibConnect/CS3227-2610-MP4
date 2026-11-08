@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const express = require('express');
 const argon2 = require('argon2');
 const { createCatalogHandler } = require('../catalog/route');
+const { canonicalizeEmail, emailKeyFor } = require('./email');
 
 const MAX_BODY_BYTES = 8 * 1024;
 const MAX_EMAIL_BYTES = 254;
@@ -19,14 +20,6 @@ const DUMMY_HASH = '$argon2id$v=19$m=19456,t=2,p=1$MDEyMzQ1Njc4OWFiY2RlZg$9YWkgP
 
 /** @typedef {'STUDENT'|'TA'} AccountType */
 /** @typedef {{ email: string, password: string, accountType: AccountType }} LoginRequest */
-
-function canonicalizeEmail(email) {
-  return email.trim().toLowerCase();
-}
-
-function emailKeyFor(canonicalEmail) {
-  return crypto.createHash('sha256').update(canonicalEmail, 'utf8').digest('hex');
-}
 
 function isBoundedUtf8(value, maxBytes) {
   return Buffer.byteLength(value, 'utf8') <= maxBytes;

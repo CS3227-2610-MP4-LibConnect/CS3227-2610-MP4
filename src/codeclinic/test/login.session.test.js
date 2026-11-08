@@ -3,7 +3,8 @@ global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 const request = require('supertest');
 const argon2 = require('argon2');
-const { createLoginApp, emailKeyFor, GENERIC_DENIAL, RETRY_MESSAGE } = require('../server/auth/login');
+const { createLoginApp, GENERIC_DENIAL, RETRY_MESSAGE } = require('../server/auth/login');
+const { emailKeyFor } = require('../server/auth/email');
 
 const email = 'member@example.test';
 const password = 'synthetic passphrase';

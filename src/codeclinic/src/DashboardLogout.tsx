@@ -5,10 +5,10 @@ type LogoutState = 'ready' | 'pending' | 'error';
 interface DashboardLogoutProps {
   onConfirmed: () => void;
   children: React.ReactNode;
-  memberNavigation?: boolean;
+  studentNavigation?: boolean;
 }
 
-export default function DashboardLogout({ onConfirmed, children, memberNavigation = false }: DashboardLogoutProps) {
+export default function DashboardLogout({ onConfirmed, children, studentNavigation = false }: DashboardLogoutProps) {
   const [state, setState] = useState<LogoutState>('ready');
 
   const logout = async () => {
@@ -67,11 +67,11 @@ export default function DashboardLogout({ onConfirmed, children, memberNavigatio
   }
 
   return <>
-    {memberNavigation && <header className="member-navbar">
-      <a className="member-navbar__brand" href="/member/dashboard">LibConnect</a>
-      <button className="member-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
+    {studentNavigation && <header className="student-navbar">
+      <a className="student-navbar__brand" href="/student/dashboard">LibConnect</a>
+      <button className="student-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
     </header>}
     {children}
-    {!memberNavigation && <button type="button" onClick={() => { void logout(); }}>Log out</button>}
+    {!studentNavigation && <button type="button" onClick={() => { void logout(); }}>Log out</button>}
   </>;
 }

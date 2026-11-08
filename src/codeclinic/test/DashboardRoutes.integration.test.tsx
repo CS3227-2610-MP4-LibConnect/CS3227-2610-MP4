@@ -54,8 +54,8 @@ describe('dashboard route session guard and logout', () => {
   });
 
   test.each([
-    ['/member/dashboard', 'MEMBER'],
-    ['/librarian/dashboard', 'LIBRARIAN'],
+    ['/student/dashboard', 'STUDENT'],
+    ['/ta/dashboard', 'TA'],
   ])('revalidates the server session before rendering %s', async (path, accountType) => {
     const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, accountType));
     renderAppAt(path, fetchMock);
@@ -64,81 +64,81 @@ describe('dashboard route session guard and logout', () => {
     expect(await screen.findByRole('heading', { name: new RegExp(`${accountType} Dashboard`, 'i') })).toBeInTheDocument();
   });
 
-  test('greets the verified member by name without interpreting it as markup', async () => {
+  test('greets the verified student by name without interpreting it as markup', async () => {
     const name = '<strong>Reader</strong>';
-    const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'MEMBER', name));
-    renderAppAt('/member/dashboard', fetchMock);
+    const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'STUDENT', name));
+    renderAppAt('/student/dashboard', fetchMock);
 
     expect(await screen.findByRole('heading', { name: `Welcome back, ${name}` })).toBeInTheDocument();
     expect(document.querySelector('strong')).toBeNull();
   });
 
-  test('rechecks the session after a member-to-librarian route transition and hides content while checking', async () => {
+  test('rechecks the session after a student-to-TA route transition and hides content while checking', async () => {
     let resolveTransition!: (response: ReturnType<typeof sessionResponse>) => void;
     const transitionResponse = new Promise<ReturnType<typeof sessionResponse>>((resolve) => {
       resolveTransition = resolve;
     });
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockReturnValueOnce(transitionResponse);
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
 
-    expect(await screen.findByRole('heading', { name: /member dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /student dashboard/i })).toBeInTheDocument();
     act(() => {
-      window.history.pushState({}, '', '/librarian/dashboard');
+      window.history.pushState({}, '', '/ta/dashboard');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(screen.getByText(/checking your session/i)).toHaveAttribute('aria-busy', 'true');
-    expect(screen.queryByRole('heading', { name: /librarian dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /ta dashboard/i })).not.toBeInTheDocument();
 
-    await act(async () => { resolveTransition(sessionResponse(200, 'LIBRARIAN')); });
-    expect(await screen.findByRole('heading', { name: /librarian dashboard/i })).toBeInTheDocument();
+    await act(async () => { resolveTransition(sessionResponse(200, 'TA')); });
+    expect(await screen.findByRole('heading', { name: /ta dashboard/i })).toBeInTheDocument();
   });
 
-  test('ignores an older member response after the librarian route check succeeds', async () => {
-    let resolveMember!: (response: ReturnType<typeof sessionResponse>) => void;
-    const memberResponse = new Promise<ReturnType<typeof sessionResponse>>((resolve) => {
-      resolveMember = resolve;
+  test('ignores an older student response after the TA route check succeeds', async () => {
+    let resolveStudent!: (response: ReturnType<typeof sessionResponse>) => void;
+    const studentResponse = new Promise<ReturnType<typeof sessionResponse>>((resolve) => {
+      resolveStudent = resolve;
     });
     const fetchMock = jest.fn()
-      .mockReturnValueOnce(memberResponse)
-      .mockResolvedValueOnce(sessionResponse(200, 'LIBRARIAN'));
-    renderAppAt('/member/dashboard', fetchMock);
+      .mockReturnValueOnce(studentResponse)
+      .mockResolvedValueOnce(sessionResponse(200, 'TA'));
+    renderAppAt('/student/dashboard', fetchMock);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     act(() => {
-      window.history.pushState({}, '', '/librarian/dashboard');
+      window.history.pushState({}, '', '/ta/dashboard');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(await screen.findByRole('heading', { name: /librarian dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /ta dashboard/i })).toBeInTheDocument();
 
-    await act(async () => { resolveMember(sessionResponse(200, 'MEMBER')); });
-    expect(screen.getByRole('heading', { name: /librarian dashboard/i })).toBeInTheDocument();
+    await act(async () => { resolveStudent(sessionResponse(200, 'STUDENT')); });
+    expect(screen.getByRole('heading', { name: /ta dashboard/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /access denied/i })).not.toBeInTheDocument();
   });
 
   test('ignores an older 401 after the current route check succeeds', async () => {
-    let resolveMember!: (response: ReturnType<typeof sessionResponse>) => void;
-    const memberResponse = new Promise<ReturnType<typeof sessionResponse>>((resolve) => {
-      resolveMember = resolve;
+    let resolveStudent!: (response: ReturnType<typeof sessionResponse>) => void;
+    const studentResponse = new Promise<ReturnType<typeof sessionResponse>>((resolve) => {
+      resolveStudent = resolve;
     });
     const fetchMock = jest.fn()
-      .mockReturnValueOnce(memberResponse)
-      .mockResolvedValueOnce(sessionResponse(200, 'LIBRARIAN'));
-    renderAppAt('/member/dashboard', fetchMock);
+      .mockReturnValueOnce(studentResponse)
+      .mockResolvedValueOnce(sessionResponse(200, 'TA'));
+    renderAppAt('/student/dashboard', fetchMock);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     act(() => {
-      window.history.pushState({}, '', '/librarian/dashboard');
+      window.history.pushState({}, '', '/ta/dashboard');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(await screen.findByRole('heading', { name: /librarian dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /ta dashboard/i })).toBeInTheDocument();
 
-    await act(async () => { resolveMember(sessionResponse(401)); });
-    expect(window.location.pathname).toBe('/librarian/dashboard');
-    expect(screen.getByRole('heading', { name: /librarian dashboard/i })).toBeInTheDocument();
+    await act(async () => { resolveStudent(sessionResponse(401)); });
+    expect(window.location.pathname).toBe('/ta/dashboard');
+    expect(screen.getByRole('heading', { name: /ta dashboard/i })).toBeInTheDocument();
   });
 
   test('invalidates a pending check when leaving and revisiting the same dashboard route', async () => {
@@ -148,8 +148,8 @@ describe('dashboard route session guard and logout', () => {
     });
     const fetchMock = jest.fn()
       .mockReturnValueOnce(firstVisitResponse)
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'));
-    renderAppAt('/member/dashboard', fetchMock);
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'));
+    renderAppAt('/student/dashboard', fetchMock);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     act(() => {
@@ -159,29 +159,41 @@ describe('dashboard route session guard and logout', () => {
     expect(await screen.findByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
 
     act(() => {
-      window.history.pushState({}, '', '/member/dashboard');
+      window.history.pushState({}, '', '/student/dashboard');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(await screen.findByRole('heading', { name: /member dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /student dashboard/i })).toBeInTheDocument();
 
     await act(async () => { resolveFirstVisit(sessionResponse(401)); });
-    expect(window.location.pathname).toBe('/member/dashboard');
-    expect(screen.getByRole('heading', { name: /member dashboard/i })).toBeInTheDocument();
+    expect(window.location.pathname).toBe('/student/dashboard');
+    expect(screen.getByRole('heading', { name: /student dashboard/i })).toBeInTheDocument();
   });
 
   test.each(['/member/dashboard', '/librarian/dashboard'])(
+    'does not serve the former route %s as a dashboard', async (path) => {
+      const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'STUDENT'));
+      renderAppAt(path, fetchMock);
+
+      expect(await screen.findByRole('button', { name: /sign in|log in/i })).toBeInTheDocument();
+      expect(fetchMock).not.toHaveBeenCalledWith('/api/auth/session', expect.anything());
+      expect(screen.queryByText(/student dashboard|ta dashboard|member dashboard|librarian dashboard/i)).not.toBeInTheDocument();
+      expect(window.location.pathname).toBe(path);
+    }
+  );
+
+  test.each(['/student/dashboard', '/ta/dashboard'])(
     'redirects an unauthenticated direct visit from %s without rendering its dashboard', async (path) => {
       const fetchMock = jest.fn().mockResolvedValue(sessionResponse(401));
       renderAppAt(path, fetchMock);
 
       await waitFor(() => expect(window.location.pathname).toBe('/'));
-      expect(screen.queryByText(/member dashboard|librarian dashboard/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/student dashboard|ta dashboard/i)).not.toBeInTheDocument();
     }
   );
 
   test.each([
-    ['/librarian/dashboard', 'MEMBER', '/member/dashboard', /member dashboard/i, /librarian dashboard/i],
-    ['/member/dashboard', 'LIBRARIAN', '/librarian/dashboard', /librarian dashboard/i, /member dashboard/i],
+    ['/ta/dashboard', 'STUDENT', '/student/dashboard', /student dashboard/i, /ta dashboard/i],
+    ['/student/dashboard', 'TA', '/ta/dashboard', /ta dashboard/i, /student dashboard/i],
   ] as const)(
     'denies %s when the server verifies %s and links to that verified role route',
     async (requestedPath, verifiedRole, ownPath, ownLinkName, deniedHeading) => {
@@ -195,13 +207,13 @@ describe('dashboard route session guard and logout', () => {
   );
 
   test('does not let a client-selected or query-string role authorize a dashboard', async () => {
-    window.localStorage.setItem('accountType', 'LIBRARIAN');
-    const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'MEMBER'));
-    renderAppAt('/member/dashboard?accountType=LIBRARIAN', fetchMock);
+    window.localStorage.setItem('accountType', 'TA');
+    const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, 'STUDENT'));
+    renderAppAt('/student/dashboard?accountType=TA', fetchMock);
 
-    expect(await screen.findByRole('heading', { name: /member dashboard/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /student dashboard/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: /welcome back/i })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /librarian dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /ta dashboard/i })).not.toBeInTheDocument();
   });
 
   test.each([
@@ -209,26 +221,26 @@ describe('dashboard route session guard and logout', () => {
     ['malformed session', { status: 200, ok: true, json: async () => ({}) }],
   ])('fails closed with retry on %s', async (_label, response) => {
     const fetchMock = jest.fn().mockResolvedValue(response);
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
 
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument();
-    expect(screen.queryByText(/member dashboard/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/student dashboard/i)).not.toBeInTheDocument();
   });
 
   test('fails closed with retry when session validation rejects over the network', async () => {
     const fetchMock = jest.fn().mockRejectedValue(new TypeError('Network request failed'));
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
 
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /member dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
   });
 
   test('posts CSRF logout and navigates only after 204 confirmation', async () => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockResolvedValueOnce({ status: 200, ok: true, json: async () => ({ csrfToken: 'synthetic-csrf' }) })
       .mockResolvedValueOnce({ status: 204, ok: true, json: async () => ({}) });
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
 
     fireEvent.click(await screen.findByRole('button', { name: /log out|sign out/i }));
     await waitFor(() => expect(window.location.pathname).toBe('/'));
@@ -241,8 +253,8 @@ describe('dashboard route session guard and logout', () => {
   });
 
   test.each([
-    ['/member/dashboard', 'MEMBER'],
-    ['/librarian/dashboard', 'LIBRARIAN'],
+    ['/student/dashboard', 'STUDENT'],
+    ['/ta/dashboard', 'TA'],
   ])('shows an accessible logout control on %s', async (path, accountType) => {
     const fetchMock = jest.fn().mockResolvedValue(sessionResponse(200, accountType));
     renderAppAt(path, fetchMock);
@@ -251,10 +263,10 @@ describe('dashboard route session guard and logout', () => {
 
   test('treats confirmed 401 during logout as logged out', async () => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'LIBRARIAN'))
+      .mockResolvedValueOnce(sessionResponse(200, 'TA'))
       .mockResolvedValueOnce({ status: 200, ok: true, json: async () => ({ csrfToken: 'synthetic-csrf' }) })
       .mockResolvedValueOnce({ status: 401, ok: false, json: async () => ({}) });
-    renderAppAt('/librarian/dashboard', fetchMock);
+    renderAppAt('/ta/dashboard', fetchMock);
 
     fireEvent.click(await screen.findByRole('button', { name: /log out|sign out/i }));
     await waitFor(() => expect(window.location.pathname).toBe('/'));
@@ -265,15 +277,15 @@ describe('dashboard route session guard and logout', () => {
     ['service failure', 503],
   ])('keeps protected content hidden with a retryable error after %s', async (_label, status) => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockResolvedValueOnce({ status: 200, ok: true, json: async () => ({ csrfToken: 'synthetic-csrf' }) })
       .mockResolvedValueOnce({ status, ok: false, json: async () => ({}) });
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
 
     fireEvent.click(await screen.findByRole('button', { name: /log out|sign out/i }));
     expect(await screen.findByRole('button', { name: /retry/i })).toBeInTheDocument();
-    expect(screen.queryByText(/member dashboard/i)).not.toBeInTheDocument();
-    expect(window.location.pathname).toBe('/member/dashboard');
+    expect(screen.queryByText(/student dashboard/i)).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe('/student/dashboard');
   });
 
   test.each([
@@ -281,50 +293,50 @@ describe('dashboard route session guard and logout', () => {
     ['CSRF service failure', { status: 503, json: async () => ({}) }],
   ])('keeps dashboard hidden and permits retry after %s', async (_label, csrfResponse) => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockResolvedValueOnce(csrfResponse);
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /member dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   test('keeps dashboard hidden when logout fails over the network', async () => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'LIBRARIAN'))
+      .mockResolvedValueOnce(sessionResponse(200, 'TA'))
       .mockResolvedValueOnce({ status: 200, json: async () => ({ csrfToken: 'synthetic-csrf' }) })
       .mockRejectedValueOnce(new TypeError('Network request failed'));
-    renderAppAt('/librarian/dashboard', fetchMock);
+    renderAppAt('/ta/dashboard', fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /librarian dashboard/i })).not.toBeInTheDocument();
-    expect(window.location.pathname).toBe('/librarian/dashboard');
+    expect(screen.queryByRole('heading', { name: /ta dashboard/i })).not.toBeInTheDocument();
+    expect(window.location.pathname).toBe('/ta/dashboard');
   });
 
   test('keeps dashboard hidden when CSRF retrieval fails over the network', async () => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockRejectedValueOnce(new TypeError('Network request failed'));
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: /member dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   test('a later dashboard visit is denied after confirmed logout', async () => {
     const fetchMock = jest.fn()
-      .mockResolvedValueOnce(sessionResponse(200, 'MEMBER'))
+      .mockResolvedValueOnce(sessionResponse(200, 'STUDENT'))
       .mockResolvedValueOnce({ status: 200, json: async () => ({ csrfToken: 'synthetic-csrf' }) })
       .mockResolvedValueOnce({ status: 204 })
       .mockResolvedValueOnce(sessionResponse(401));
-    const { unmount } = renderAppAt('/member/dashboard', fetchMock);
+    const { unmount } = renderAppAt('/student/dashboard', fetchMock);
     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     unmount();
-    renderAppAt('/member/dashboard', fetchMock);
+    renderAppAt('/student/dashboard', fetchMock);
     await waitFor(() => expect(window.location.pathname).toBe('/'));
-    expect(screen.queryByRole('heading', { name: /member dashboard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
   });
 });

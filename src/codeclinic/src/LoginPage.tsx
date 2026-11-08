@@ -72,7 +72,7 @@ function LoginPage() {
         setFormError('Unable to complete sign in. Please try again.');
         return;
       }
-      window.location.assign(returnedType === 'STUDENT' ? '/member/dashboard' : '/librarian/dashboard');
+      window.location.assign(returnedType === 'STUDENT' ? '/student/dashboard' : '/ta/dashboard');
     } catch {
       setFormError('Sign in is temporarily unavailable. Please try again later.');
     } finally {

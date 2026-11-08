@@ -245,8 +245,8 @@
   -webkit-line-clamp: 4;
 }
 
-.member-navbar a:focus-visible,
-.member-navbar button:focus-visible {
+.student-navbar a:focus-visible,
+.student-navbar button:focus-visible {
   outline: 3px solid var(--lc-color-focus);
   outline-offset: 3px;
 }

@@ -54,7 +54,7 @@ test('serves the built frontend and the login API from one origin', async () => 
     expect(registrationPage.text).toContain('<title>LibConnect</title>');
 
     const dashboardResults = [];
-    for (const dashboardPath of ['/member/dashboard', '/librarian/dashboard']) {
+    for (const dashboardPath of ['/student/dashboard', '/ta/dashboard']) {
       const directNavigation = await request(app).get(dashboardPath);
       const refresh = await request(app).get(dashboardPath);
       dashboardResults.push(
@@ -63,11 +63,18 @@ test('serves the built frontend and the login API from one origin', async () => 
       );
     }
     expect(dashboardResults).toEqual([
-      { path: '/member/dashboard', kind: 'direct', status: 200, shell: true },
-      { path: '/member/dashboard', kind: 'refresh', status: 200, shell: true },
-      { path: '/librarian/dashboard', kind: 'direct', status: 200, shell: true },
-      { path: '/librarian/dashboard', kind: 'refresh', status: 200, shell: true },
+      { path: '/student/dashboard', kind: 'direct', status: 200, shell: true },
+      { path: '/student/dashboard', kind: 'refresh', status: 200, shell: true },
+      { path: '/ta/dashboard', kind: 'direct', status: 200, shell: true },
+      { path: '/ta/dashboard', kind: 'refresh', status: 200, shell: true },
     ]);
+
+    for (const formerPath of ['/member/dashboard', '/librarian/dashboard']) {
+      const former = await request(app).get(formerPath);
+      expect(former.status).toBe(404);
+      expect(former.text).not.toContain('<title>LibConnect</title>');
+      expect(former.headers.location).toBeUndefined();
+    }
 
     const login = await request(app).post('/api/auth/login').send({
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'STUDENT',

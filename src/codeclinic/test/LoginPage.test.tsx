@@ -162,8 +162,8 @@ describe('role-aware login', () => {
   });
 
   test.each([
-    { accountType: 'STUDENT', destination: '/member/dashboard' },
-    { accountType: 'TA', destination: '/librarian/dashboard' },
+    { accountType: 'STUDENT', destination: '/student/dashboard' },
+    { accountType: 'TA', destination: '/ta/dashboard' },
   ])('navigates to the $accountType dashboard after successful login', async ({ accountType, destination }) => {
     const { restore } = mockLoginResponse(200, { accountType });
     const assign = jest.fn();

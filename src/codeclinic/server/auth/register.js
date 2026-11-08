@@ -1,4 +1,4 @@
-const { canonicalizeEmail } = require('./login');
+const { canonicalizeEmail } = require('./email');
 
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const INVALID_MESSAGE = 'Enter valid registration details.';

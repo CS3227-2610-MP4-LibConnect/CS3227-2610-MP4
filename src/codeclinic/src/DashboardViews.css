@@ -11,13 +11,13 @@
     var(--lc-color-page);
 }
 
-.member-dashboard {
+.student-dashboard {
   width: min(100%, 1180px);
   min-height: calc(100vh - 72px);
   padding: var(--lc-space-8) var(--lc-space-page) var(--lc-space-16);
 }
 
-.member-navbar {
+.student-navbar {
   position: sticky;
   z-index: 10;
   top: 0;
@@ -32,7 +32,7 @@
   box-shadow: 0 4px 18px rgba(30, 64, 175, 0.06);
 }
 
-.member-navbar__brand {
+.student-navbar__brand {
   color: var(--lc-color-navy);
   font-family: var(--lc-font-display);
   font-size: 1.35rem;
@@ -40,7 +40,7 @@
   text-decoration: none;
 }
 
-.member-navbar__logout {
+.student-navbar__logout {
   min-height: 42px;
   padding: 0 var(--lc-space-control-inline);
   border: 1px solid var(--lc-color-control-border);
@@ -88,11 +88,11 @@
     padding: var(--lc-space-8) var(--lc-space-4) var(--lc-space-4);
   }
 
-  .member-dashboard {
+  .student-dashboard {
     padding: var(--lc-space-6) var(--lc-space-4) var(--lc-space-8);
   }
 
-  .member-navbar {
+  .student-navbar {
     padding-inline: var(--lc-space-4);
   }
 

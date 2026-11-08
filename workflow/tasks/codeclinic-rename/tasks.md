@@ -19,7 +19,7 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
 
 ## Group 2 — Dashboards and email helpers (parallel)
 
-- [ ] **T03 — Role dashboards and routes.**
+- [x] **T03 — Role dashboards and routes.**
   - Rename `src/MemberDashboard.tsx` to `src/StudentDashboard.tsx` and `src/LibrarianDashboard.tsx` to `src/TADashboard.tsx`.
   - Update the routes in `src/index.tsx` and `src/DashboardRouteGuard.tsx`, the brand link in `src/DashboardLogout.tsx`, and the frontend-shell paths in `server/index.js` to `/student/dashboard` and `/ta/dashboard`.
   - The former paths are not served or redirected.
@@ -27,7 +27,7 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
 
   (role-based-dashboards v0.5 R1–R7.)
 
-- [ ] **T06 — Move the email helpers into their own module.** Move `canonicalizeEmail` and `emailKeyFor` from `server/auth/login.js` to a new `server/auth/email.js`, and import them in `login.js`, `register.js`, and `firestore-registration.js`. Behavior is unchanged, and the existing email tests pass. (PLAN.md *Refactor during the role-rename tasks*; role-aware-login R4.)
+- [x] **T06 — Move the email helpers into their own module.** Move `canonicalizeEmail` and `emailKeyFor` from `server/auth/login.js` to a new `server/auth/email.js`, and import them in `login.js`, `register.js`, and `firestore-registration.js`. Behavior is unchanged, and the existing email tests pass. (PLAN.md *Refactor during the role-rename tasks*; role-aware-login R4.)
 
 ## Group 3 — Remove the Book catalog
 

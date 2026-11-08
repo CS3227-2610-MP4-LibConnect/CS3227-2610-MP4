@@ -1,6 +1,6 @@
 import React from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { MemberDashboard } from '../src/MemberDashboard';
+import { StudentDashboard } from '../src/StudentDashboard';
 
 const emptyResponse = {
   books: [], nextCursor: null, scannedAnyDocument: false,
@@ -21,7 +21,7 @@ describe('member catalog dashboard presentation', () => {
 
   beforeEach(() => {
     onLogoutConfirmed.mockClear();
-    window.history.replaceState({}, '', '/member/dashboard');
+    window.history.replaceState({}, '', '/student/dashboard');
     Object.defineProperty(global, 'fetch', {
       configurable: true, writable: true, value: jest.fn().mockResolvedValue(response(emptyResponse)),
     });
@@ -33,15 +33,15 @@ describe('member catalog dashboard presentation', () => {
   });
 
   test('provides dashboard navigation and keeps logout available', async () => {
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
 
-    expect(screen.getByRole('link', { name: /libconnect/i })).toHaveAttribute('href', '/member/dashboard');
+    expect(screen.getByRole('link', { name: /libconnect/i })).toHaveAttribute('href', '/student/dashboard');
     expect(screen.getByRole('button', { name: /log out/i })).toBeVisible();
     await screen.findByText('No books found.');
   });
 
   test('starts with labelled basic search and advanced criteria collapsed', async () => {
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
 
     expect(screen.getByRole('searchbox', { name: /search/i })).toBeVisible();
     expect(screen.getByRole('button', { name: /advanced search/i })).toHaveAttribute('aria-expanded', 'false');
@@ -50,7 +50,7 @@ describe('member catalog dashboard presentation', () => {
   });
 
   test('hides advanced criteria when collapsed and restores their values when reopened', async () => {
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     await screen.findByText('No books found.');
 
     const toggle = screen.getByRole('button', { name: /advanced search/i });
@@ -78,7 +78,7 @@ describe('member catalog dashboard presentation', () => {
       });
       return response(emptyResponse);
     });
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     const search = screen.getByRole('searchbox', { name: /search books/i });
     fireEvent.change(search, { target: { value: '  tom  ' } });
     fireEvent.click(screen.getByRole('button', { name: 'Search', exact: true }));
@@ -98,7 +98,7 @@ describe('member catalog dashboard presentation', () => {
   });
 
   test('collapsing advanced search deactivates its criteria and preserves values for reopening', async () => {
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     await screen.findByText('No books found.');
     const toggle = screen.getByRole('button', { name: /advanced search/i });
     fireEvent.click(toggle);
@@ -122,7 +122,7 @@ describe('member catalog dashboard presentation', () => {
   });
 
   test('rejects invalid and reversed years before issuing a request', async () => {
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     await screen.findByText('No books found.');
     fireEvent.click(screen.getByRole('button', { name: /advanced search/i }));
     fireEvent.change(screen.getByRole('textbox', { name: /minimum publication year/i }), { target: { value: '1450.0' } });
@@ -148,7 +148,7 @@ describe('member catalog dashboard presentation', () => {
         ...emptyResponse, books: [book('full', 'Full catalog result')], scannedAnyDocument: true,
         scannedValidBooks: true,
       }));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(1));
     const search = screen.getByRole('searchbox', { name: /search books/i });
     fireEvent.change(search, { target: { value: 'stale query' } });
@@ -177,7 +177,7 @@ describe('member catalog dashboard presentation', () => {
         books: [book('two', 'Second page book')], nextCursor: null, scannedAnyDocument: true,
         scannedValidBooks: true, scanComplete: true,
       }));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(await screen.findByRole('heading', { name: 'First page book' })).toBeVisible();
     fireEvent.click(screen.getByRole('button', { name: /load more books/i }));
     expect(await screen.findByRole('heading', { name: 'Second page book' })).toBeVisible();
@@ -191,7 +191,7 @@ describe('member catalog dashboard presentation', () => {
       .mockResolvedValueOnce(response({ ...emptyResponse, scannedAnyDocument: true, scannedValidBooks: true }))
       .mockResolvedValueOnce(response({ error: { code: 'CATALOG_UNAVAILABLE' } }, 503))
       .mockResolvedValueOnce(response({ ...emptyResponse, books: [book('retry', 'Retry result')], scannedAnyDocument: true, scannedValidBooks: true }));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     await screen.findByText('No books found.');
     fireEvent.change(screen.getByRole('searchbox', { name: /search books/i }), { target: { value: 'absent' } });
     fireEvent.click(screen.getByRole('button', { name: 'Search', exact: true }));
@@ -214,7 +214,7 @@ describe('member catalog dashboard presentation', () => {
         books: [], nextCursor: null, scannedAnyDocument: true,
         scannedValidBooks: false, scanComplete: true,
       }));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(await screen.findByRole('button', { name: /load more books/i })).toBeVisible();
     expect(screen.queryByText(/no books found|no matching books/i)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /load more books/i }));
@@ -225,20 +225,20 @@ describe('member catalog dashboard presentation', () => {
 
   test('fails closed on malformed success payload and authorization denial', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce(response({ books: [{ title: 'Untrusted' }] }));
-    const first = render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    const first = render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(await screen.findByRole('button', { name: 'Retry' })).toBeVisible();
     expect(screen.queryByRole('heading', { name: 'Untrusted' })).not.toBeInTheDocument();
     first.unmount();
 
     (global.fetch as jest.Mock).mockResolvedValueOnce(response({ error: { code: 'FORBIDDEN' } }, 403));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(await screen.findByText(/don’t have access/i)).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument();
   });
 
   test('accepts the valid empty-catalog response', async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce(response(emptyResponse));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
 
     expect(await screen.findByText('No books found.')).toBeVisible();
     expect(screen.queryByText('No matching books.')).not.toBeInTheDocument();
@@ -257,7 +257,7 @@ describe('member catalog dashboard presentation', () => {
     }],
   ])('fails closed on contradictory scan metadata: %s', async (_description, payload) => {
     (global.fetch as jest.Mock).mockResolvedValueOnce(response(payload));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
 
     expect(await screen.findByRole('button', { name: 'Retry' })).toBeVisible();
     expect(screen.queryByText('No books found.')).not.toBeInTheDocument();
@@ -269,7 +269,7 @@ describe('member catalog dashboard presentation', () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce(response({
       books: [], nextCursor: '', scannedAnyDocument: true, scannedValidBooks: true, scanComplete: false,
     }));
-    render(<MemberDashboard onLogoutConfirmed={onLogoutConfirmed} />);
+    render(<StudentDashboard onLogoutConfirmed={onLogoutConfirmed} />);
     expect(await screen.findByRole('button', { name: 'Retry' })).toBeVisible();
     expect(screen.queryByRole('button', { name: /load more books/i })).not.toBeInTheDocument();
     expect(screen.queryByText(/no books found|no matching books/i)).not.toBeInTheDocument();
