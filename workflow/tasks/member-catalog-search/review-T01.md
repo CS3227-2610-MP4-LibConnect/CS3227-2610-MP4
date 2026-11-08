@@ -1,0 +1,25 @@
+# T01 independent review — changes required
+
+Task: `member-catalog-search`, batch 1, T01. Reviewed canonical specification v0.1 (SHA-256 `AE609123AD4151616BADFEA10C1EE91B710E1C441E17D43FE77C8703D91A4842`), checklist/handoff v0.2, assignment manifest, implementation-T01 design report, factual log, and read-only local source. Review log: `logs/tasks/member-catalog-search/review-T01.md` (staged as `review-T01-log.md`).
+
+## Verdict and traceability
+
+**T01: changes required; partial and correctly stopped at a separate approval boundary.** The candidate specifies a read-only endpoint, allowed query fields, preliminary validation bounds, a response shape, continuation interaction, invalid-Book handling, and 401/403/503 UI behavior. It does not finalize the Book storage contract, demonstrate an acceptable total read bound, or resolve all empty-catalog semantics. T01 remains unchecked. No T02 or production implementation should start from this candidate.
+
+R2–R3 and scenarios 5–8 have a plausible full-catalog scan/filter design but no proven operational bound or tests. R4 and scenarios 1–2, 9–10 have proposed card/response states; the all-invalid-record case is ambiguous. R5–R6 and scenarios 11–13 have proposed authorization/error rules but no endpoint or tests. Scenario 14 is outside T01 and remains unverified. All behavioral criteria are unverified because T01 changed no production behavior; T02–T06 own implementation and tests.
+
+## Findings
+
+1. **Blocker — storage and total query budget not approved or demonstrated.** `implementation-T01.md`, “Status and local findings,” “Scan invariant and unresolved cost,” and “Approval required before T02”; checklist T01 and spec R2/R5. The source contains no Book collection or population path, and the developer guide supplies no catalog volume. The proposal reads at most 100 Book documents per request but may read every document to finish a search. With unknown `N`, total reads and continuation count are unbounded. The report correctly identifies this and requests the human decision. Obtain explicit approval for a concrete collection/document contract and supported volume/read budget, or a complete alternative search architecture. Then revise T01 with a demonstrated bound and independent review before T02.
+2. **Moderate — catalog-empty signal conflates zero documents with zero valid documents.** `implementation-T01.md`, “Candidate contract,” response shape. `scannedValidBooks` stays false when a nonempty collection contains only invalid records; after `scanComplete`, the UI would label it globally empty. Spec R4 scenario 9 calls for the empty message when there are zero Book records, while malformed required Book data must be handled safely. Define and test whether the catalog-empty indicator counts raw documents, valid Book records, or returns a data-integrity error for an all-invalid collection; make the UI message truthful under that policy.
+3. **Moderate — final contract details remain provisional.** `implementation-T01.md`, “Candidate contract.” The text comparison says to apply “one documented Unicode case mapping” but does not name it; cursor validation references an “impossible ID” without defining ID syntax or constraints. The document itself says field types, limits, uniqueness, and Book schema await approval. Checklist T01 requires exact rules and a finalized design. After the storage decision, pin these rules and test Unicode/cursor boundaries with synthetic fixtures.
+
+## Security and change scope
+
+The candidate correctly treats the cursor as untrusted, requires current server-side session/account checks on each request, and does not use Book text for actions. No Book or session fields are proposed in errors. This is a design assessment, not verification of an endpoint. No production source changes were present in `git diff --name-only HEAD -- server src test package.json package-lock.json`; the pre-implementation test is untracked and belongs to the prior test-writing dispatch. No new dependency, configuration, Firestore rule, or external access was attempted in this review.
+
+## Review separation and checks
+
+The T01 report is untracked and cannot be retrieved from `git show HEAD`; a separate clean worktree would not contain it. I inspected that exact report read-only in the shared workspace and compared tracked server source through `git show HEAD`, with no production edits. This is a separation exception under `workflow/README.md`; the distinct reviewer, read-only source view, `git diff` scope check, and separate staged review artifacts are compensating controls. The assignment plan validator passed. No T01 tests exist because no behavior was implemented. `react-scripts` is absent locally; the earlier React test could not run. Exact checks and one corrected path error are in the review log.
+
+The orchestrator should present the specific storage/volume decision to the human. Human approval of batch dispatch did not approve a new Book data model. Keep T01 open, revise its contract after that decision, and request independent re-review before any T02 dispatch.

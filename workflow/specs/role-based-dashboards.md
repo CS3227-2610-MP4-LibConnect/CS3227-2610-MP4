@@ -1,6 +1,6 @@
 # Role-based dashboard specification
 
-Version: 0.3 (2026-11-07)
+Version: 0.4 (2026-11-08)
 Approval evidence: the human explicitly approved version 0.3 on 2026-11-07. Version 0.2 was also human-approved, including the route and cross-role denial defaults. No agent-set approval state.
 Task ID: `role-based-dashboards`
 
@@ -38,11 +38,11 @@ Version 0.3 adds an implementation organization requirement: define the member a
 
 When `POST /api/auth/login` succeeds with HTTP 200 and a valid `accountType`, the login page MUST navigate to `/member/dashboard` for `MEMBER` and `/librarian/dashboard` for `LIBRARIAN`. It MUST stop rendering the signed-in confirmation state. An invalid or missing type, malformed success body, or unsuccessful response MUST NOT navigate to either dashboard or establish UI-authenticated state; it MUST show an appropriate non-sensitive error.
 
-On arrival, the dashboard route MUST revalidate the cookie-backed session with `GET /api/auth/session` before rendering its dashboard content. The returned server role MUST match the route. The UI MUST NOT rely on the login form's selected account type, URL, query parameter, browser storage, or prior in-memory state as authorization.
+On arrival, the dashboard route MUST revalidate the cookie-backed session with `GET /api/auth/session` before rendering its dashboard content. The returned server role MUST match the route. For an active member, the session endpoint MAY additionally return the stored account name so the member dashboard can greet that member. It MUST NOT return password, hash, session material, or unrelated account fields. The UI MUST NOT rely on the login form's selected account type, URL, query parameter, browser storage, or prior in-memory state as authorization.
 
 ### R2. Separate dashboards
 
-The member route MUST render a member-specific dashboard landing view. The librarian route MUST render a librarian-specific dashboard landing view. Each MUST identify the corresponding account type and provide a logout control. A route for one role MUST NOT render the other role's dashboard.
+The member route MUST render a member-specific dashboard landing view and greet the member using the name returned by the verified server session when one is present. It MUST NOT show a placeholder name when the stored name is unavailable. The librarian route MUST render a librarian-specific dashboard landing view. Each MUST identify the corresponding account type and provide a logout control. A route for one role MUST NOT render the other role's dashboard.
 
 This task adds only basic role-specific landing views. It does not authorize data access or actions from the broader feature lists in `Overview.md`.
 
@@ -141,3 +141,7 @@ The human authorized a planning amendment for separate `MemberDashboard.tsx` and
 ### 2026-11-07 — canonical specification v0.3 approved
 
 The human explicitly approved canonical specification version 0.3. This approval covers the specification only; checklist, handoff, grouping, implementation, commit, and merge approvals remain separate.
+
+### 2026-11-08 — member greeting amendment
+
+The human directed the member dashboard to greet the signed-in user by name. Version 0.4 records the minimal session response addition and member-only presentation requirement. The login response and authorization rules remain unchanged.

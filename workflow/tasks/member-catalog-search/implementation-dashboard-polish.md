@@ -1,0 +1,13 @@
+# Dashboard polish and local emulator warning follow-up
+
+Date: 2026-11-08. Human instructions in this conversation requested dashboard search styling, removal of each card's synopsis expansion button, a name-based member greeting, and removal of the local Firestore `credentials` deprecation warning.
+
+Specification versions: `member-catalog-search` v0.2 (SHA-256 `53D5000B27EB1673D5BE0419EC3A05F1BBA36739E0C9D86082F4FC51B1FE9BFA`); `role-based-dashboards` v0.4 (SHA-256 `FE1E9C57851088862415A0F154FEEBE8FF92DB8682EF4B479C82D0FAAFDD2383`). The task copy of the catalog spec matches the canonical spec. The login success response and authorization policy were not changed.
+
+Changed files for this follow-up: `src/MemberCatalog.tsx`, `src/MemberCatalog.css`, `src/MemberDashboard.tsx`, `src/DashboardRouteGuard.tsx`, `server/auth/login.js`, `server/firestore-target.js`, `test/MemberCatalogCards.test.tsx`, `test/DashboardRoutes.integration.test.tsx`, `test/login.session.test.js`, `test/firestore-target.test.js`, `test/seed-local-books.test.js`, and the two canonical specifications. Other pre-existing working-tree changes are outside this follow-up.
+
+The search form now groups its secondary actions and uses the shared color, radius, spacing, and focus tokens. The synopsis expansion state/button and its CSS were removed; the full text remains in the DOM with visual line clamping. The session endpoint returns the stored, bounded member name after its existing session/account recheck. The route guard passes that name to the member dashboard; missing or malformed names render a neutral `Welcome back` without a placeholder. The local Firestore connector no longer creates a synthetic credential, which removed the `google-auth-library` deprecated `credentials` option warning during a read-only emulator request. The emulator target remains pinned to project `libconnect-mp4` at `127.0.0.1:8080`.
+
+Verification: focused CRA tests 79/79 passed after correcting an existing heading assertion; full CRA suite 254 passed, one opt-in emulator integration test skipped; TypeScript `--noEmit` passed; production CRA build compiled. A read-only Firestore query through `connectFirestoreTarget` succeeded against the local emulator without the credential warning. The independent reviewer passed 63/63 targeted tests and reported pass with visual follow-up. See `logs/tasks/member-catalog-search/dashboard-polish.md` for command outcomes and the preserved initial full-suite failure/correction.
+
+Unresolved: the computer browser host was unavailable, and local Chrome/Edge headless attempts produced no screenshots. Rendered desktop/320 CSS-pixel layout, focus, overflow, and synopsis clipping remain unverified. No cloud access, commit, merge, or deployment occurred.

@@ -1,0 +1,9 @@
+# Orchestrator batch 3 factual log
+
+- Date: 2026-11-07. Human explicitly replied “approve” to the proposed T04–T05 batch plan and implementation dispatch. No commit, merge, cloud access, dependency change, or deployment approval was granted.
+- Contract: `workflow/specs/member-catalog-search.md` v0.1, checklist/handoff v0.2, T01 final design. `assignment-batch-3.json` passed `plan` validation before implementation and `complete` validation after final review.
+- One implementer completed T04, recorded its focused evidence, then completed T05. A different reviewer independently assessed both and the combined diff. Initial verdicts were changes required for shared CSS regression, TypeScript TS18046, and accepting an empty incomplete cursor. Original findings were preserved.
+- Targeted corrections restored librarian dashboard styling, fixed TypeScript narrowing, and rejected empty continuation cursors with a regression test. Final independent verdicts: T04 pass with follow-up; T05 pass with follow-up.
+- React verification: isolated offline Jest, 2 suites and 14/14 tests passed. Refreshed isolated TypeScript project check exited 0 with no diagnostics. `git diff --check` exited 0. Exact commands and results are in the per-item implementation and review logs.
+- Browser CUA inventory returned `Browsers: Error: The browser access host is unavailable`. Desktop/320-pixel rendered layout, scroll persistence, focus, and synopsis truncation remain unverified and are explicitly assigned to T06. The app-root install is incomplete; tests used `.deps-batch3`, created from the existing lockfile with `npm ci --offline --ignore-scripts --no-audit --no-fund` (1602 packages).
+- The orchestrator filed the canonical per-item reports/logs and checked T04–T05 after independent final review, with the visual gap recorded beside the checklist status. T06 remains unchecked and requires separate batch plan/dispatch approval.

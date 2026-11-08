@@ -1,0 +1,8 @@
+# T02 factual review log
+
+- Read `AGENTS.md`, `workflow/README.md`, `workflow/agents/reviewer.toml`, canonical spec v0.1, checklist/handoff v0.2, batch-2 manifest, final T01 contract/review, T02 report/log, `server/catalog/adapter.js`, and `test/member-catalog.adapter.test.js`.
+- `Get-FileHash workflow/specs/member-catalog-search.md -Algorithm SHA256` and the task copy: both `AE609123AD4151616BADFEA10C1EE91B710E1C441E17D43FE77C8703D91A4842`.
+- `git status --short` identified the scoped untracked adapter/test and unrelated preexisting workspace changes; adapter/test were read exactly as present. No source changes made by reviewer.
+- With `NODE_PATH` set to the local `.deps-batch2/node_modules`, `node .deps-batch2/node_modules/jest/bin/jest.js --config '{"testEnvironment":"node","modulePathIgnorePatterns":["<rootDir>/.deps-batch2/"]}' --runInBand test/server.test.js test/login.session.test.js test/member-catalog.adapter.test.js test/member-catalog.endpoint.test.js`: exit 0; 4 suites and 39 tests passed. This includes T02's 5 adapter tests.
+- Read installed `@google-cloud/firestore/build/src/reference/query.js` `validateReference` path: a collection document-ID cursor accepts a plain string ID. Constructed a local query using `new Firestore({projectId:'synthetic-local'})`, `collection('books').select(...fields).orderBy('__name__').limit(100).startAfter('ISBN-001')` without `.get()`: exit 0; printed `__name__ 1 false` for field order and cursor options. No network/database operation.
+- No Firebase CLI, emulator, cloud access, Book write, dependency change, production mutation, or commit.

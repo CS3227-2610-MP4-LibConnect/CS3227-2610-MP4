@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "taskId": "member-catalog-search",
+  "batch": 1,
+  "items": [
+    "T01"
+  ],
+  "splitReason": "T01 may reach a separate Book storage or query-design approval boundary before T02.",
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/member-catalog-search.md",
+      "version": "0.1"
+    },
+    "checklist": {
+      "path": "workflow/tasks/member-catalog-search/tasks.md",
+      "version": "0.2"
+    },
+    "handoff": {
+      "path": "workflow/tasks/member-catalog-search/handoff.md",
+      "version": "0.2"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/member-catalog-search/handoff.md",
+  "implementer": {
+    "agentId": "implementer-t01",
+    "worktree": "shared workspace; design evidence only",
+    "allowedFiles": [
+      "workflow/tasks/member-catalog-search/implementation-T01.md",
+      "workflow/tasks/member-catalog-search/implementation-T01-addendum.md",
+      "workflow/tasks/member-catalog-search/implementation-T01-final.md",
+      "workflow/tasks/member-catalog-search/scan-demo.mjs",
+      "logs/tasks/member-catalog-search/implementation-T01.md",
+      "logs/tasks/member-catalog-search/implementation-T01-addendum.md",
+      "logs/tasks/member-catalog-search/implementation-T01-final.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-t01",
+    "worktree": "separate clean read-only checkout",
+    "reviewOnlyFiles": [
+      "workflow/tasks/member-catalog-search/review-T01.md",
+      "workflow/tasks/member-catalog-search/review-T01-addendum.md",
+      "workflow/tasks/member-catalog-search/review-T01-final.md",
+      "logs/tasks/member-catalog-search/review-T01.md",
+      "logs/tasks/member-catalog-search/review-T01-addendum.md",
+      "logs/tasks/member-catalog-search/review-T01-final.md"
+    ]
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/member-catalog-search/implementation-T01-final.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "checks": [
+        {
+          "result": "pass",
+          "command": "node src/workflow/validate-assignment.mjs workflow/tasks/member-catalog-search/assignment-batch-1.json plan"
+        },
+        {
+          "result": "pass",
+          "command": "node workflow/tasks/member-catalog-search/scan-demo.mjs"
+        },
+        {
+          "result": "skipped",
+          "command": "React focused test (react-scripts unavailable locally)"
+        }
+      ],
+      "implementationLog": "logs/tasks/member-catalog-search/implementation-T01-final.md",
+      "reviewReport": "workflow/tasks/member-catalog-search/review-T01-final.md",
+      "reviewLog": "logs/tasks/member-catalog-search/review-T01-final.md"
+    }
+  }
+}
