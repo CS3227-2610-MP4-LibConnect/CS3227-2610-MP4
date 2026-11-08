@@ -23,9 +23,9 @@ All new gateway code goes under `src/codeclinic/server/ai/` as CommonJS JavaScri
 
 ## Group 2 — Provider transport and output parsing (T04, T05)
 
-- [ ] **T04 — Provider transport.** Add `server/ai/transport.js`. It builds the `POST /chat/completions` request (configured model, `max_tokens`, `reasoning_effort: "none"`, Bearer header) and applies the 20-second timeout, one jittered retry only for `429`/`5xx`/network/timeout, the `Retry-After` rule, and the circuit breaker (5 consecutive failures, 60 seconds). It maps failures to internal categories without keeping provider bodies. Test with a fake `fetch` and a fake clock, including that `400`/`401`/`403` are not retried. (Spec R8; scenarios 1, 4, 8, 9.)
+- [x] **T04 — Provider transport.** Add `server/ai/transport.js`. It builds the `POST /chat/completions` request (configured model, `max_tokens`, `reasoning_effort: "none"`, Bearer header) and applies the 20-second timeout, one jittered retry only for `429`/`5xx`/network/timeout, the `Retry-After` rule, and the circuit breaker (5 consecutive failures, 60 seconds). It maps failures to internal categories without keeping provider bodies. Test with a fake `fetch` and a fake clock, including that `400`/`401`/`403` are not retried. (Spec R8; scenarios 1, 4, 8, 9.)
 
-- [ ] **T05 — Output parsing.** Add `server/ai/parse.js`. It reads the first choice's `message.content`, strips at most one surrounding code fence, parses the JSON, and passes the result to the feature's `parse`. Test valid, fenced, fenced-with-extra-text, missing, non-string, non-JSON, and schema-invalid replies. (Spec R9; scenario 10.)
+- [x] **T05 — Output parsing.** Add `server/ai/parse.js`. It reads the first choice's `message.content`, strips at most one surrounding code fence, parses the JSON, and passes the result to the feature's `parse`. Test valid, fenced, fenced-with-extra-text, missing, non-string, non-JSON, and schema-invalid replies. (Spec R9; scenario 10.)
 
 ## Group 3 — Gateway composition and startup wiring (T08)
 

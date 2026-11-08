@@ -280,3 +280,57 @@ describe('ai redact: input cap', () => {
     expect(redactAndCap('hello world!', 11)).toEqual({ ok: false, code: AI_INPUT_TOO_LARGE });
   });
 });
+
+describe('ai redact: typed assignments (review-G1 M1)', () => {
+  test.each([
+    ['Python annotated', 'password: str = "hunter2"', 'password: str = "[REDACTED]"'],
+    ['Python Optional', "api_key: Optional[str] = 'sk-live-1'", "api_key: Optional[str] = '[REDACTED]'"],
+    ['Python union', 'db_secret: str | None = "s3cr3t"', 'db_secret: str | None = "[REDACTED]"'],
+    ['Python unquoted', 'TOKEN: Final = abc123', 'TOKEN: Final = [REDACTED]'],
+    ['TypeScript const', 'const token: string = "abc.def.ghi";', 'const token: string = "[REDACTED]";'],
+    ['TypeScript let union', 'let apiKey: string | undefined = `k-1`;', 'let apiKey: string | undefined = `[REDACTED]`;'],
+    ['TypeScript generic', 'const secretMap: Map<string> = "x";', 'const secretMap: Map<string> = "[REDACTED]";'],
+    ['TypeScript array type', 'const tokens: string[] = abc;', 'const tokens: string[] = [REDACTED];'],
+    ['Kotlin val', 'val apiKey: String = "k-123"', 'val apiKey: String = "[REDACTED]"'],
+    ['Kotlin nullable', 'private var password: String? = "pw"', 'private var password: String? = "[REDACTED]"'],
+    ['Scala qualified type', 'val clientSecret: java.lang.String = "cs"', 'val clientSecret: java.lang.String = "[REDACTED]"'],
+    ['no spaces', 'password:str="hunter2"', 'password:str="[REDACTED]"'],
+  ])('%s', (_label, input, expected) => {
+    expect(redact(input)).toBe(expected);
+  });
+
+  test('a value already redacted by an earlier pattern yields one marker', () => {
+    expect(redact(`const token: string = ${githubToken('ghp')};`)).toBe('const token: string = [REDACTED];');
+  });
+
+  test('untyped colon forms keep their existing behaviour', () => {
+    expect(redact('password: hunter2')).toBe('password: [REDACTED]');
+    expect(redact('{"token": "abc"}')).toBe('{"token": "[REDACTED]"}');
+    expect(redact('password: hunter2, retries = 3')).toBe('password: [REDACTED], retries = 3');
+    expect(redact('password := "x"')).toBe('password := "[REDACTED]"');
+  });
+
+  test.each([
+    'username: str = "alice"',
+    'const count: number = 42;',
+    'val host: String = "server01"',
+    'let user: string | undefined = `bob`;',
+    'if (password == "x") {',
+    'token_count === 3',
+  ])('near miss is not redacted: %j', (input) => {
+    expect(redact(input)).toBe(input);
+  });
+
+  test('a comparison or arrow after a type annotation is not treated as the value', () => {
+    expect(redact('password: str == "guess"')).not.toContain('"[REDACTED]"');
+    expect(redact('token: T => fn(token)')).not.toContain('fn([REDACTED]');
+  });
+
+  test('adversarial annotation-like input is processed in bounded time', () => {
+    const input = ('password: ' + 'a '.repeat(40) + '|').repeat(20000) + ('token:' + 'x'.repeat(70)).repeat(5000);
+    expect(input.length).toBeGreaterThan(750000);
+    const start = Date.now();
+    redact(input);
+    expect(Date.now() - start).toBeLessThan(2000);
+  });
+});
