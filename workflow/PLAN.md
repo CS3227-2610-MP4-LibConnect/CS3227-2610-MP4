@@ -25,8 +25,8 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 | 4 | `ai-error-explainer` | Student AI: error explanation, concept, hints only, ticket rewrite | `ai-gateway`, `student-tickets` | Student owner | Not drafted |
 | 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | Not drafted |
 | 4 | `bug-faq` | Search anonymised resolved tickets; replaces retired `member-catalog-search` | `ta-ticket-queue` | Student owner | Not drafted |
-| 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | Not drafted |
-| 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | Not drafted |
+| 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | v0.1 approved |
+| 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | v0.1 approved |
 | 6 | `session-requests` | *Optional:* student requests and TA approvals of live sessions | `ta-ticket-queue` | Student and TA owners | Not drafted |
 
 Tasks with the same order number may run in parallel once their dependencies
