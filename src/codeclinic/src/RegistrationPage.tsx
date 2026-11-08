@@ -4,7 +4,7 @@ import './LoginPage.css';
 type AccountType = 'STUDENT' | 'TA';
 type Field = 'name' | 'email' | 'password' | 'confirmation' | 'employeeId';
 type Errors = Partial<Record<Field, string>>;
-const REGISTRATION_NOTICE_KEY = 'libconnect.registrationNotice';
+const REGISTRATION_NOTICE_KEY = 'codeclinic.registrationNotice';
 const byteLength = (value: string) => new Blob([value]).size;
 const REGISTRATION_EMAIL_FORMAT = /^[^\s@.]+(\.[^\s@.]+)*@[^\s@.]+(\.[^\s@.]+)+$/;
 
@@ -119,10 +119,10 @@ function RegistrationPage() {
   return (
     <main className="login-page">
       <section className="login-card" aria-labelledby="registration-title">
-        <div className="brand-mark" aria-hidden="true">L</div>
-        <p className="eyebrow">LIBCONNECT</p>
+        <div className="brand-mark" aria-hidden="true">C</div>
+        <p className="eyebrow">CODECLINIC</p>
         <h1 id="registration-title">Register</h1>
-        <p className="login-intro">Create your library account.</p>
+        <p className="login-intro">Create your CodeClinic account.</p>
         {completedType ? <div role="status" aria-live="polite">
           <p>{completedType === 'STUDENT'
             ? 'Student registration complete. You can now sign in.'

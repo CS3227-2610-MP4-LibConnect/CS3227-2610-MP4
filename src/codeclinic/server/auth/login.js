@@ -9,7 +9,7 @@ const MAX_PASSWORD_BYTES = 1024;
 const GENERIC_DENIAL = 'Unable to sign in with those details.';
 const RETRY_MESSAGE = 'Sign-in is temporarily unavailable. Please try again.';
 const RATE_LIMIT_MESSAGE = 'Unable to sign in right now. Please try again later.';
-const SESSION_COOKIE = '__Host-libconnect_session';
+const SESSION_COOKIE = '__Host-codeclinic_session';
 const ABSOLUTE_TIMEOUT_MS = 8 * 60 * 60 * 1000;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 

@@ -40,7 +40,7 @@ Shared test files, as approved with the grouping: `LoginPage.integration.test.ts
 
 ## Group 4 — Internal and user-visible names
 
-- [ ] **T05 — Internal and user-visible names.**
+- [x] **T05 — Internal and user-visible names.**
   - **Configuration variables:** rename `LIBCONNECT_FIRESTORE_MODE` and `LIBCONNECT_FIRESTORE_PROJECT_ID` to `CODECLINIC_*` in `server/firestore-target.js`, `apphosting.yaml`, `README.md`, and tests. The server must not read the former names.
   - **Emulator project ID:** change the local ID to `demo-codeclinic` in `server/firestore-target.js`, `.firebaserc`, `README.md`, and tests.
   - **Session cookie:** rename it to `__Host-codeclinic_session`.

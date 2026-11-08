@@ -8,9 +8,9 @@ const request = require('supertest');
 const { createServerApp } = require('../server');
 
 test('serves the built frontend and the login API from one origin', async () => {
-  const buildDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'libconnect-server-'));
+  const buildDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'codeclinic-server-'));
   try {
-    fs.writeFileSync(path.join(buildDirectory, 'index.html'), '<!doctype html><title>LibConnect</title>');
+    fs.writeFileSync(path.join(buildDirectory, 'index.html'), '<!doctype html><title>CodeClinic</title>');
     const db = {
       collection(name) {
         expect(name).toBe('emailKeys');
@@ -47,19 +47,19 @@ test('serves the built frontend and the login API from one origin', async () => 
 
     const page = await request(app).get('/');
     expect(page.status).toBe(200);
-    expect(page.text).toContain('<title>LibConnect</title>');
+    expect(page.text).toContain('<title>CodeClinic</title>');
 
     const registrationPage = await request(app).get('/register');
     expect(registrationPage.status).toBe(200);
-    expect(registrationPage.text).toContain('<title>LibConnect</title>');
+    expect(registrationPage.text).toContain('<title>CodeClinic</title>');
 
     const dashboardResults = [];
     for (const dashboardPath of ['/student/dashboard', '/ta/dashboard']) {
       const directNavigation = await request(app).get(dashboardPath);
       const refresh = await request(app).get(dashboardPath);
       dashboardResults.push(
-        { path: dashboardPath, kind: 'direct', status: directNavigation.status, shell: directNavigation.text.includes('<title>LibConnect</title>') },
-        { path: dashboardPath, kind: 'refresh', status: refresh.status, shell: refresh.text.includes('<title>LibConnect</title>') },
+        { path: dashboardPath, kind: 'direct', status: directNavigation.status, shell: directNavigation.text.includes('<title>CodeClinic</title>') },
+        { path: dashboardPath, kind: 'refresh', status: refresh.status, shell: refresh.text.includes('<title>CodeClinic</title>') },
       );
     }
     expect(dashboardResults).toEqual([
@@ -72,13 +72,13 @@ test('serves the built frontend and the login API from one origin', async () => 
     for (const formerPath of ['/member/dashboard', '/librarian/dashboard']) {
       const former = await request(app).get(formerPath);
       expect(former.status).toBe(404);
-      expect(former.text).not.toContain('<title>LibConnect</title>');
+      expect(former.text).not.toContain('<title>CodeClinic</title>');
       expect(former.headers.location).toBeUndefined();
     }
 
     const retiredCatalog = await request(app).get('/api/member/catalog');
     expect(retiredCatalog.status).toBe(404);
-    expect(retiredCatalog.text).not.toContain('<title>LibConnect</title>');
+    expect(retiredCatalog.text).not.toContain('<title>CodeClinic</title>');
 
     const login = await request(app).post('/api/auth/login').send({
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'STUDENT',

@@ -1,4 +1,4 @@
-# LibConnect registration and login
+# CodeClinic registration and login
 
 The Express server handles registration, login, sessions, and rate counters.
 It serves the built React frontend from the same origin. Firestore target mode
@@ -10,30 +10,18 @@ Install this directory's existing npm dependencies first. In one terminal,
 start the local Firestore emulator from this directory:
 
 ```powershell
-firebase emulators:start --only firestore --project libconnect-mp4
+firebase emulators:start --only firestore --project demo-codeclinic
 ```
 
-Wait until Firestore is listening on `127.0.0.1:8080`. To populate it with 120
-sample Books and three BookCopy records per Book, run this from
-this directory in a second PowerShell terminal:
+Wait until Firestore is listening on `127.0.0.1:8080`. The `demo-` prefix
+marks an emulator-only project ID, so the Firebase tools cannot reach a cloud
+project with it. The `.firebaserc` `default` alias is `demo-codeclinic`.
+
+In a second PowerShell terminal, start Express from this directory:
 
 ```powershell
-node scripts/seed-local-books.js
-```
-
-The script writes only to the local `libconnect-mp4` emulator. Book documents use
-ISBN IDs in `books`; copies use `<isbn>-01` through `<isbn>-03` IDs in
-`bookCopies`. It creates only missing IDs in one batch, so rerunning it preserves
-existing books and copy statuses while bringing the seeded set to 120 books and
-360 copies. Newly created copies start as `AVAILABLE`; existing statuses are
-preserved. Use `--dry-run` to print the target counts without connecting or
-writing.
-
-Then start Express:
-
-```powershell
-$env:LIBCONNECT_FIRESTORE_MODE = 'local-emulator'
-$env:LIBCONNECT_FIRESTORE_PROJECT_ID = 'libconnect-mp4'
+$env:CODECLINIC_FIRESTORE_MODE = 'local-emulator'
+$env:CODECLINIC_FIRESTORE_PROJECT_ID = 'demo-codeclinic'
 $env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
 npm run build
 node server/index.js
@@ -63,8 +51,8 @@ from 1 through 65535 if port 3000 is occupied.
 
 ## Production configuration
 
-Deployment must explicitly set `LIBCONNECT_FIRESTORE_MODE=production`,
-`LIBCONNECT_FIRESTORE_PROJECT_ID` to the intended production project ID,
+Deployment must explicitly set `CODECLINIC_FIRESTORE_MODE=production`,
+`CODECLINIC_FIRESTORE_PROJECT_ID` to the intended production project ID,
 and `GOOGLE_CLOUD_PROJECT` to the same ID. This configuration currently
 recognizes Cloud Run through its `K_SERVICE` runtime signal and uses its
 application-default runtime identity. Do not set `FIRESTORE_EMULATOR_HOST` or
@@ -74,8 +62,9 @@ ADC file at `CLOUDSDK_CONFIG` or the platform's default gcloud config path,
 and verifies the Cloud Run metadata project ID matches the configured project
 before initializing Firebase Admin. It checks only for the file's presence;
 it never reads its contents. Configure the deployment identity and
-Firestore permissions as a separately approved release step; this repository
-does not contain production credentials or a production project ID.
+Firestore permissions as a separately approved release step. The production
+project ID `libconnect-mp4` appears in `.firebaserc` and `apphosting.yaml`;
+this repository does not contain production credentials.
 
 ## Verification
 

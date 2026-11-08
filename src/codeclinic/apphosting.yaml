@@ -29,13 +29,13 @@ scripts:
 
 
 env: 
-- variable: LIBCONNECT_FIRESTORE_MODE
+- variable: CODECLINIC_FIRESTORE_MODE
   value: production
   availability: 
     - BUILD
     - RUNTIME
 
-- variable: LIBCONNECT_FIRESTORE_PROJECT_ID
+- variable: CODECLINIC_FIRESTORE_PROJECT_ID
   value: libconnect-mp4
   availability: 
     - BUILD

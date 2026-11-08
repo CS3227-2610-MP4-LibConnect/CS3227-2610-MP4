@@ -85,7 +85,7 @@ function makeSystem({ user = account, repositoryError, storeError, createError, 
 
 function cookieFrom(response) {
   const setCookie = response.headers['set-cookie'] || [];
-  const line = setCookie.find((value) => value.startsWith('__Host-libconnect_session='));
+  const line = setCookie.find((value) => value.startsWith('__Host-codeclinic_session='));
   return line && line.split(';')[0];
 }
 

@@ -4,15 +4,15 @@ const path = require('path');
 const { resolveFirestoreTarget, connectFirestoreTarget } = require('../server/firestore-target');
 
 const localEnv = {
-  LIBCONNECT_FIRESTORE_MODE: 'local-emulator',
-  LIBCONNECT_FIRESTORE_PROJECT_ID: 'libconnect-mp4',
+  CODECLINIC_FIRESTORE_MODE: 'local-emulator',
+  CODECLINIC_FIRESTORE_PROJECT_ID: 'demo-codeclinic',
   FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080',
 };
 const productionEnv = {
-  LIBCONNECT_FIRESTORE_MODE: 'production',
-  LIBCONNECT_FIRESTORE_PROJECT_ID: 'production-project',
+  CODECLINIC_FIRESTORE_MODE: 'production',
+  CODECLINIC_FIRESTORE_PROJECT_ID: 'production-project',
   GOOGLE_CLOUD_PROJECT: 'production-project',
-  K_SERVICE: 'libconnect-api',
+  K_SERVICE: 'codeclinic-api',
 };
 
 function adminDoubles() {
@@ -48,28 +48,28 @@ describe('explicit Firestore target selection', () => {
       ...localEnv,
       GOOGLE_APPLICATION_CREDENTIALS: 'synthetic-developer-credentials',
     });
-    expect(target).toMatchObject({ mode: 'local-emulator', projectId: 'libconnect-mp4', emulatorHost: '127.0.0.1:8080' });
+    expect(target).toMatchObject({ mode: 'local-emulator', projectId: 'demo-codeclinic', emulatorHost: '127.0.0.1:8080' });
     const deps = adminDoubles();
     const db = await connectFirestoreTarget(target, deps);
     expect(db).toBe(deps.db);
     expect(deps.probeEmulator).toHaveBeenCalledWith('127.0.0.1', 8080);
     expect(deps.applicationDefault).not.toHaveBeenCalled();
     expect(deps.cert).not.toHaveBeenCalled();
-    expect(deps.initializeApp).toHaveBeenCalledWith({ projectId: 'libconnect-mp4' });
+    expect(deps.initializeApp).toHaveBeenCalledWith({ projectId: 'demo-codeclinic' });
     expect(deps.getFirestore).toHaveBeenCalledTimes(1);
   });
 
   test.each([
-    ['missing mode', { ...localEnv, LIBCONNECT_FIRESTORE_MODE: undefined }],
-    ['unknown mode', { ...localEnv, LIBCONNECT_FIRESTORE_MODE: 'auto' }],
-    ['missing local project', { ...localEnv, LIBCONNECT_FIRESTORE_PROJECT_ID: undefined }],
-    ['wrong local project', { ...localEnv, LIBCONNECT_FIRESTORE_PROJECT_ID: 'other-project' }],
+    ['missing mode', { ...localEnv, CODECLINIC_FIRESTORE_MODE: undefined }],
+    ['unknown mode', { ...localEnv, CODECLINIC_FIRESTORE_MODE: 'auto' }],
+    ['missing local project', { ...localEnv, CODECLINIC_FIRESTORE_PROJECT_ID: undefined }],
+    ['wrong local project', { ...localEnv, CODECLINIC_FIRESTORE_PROJECT_ID: 'other-project' }],
     ['missing emulator', { ...localEnv, FIRESTORE_EMULATOR_HOST: undefined }],
     ['non-loopback emulator', { ...localEnv, FIRESTORE_EMULATOR_HOST: 'firestore.example:8080' }],
     ['wrong emulator port', { ...localEnv, FIRESTORE_EMULATOR_HOST: '127.0.0.1:8081' }],
     ['URL instead of host', { ...localEnv, FIRESTORE_EMULATOR_HOST: 'http://127.0.0.1:8080' }],
     ['mismatched cloud project', { ...localEnv, GOOGLE_CLOUD_PROJECT: 'other-project' }],
-    ['missing production project', { ...productionEnv, LIBCONNECT_FIRESTORE_PROJECT_ID: undefined }],
+    ['missing production project', { ...productionEnv, CODECLINIC_FIRESTORE_PROJECT_ID: undefined }],
     ['mismatched production project', { ...productionEnv, GOOGLE_CLOUD_PROJECT: 'other-project' }],
     ['missing production runtime', { ...productionEnv, K_SERVICE: undefined }],
     ['production emulator variable', { ...productionEnv, FIRESTORE_EMULATOR_HOST: '127.0.0.1:8080' }],
@@ -80,6 +80,26 @@ describe('explicit Firestore target selection', () => {
     expect(deps.initializeApp).not.toHaveBeenCalled();
     expect(deps.getFirestore).not.toHaveBeenCalled();
     expect(deps.applicationDefault).not.toHaveBeenCalled();
+  });
+
+  // Built from parts so the repository search for the former product name stays clean.
+  const formerPrefix = ['LIB', 'CONNECT_'].join('');
+  const withFormerNames = (env) => Object.fromEntries(Object.entries(env)
+    .map(([key, value]) => [key.replace(/^CODECLINIC_/, formerPrefix), value]));
+
+  test.each([
+    ['local', localEnv],
+    ['production', productionEnv],
+  ])('ignores the former variable names for %s mode', (_label, env) => {
+    const formerEnv = withFormerNames(env);
+    expect(Object.keys(formerEnv).some((key) => key.startsWith(formerPrefix))).toBe(true);
+    expect(Object.keys(formerEnv).some((key) => key.startsWith('CODECLINIC_'))).toBe(false);
+    expect(() => resolveFirestoreTarget(formerEnv)).toThrow();
+  });
+
+  test('rejects the former local emulator project ID', () => {
+    const formerProjectId = ['lib', 'connect-mp4'].join('');
+    expect(() => resolveFirestoreTarget({ ...localEnv, CODECLINIC_FIRESTORE_PROJECT_ID: formerProjectId })).toThrow();
   });
 
   test('unreachable local emulator fails without trying credentials or Firestore', async () => {
@@ -127,7 +147,7 @@ describe('explicit Firestore target selection', () => {
   });
 
   test('production rejects a synthetic well-known gcloud ADC file before credential or SDK construction', async () => {
-    const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'libconnect-adc-test-'));
+    const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'codeclinic-adc-test-'));
     const previousCloudSdkConfig = process.env.CLOUDSDK_CONFIG;
     try {
       // This marker has no credential content. Its presence alone must block

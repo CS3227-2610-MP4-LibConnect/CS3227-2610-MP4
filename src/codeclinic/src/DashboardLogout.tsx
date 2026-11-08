@@ -68,7 +68,7 @@ export default function DashboardLogout({ onConfirmed, children, studentNavigati
 
   return <>
     {studentNavigation && <header className="student-navbar">
-      <a className="student-navbar__brand" href="/student/dashboard">LibConnect</a>
+      <a className="student-navbar__brand" href="/student/dashboard">CodeClinic</a>
       <button className="student-navbar__logout" type="button" onClick={() => { void logout(); }}>Log out</button>
     </header>}
     {children}
