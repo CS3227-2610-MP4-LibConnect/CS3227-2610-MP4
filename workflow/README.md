@@ -128,10 +128,9 @@ commit.
 - Per-task evidence: `workflow/tasks/`
 - Factual execution logs: `logs/tasks/<task-id>/`
 - Chat summaries: `logs/chat/<developer>/` or `logs/chat/<task-id>/`
-- Delivery plan: `workflow/PLAN.md`
-- User-workflow drafts: 
-- Developer responsibilities: 
-- Member-track SDD designs and task lists: 
+- Delivery plan, feature dependencies, and developer responsibilities: `workflow/PLAN.md`
+- Optional design and proposal notes: `workflow/tasks/<task-id>/design.md` and `proposal.md`, only when a task needs them
+- Project skills: `.agents/skills/` (installed versions recorded in `skills-lock.json`)
 - Product and developer documentation: `docs/`
 
 ## Skill integration

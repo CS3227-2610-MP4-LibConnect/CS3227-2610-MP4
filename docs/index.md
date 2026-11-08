@@ -1,28 +1,33 @@
 ---
 layout: default
-title: LibConnect
+title: CodeClinic
 ---
 
 <div class="site-intro">
-  <p class="eyebrow">A clearer way to connect with your library</p>
-  <p class="lead">One place for members and library teams to manage books, borrowing, and the everyday work that keeps a library running.</p>
+  <p class="eyebrow">A course help desk for programming students</p>
+  <p class="lead">Students submit coding problems as tickets and TAs resolve them. AI coaches students with hints and helps TAs, without doing the work for them.</p>
 </div>
 
 ## Explore the guides
 
-Choose a guide to get started with LibConnect or learn how the application is built.
+Choose a guide to get started with CodeClinic or learn how the application is built.
 
 <div class="guide-grid">
   <a class="guide-card" href="UserGuide.html">
-    <span class="guide-label">For members and library teams</span>
+    <span class="guide-label">For students and TAs</span>
     <strong>User Guide <span aria-hidden="true">→</span></strong>
-    <span>Learn how to use the catalog, loans, reservations, fines, and account features.</span>
+    <span>Learn how to sign up, sign in, and use the features available to your role.</span>
   </a>
   <a class="guide-card" href="DeveloperGuide.html">
     <span class="guide-label">For contributors</span>
     <strong>Developer Guide <span aria-hidden="true">→</span></strong>
-    <span>Explore the architecture, development workflow, and implementation details.</span>
+    <span>Explore the architecture, security design, and multi-agent development workflow.</span>
+  </a>
+  <a class="guide-card" href="Reflections.html">
+    <span class="guide-label">For the course team</span>
+    <strong>Reflections <span aria-hidden="true">→</span></strong>
+    <span>Read the team's reflections on multi-agent SE, context engineering, and resource-aware use.</span>
   </a>
 </div>
 
-<p class="site-note">LibConnect is a web-based library management platform developed with React, TypeScript, Express, and Firestore.</p>
+<p class="site-note">CodeClinic is a web-based help desk for programming courses, developed with React, TypeScript, Express, and Firestore.</p>
