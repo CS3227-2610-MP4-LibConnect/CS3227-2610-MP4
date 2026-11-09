@@ -18,6 +18,9 @@ const SYSTEM_PROMPT = [
   'Write in the present tense, as a note for the TA to review and confirm; never claim that the problem "was resolved".',
   'State only causes that the ticket content supports.',
   'If the cause is unclear, say what the TA should check instead of guessing.',
+  'Do not offer explanations hedged with words such as "likely" or "probably".',
+  'Do not explain how output is displayed or rendered unless the ticket states it.',
+  'For anything the ticket leaves unexplained, say what the TA should check.',
   'Reply with exactly one JSON object of the form {"draft": "<the resolution note>"}.',
 ].join('\n');
 
