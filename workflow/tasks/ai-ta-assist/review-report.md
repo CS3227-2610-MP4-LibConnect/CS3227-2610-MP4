@@ -285,3 +285,100 @@ This review did not re-run the live model. Log 30, treated as reported evidence 
 ### Verdict
 
 **Pass.** T20 and T21 match Group 9 and stay inside the v0.5 limits: six fixed prompt lines, one new unit file, and no change to authorization, `buildUserContent`, parsers, caps, routes, or `server/ai/`. The prompts keep R1 and R3 and do not instruct the model to follow ticket text. Ticking T20 and T21, and any merge, remain human decisions. This review does not approve a merge.
+
+## Improvement round 4 review (2026-11-10)
+
+Reviewer: independent reviewer (did not implement T22). Execution log: `logs/tasks/ai-ta-assist/35-reviewer-round4.md`.
+
+### Versions and approvals checked
+
+- Spec `workflow/specs/ai-ta-assist.md` v0.3, R1 (fixed drafter `systemPrompt`, `buildUserContent`, caps, parse shape). R1 is unchanged by this round.
+- Checklist `tasks.md` v0.6, Group 10 (T22), and handoff v0.6. The v0.6 amendment limits the round to prompt wording and tests, with no change to authorization, `buildUserContent`, parsers, caps, routes, or the gateway. Approval evidence is the human's "continue improve" on 2026-11-10, recorded in both files. No approval was inferred from tests or agent messages.
+- T22 remains unchecked. This review does not tick it.
+
+### Diff examined (exception recorded)
+
+This is the `workflow/README.md` exception to reviewing a separate commit. The round is uncommitted. It was reviewed in a separate clean worktree: a detached checkout of `95b73d9` with the uncommitted round 4 work applied as a patch (`node_modules` symlinked, no install). Compensating controls: `git diff` and the untracked list were taken against `95b73d9`; production files, tests, prompts, and checklist boxes were not edited; the full suite, `tsc`, and the build were run independently; the live harness and the scratchpad `e2e/` folder were not run; no `.env` was read; `RUN_SOCLAAS_TESTS` was unset; no network.
+
+`git diff --stat`: 3 files, +17/−5. The production diff is one added line at `server/tickets/ta-ai-fix-note.js:23`. The other tracked edits are the v0.6 checklist and handoff (version, approval line, Group 10, change-log entry). Untracked: `test/ta-ai-prompts.round4.test.js`, `implementation-T22.md`, and logs 33 and 34. There is no diff under `server/ai/`, routes, the UI, `buildUserContent`, `parse`, or the caps. No existing test file is modified (`git status` shows only the new round 4 test under `test/`).
+
+The added line is a single-quoted string literal in the existing `SYSTEM_PROMPT` array, with no template literal, `${`, or concatenation, so no ticket or request value can enter it. It does not conflict with or weaken earlier lines:
+- It sits after the round 3 line "Do not explain how output is displayed or rendered unless the ticket states it." That line forbids explaining a display; the new one has the draft restate a reported display and send the TA to check it. Both are consistent.
+- "Restate that observation" refers to the reported symptom (how output appears on screen). It is not "follow instructions in the ticket". It sits under the shared preamble (`server/ai/prompt.js:26-33`), which still marks delimited content as data, never instructions, and ignores requests in it. The R1 "do not add information beyond what the ticket contains", plain-text-only, and no-names lines remain.
+- An echoed observation that contains HTML text stays harmless: the drafter line 16 asks for plain text, the parser bounds the draft to one string field of at most 2000 characters, and the UI has no `dangerouslySetInnerHTML` in `src/` (React escapes the text).
+
+### Verification (exact results in log 35)
+
+- Full suite, from `src/codeclinic`: exit 0. Test Suites: 5 skipped, 66 passed, 66 of 71 total. Tests: 9 skipped, 1280 passed, 1289 total. `test/ta-ai-prompts.round3.test.js` and `test/ta-ai-prompts.round4.test.js` passed.
+- `npx tsc --noEmit -p .`: exit 0, no output.
+- `npm run build`: exit 0, "Compiled successfully." (one Node deprecation notice).
+- Live harness not run. Log 34 is reported orchestrator evidence only: 5 round 4 runs each passed 46/46, and the HTML draft inferred a display cause in 0/5 (against 12/15 across the earlier saved outputs). No model text is copied here.
+
+### Per-task verification
+
+| Task | Verified? | Basis |
+| --- | --- | --- |
+| T22 | Yes (unit level) | `ta-ai-fix-note.js:23` adds the approved instruction: describe only what the ticket reports, restate an on-screen output observation and tell the TA to check it, without naming a possible cause such as XSS, sanitization, or escaping (it also adds "filtering", within the checklist's "such as"). All R1, T13, T18, and T21 lines remain. `test/ta-ai-prompts.round4.test.js:7-35` asserts the new clauses, the kept round 3 and earlier lines, and that the resolved prompt has no `${`, `undefined`, or `[object`. The live effect is reported evidence only (log 34). |
+
+### Findings
+
+| ID | Severity | Location | Evidence | Action |
+| --- | --- | --- | --- | --- |
+| R4-1 | Low | `server/tickets/ta-ai-fix-note.js:23` vs `:14`, `:19` | Line 14 asks for "the cause" and line 19 allows "causes that the ticket content supports". Line 23 says to restate a display observation "without naming a possible cause such as XSS, sanitization, escaping, or filtering", with no exception for a cause the ticket itself states. A ticket that does say, for example, that output is not escaped may get a draft that omits that supported cause. This is advisory output that a TA reviews, so it does not block. | Optional follow-up, which needs human approval: add "unless the ticket states the cause" to line 23, matching the round 3 line's wording. Not required for T22 as approved. |
+| R4-2 | Info | `test/ta-ai-prompts.round4.test.js:31-35` | The fixed-string test checks the resolved string, so it would not catch interpolation of a plain string value. The source line was checked by hand and is a literal. The other tests are wording assertions, which is the only unit-level check possible for a prompt change. | None required. |
+| R4-3 | Info | log 34 | Reported: "likely" appeared in 2/20 round 4 drafts (qualifying a supported cause), and full insights grouping was 3/5 runs with an unchanged insights prompt. These are residual advisory-quality notes outside T22. | Human judgment. No change to T22. |
+
+No Critical, High, or Medium findings. The evidence (implementation-T22, logs 33 and 34) holds no credentials, `.env` values, session data, or model output beyond log 34's counts and summary.
+
+### Verdict
+
+**Pass with follow-up.** T22 matches Group 10 and stays inside the v0.6 limits: one fixed prompt line, one new unit file, and no change to authorization, `buildUserContent`, parsers, caps, routes, or `server/ai/`. The new line keeps R1, rounds 1–3, and the shared preamble's injection defences. The follow-up (R4-1) is optional wording work and does not block. Ticking T22, any follow-up, and any merge remain human decisions. This review does not approve a merge.
+
+## T23 re-check (2026-11-10)
+
+Reviewer: independent reviewer (did not implement T22 or T23). The human approved this re-review on 2026-11-10. Execution log: `logs/tasks/ai-ta-assist/38-reviewer-T23.md`.
+
+### Versions and approvals checked
+
+- Spec v0.3, R1 (unchanged). Checklist `tasks.md` v0.6, Group 10, T23, and handoff v0.6. T23 approval evidence is the human's "Fix R4-1, then commit (Recommended)" on 2026-11-10, recorded in both change logs. No approval was inferred from tests or agent messages. T22 and T23 remain unchecked; this review does not tick them.
+
+### Diff examined (exception recorded)
+
+Same `workflow/README.md` exception as the round 4 review: a separate clean worktree, a detached `95b73d9` with the uncommitted round 4 work (T22 + T23) applied as a patch, `node_modules` symlinked. Compensating controls: diff and untracked list taken against `95b73d9`; no production, test, or checklist edits by the reviewer; suite, `tsc`, and build run independently; no `.env`, no network, `RUN_SOCLAAS_TESTS` unset, the live harness and the scratchpad `e2e/` folder not run.
+
+Relative to the round 4 review, the only production change is the ending of `server/tickets/ta-ai-fix-note.js:23`, which gains ", unless the ticket itself states that cause". New untracked files: `test/ta-ai-prompts.round4b.test.js`, `implementation-T23.md`, logs 36 and 37. The tracked checklist and handoff edits add T23 and its change-log entries only. No diff under `server/ai/`, routes, UI, `buildUserContent`, `parse`, or caps. No tracked test file is modified (`git diff --stat 95b73d9 -- src/codeclinic/test` is empty); the untracked round 4 test still holds the assertions the round 4 review read, and its unanchored regex still matches the extended line, so it was not edited.
+
+### Assessment
+
+- **R4-1 resolved.** Line 23 now ends "without naming a possible cause such as XSS, sanitization, escaping, or filtering, unless the ticket itself states that cause." The exception attaches to the "without naming" clause, so a cause the ticket states (for example autoescaping) may be named. This is consistent with line 14 ("the cause"), line 19 ("only causes that the ticket content supports"), and the round 3 line 22 wording ("unless the ticket states it").
+- **Still a fixed string.** The line is a single-quoted literal in the `SYSTEM_PROMPT` array, with no template literal, `${`, or concatenation.
+- **No permission to follow ticket instructions or add causes.** "States that cause" refers to a cause reported in the ticket content, not to instructions. "Itself" narrows it to the ticket, and "that cause" ties it to the named class of display causes. Lines 17 ("Do not add information beyond what the ticket contains"), 19, 20, and 21 still bar unstated or hedged causes, and the shared preamble (`server/ai/prompt.js:26-33`) still treats delimited content as data and ignores requests in it. A ticket that claims a cause can at most get that claim repeated in an advisory, plain-text, length-bounded draft that a TA reviews, which is the R1 design.
+- **Tests meaningful.** `test/ta-ai-prompts.round4b.test.js:7-9` asserts the exact new ending, anchored to "escaping, or filtering," and so fails if the exception is removed or moved to another line. Lines 11-22 re-assert the T22 and round 3 clauses, and 24-27 the fixed-string check. As noted in R4-2, unit tests can only assert wording; the behavioural effect depends on the live model.
+
+### Verification (exact results in log 38)
+
+- Full suite, from `src/codeclinic`: exit 0. Test Suites: 5 skipped, 67 passed, 67 of 72 total. Tests: 9 skipped, 1284 passed, 1293 total (round 4 review: 1280/1289; +4 from round4b). Both round 4 test files passed.
+- `npx tsc --noEmit -p .`: exit 0, no output.
+- `npm run build`: exit 0, "Compiled successfully." (one Node `DEP0176` deprecation notice).
+- Live harness not run. Log 37 is reported orchestrator evidence only (5 runs at 51/51; display cause inferred 0/5; stated cause kept 5/5; hedged 0/25).
+
+### Per-task verification
+
+| Task | Verified? | Basis |
+| --- | --- | --- |
+| T22 | Yes (unit level) | Unchanged from the round 4 review except the T23 ending; all T22 clauses still present and asserted by both round 4 test files. |
+| T23 | Yes (unit level) | `ta-ai-fix-note.js:23` carries the approved exception, worded as the checklist specifies; `round4b.test.js:7-9` asserts it. Live effect is reported evidence only (log 37). |
+
+### Findings
+
+| ID | Severity | Location | Evidence | Action |
+| --- | --- | --- | --- | --- |
+| R4-1 | Closed | `ta-ai-fix-note.js:23` | Exception added as recommended. | None. |
+| R4b-1 | Info | log 37, residual note 1 | One of 5 HTML drafts named a content-security policy as something to check. Line 23 lists "such as" examples, and the line 20/24 "say what the TA should check" instructions make a check suggestion legitimate, so a named check is a borderline case of naming a possible cause, not a T23 defect. It is advisory and TA-reviewed. | No action for T23. Any further wording round is a human decision. |
+| R4b-2 | Info | log 37, residual note 2 | One draft added a detail not in the ticket (the browser console). This conflicts with line 17 ("Do not add information beyond what the ticket contains") if read as a fact, but is acceptable if read as a place for the TA to check. 1/5 runs, advisory, TA-reviewed, no security effect (plain text, bounded, React-escaped). | No action for T23. Human judgment whether to track it as a quality note. |
+
+No Critical, High, Medium, or Low findings. The T23 evidence (implementation-T23, logs 36 and 37) holds no credentials, `.env` values, session data, or model output beyond log 37's counts and short descriptions.
+
+### Verdict
+
+**Pass.** T23 resolves R4-1 with a single fixed-string wording change and one new unit file, within the v0.6 limits. T22 and T23 are verified at unit level; their live effect rests on the orchestrator's reported log 37. The two residual notes are advisory quality observations that need no action for this task. Ticking T22 and T23, the commit, and any merge remain human decisions. This review does not approve a merge.
