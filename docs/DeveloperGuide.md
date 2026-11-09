@@ -310,13 +310,12 @@ Every non-trivial feature follows spec-driven development: **specify → plan/ta
 | Agent | Role | Configured model and effort |
 | --- | --- | --- |
 | `analyst` | Writes the specification, task checklist, and handoff | `gpt-6-luna`, medium |
-| `orchestrator` | Coordinates test writing, task grouping, implementers, and review; owns checklist updates | `gpt-6-sol`, high |
+| `orchestrator` | Coordinates test writing, ordered batches, implementers, and review; owns checklist updates | `gpt-6-sol`, high |
 | `test_writer` | Writes tests from the approved specification before implementation | `gpt-6-luna`, medium |
-| `task_grouper` | Groups checklist tasks by dependency for safe parallel work | `gpt-6-luna`, medium |
-| `implementer` | Implements one assigned task and records evidence | `gpt-6-luna`, medium |
-| `reviewer` | Independently reviews the exact implementation from a separate worktree | `gpt-6-luna`, high |
+| `implementer` | Implements one approved batch of up to two tasks in order and records evidence for each | `gpt-6-luna`, medium |
+| `reviewer` | Independently reviews each batch item and their combined change from a separate worktree | `gpt-6-luna`, high |
 
-The orchestrator dispatches one checklist item at a time with artifact paths rather than pasted documents. Each agent verifies approval state before acting, and no agent may approve its own work. The OpenSpec toolkit skills (`.agents/skills/openspec-*`) are installed. A path adapter maps them to `workflow/specs/` so the project keeps a single specification tree. `workflow/README.md` defines the lifecycle, handoff rules, permission matrix, and evidence requirements.
+The orchestrator proposes consecutive batches of up to two checklist items in dependency order and obtains human approval before dispatch. One implementer completes and verifies each item before starting the next; a different reviewer checks each item and their combined behavior before the next batch. Batch manifests under `workflow/tasks/<task-id>/` are checked by `src/workflow/validate-assignment.mjs`. Agents receive artifact paths rather than pasted documents, verify approval state before acting, and cannot approve their own work. The OpenSpec toolkit skills (`.agents/skills/openspec-*`) are installed. A path adapter maps them to `workflow/specs/` so the project keeps a single specification tree. `workflow/README.md` defines the lifecycle, handoff rules, permission matrix, and evidence requirements.
 
 ## Context engineering and resource-aware use
 
@@ -343,6 +342,7 @@ In the app, no LLM calls exist yet. The planned prompt, caching, and token-budge
 | `workflow/tasks/<task-id>/` | Per-task evidence: spec reference, `tasks.md` checklist, `handoff.md`, implementation and review reports, test coverage reports, security review, and visual evidence |
 | `workflow/tasks/ai-gateway/design.md` | SoC LLM adapter design reused from MP3: provider contract, five-layer reliability pipeline, error handling, and the 90 requests/minute provider limit |
 | `workflow/tasks/<task-id>/assignment-batch-*.json` | Orchestrator dispatch records for a task's batches |
+| `src/workflow/validate-assignment.mjs` | Checks batch manifest structure and evidence paths; does not grant approval or verify test truth |
 | `workflow/tasks/<task-id>/execution_logs/` | Legacy location for factual logs from earlier tasks |
 | `logs/tasks/<task-id>/` | Factual execution logs: commands, results, and agent run notes |
 | `logs/chat/<name>/` | Chat summaries produced with the `summarise-chat` skill and checked by the developer |
