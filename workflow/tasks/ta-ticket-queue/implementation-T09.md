@@ -9,3 +9,5 @@ Changed files:
 Verification: new test passes; full suite 48 suites passed, 1048 tests passed, 4 skipped suites.
 
 Risks: the emulator does not enforce indexes, so this is a static check only. `firebase.json` reference, deployment, and deploy permission remain with `environments-and-deployment`; filtered production queries stay at risk until then.
+
+T9-1 fix: the coverage test now also asserts the final orderBy is `__name__` ascending.

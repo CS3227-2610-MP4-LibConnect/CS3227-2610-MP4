@@ -51,6 +51,7 @@ describe('ta-ticket-queue Firestore indexes', () => {
       for (const concept of concepts) {
         test(`status=${status} language=${language} concept=${concept} has exactly one matching index`, async () => {
           const recorded = await recordQuery({ status, language, concept });
+          expect(recorded.orders[recorded.orders.length - 1]).toEqual({ field: '__name__', dir: 'asc' });
           const needed = requiredFields(recorded);
           expect(needed[needed.length - 1]).toEqual({ fieldPath: 'createdAt', order: 'ASCENDING' });
           const matches = indexFile.indexes.filter((i) => JSON.stringify(i.fields) === JSON.stringify(needed));
