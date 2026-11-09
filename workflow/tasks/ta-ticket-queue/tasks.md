@@ -16,7 +16,7 @@ through the store module from T01. No task adds a ticket-creation endpoint.
 
 ## Group 1: Store and state machine — T01
 
-- [ ] **T01: Ticket store and state machine.** Add `server/tickets/`:
+- [x] **T01: Ticket store and state machine.** Add `server/tickets/`:
   - `constants.js`: the Q1 language list, the tag rules, and the four
     statuses.
   - `transitions.js`: a pure guard that decides whether an event is allowed,
@@ -32,7 +32,7 @@ through the store module from T01. No task adds a ticket-creation endpoint.
 
 ## Group 2: Queue list and detail API — T02
 
-- [ ] **T02: Queue list and detail API.** Add `server/tickets/ta-routes.js`
+- [x] **T02: Queue list and detail API.** Add `server/tickets/ta-routes.js`
   with `GET /api/ta/tickets` (R1) and `GET /api/ta/tickets/:ticketId` (R2),
   using the existing `requireActiveActor` guard and a TA-only check. Mount it
   in `server/index.js`.
@@ -48,7 +48,7 @@ through the store module from T01. No task adds a ticket-creation endpoint.
 
 Collision handling: T04 puts its reply handler in its own module (e.g. `server/tickets/ta-replies.js`) mounted by T02's router, so it does not edit the claim/resolve handlers T03 adds to `ta-routes.js`. T06 and T07 are in different groups because both edit `src/index.tsx`, `server/index.js`, and `src/AppHeader.tsx`.
 
-- [ ] **T03: Claim, unclaim, and resolve API.** Add the three R3, R4, and R6
+- [x] **T03: Claim, unclaim, and resolve API.** Add the three R3, R4, and R6
   `POST` endpoints, each with `requireCsrf`. The bodies are strictly
   validated: empty for claim and unclaim; for resolve, `{ fixNote }` of
   1–2000 characters after trimming. Any other key returns `400`.
@@ -68,7 +68,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
     tickets, forbidden keys, CSRF, and one notification per reply.
   - (Spec R5, R7; scenarios 5, 7, 8, 11.)
 
-- [x] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
+- [ ] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
   language, and concept filters, **Load more**, the claimed badges, and
   empty, loading, and error-with-retry states.
   - Add the route to `src/index.tsx` behind the TA route guard, the SPA path
@@ -126,3 +126,4 @@ dispatch, review, commit, and merge are separate human decisions.
 - 2026-11-09: The human approved checklist v0.1 and handoff v0.1 ("approved the checklist and handoff").
 - 2026-11-09: Applied the human-approved 5-group grouping (revised from the task grouper's 6-group proposal); whole tasks moved without wording or checkbox changes.
 - 2026-11-09: After the independent review (`review-report.md`, verdict "pass with follow-up"), the orchestrator marked T05, T06, T07, and T08 `[x]`. T01 (L2, L3), T02 (F1, list view), T03 (L1), and T04 (L4) stay `[ ]` because each has a Low finding awaiting the human's decision.
+- 2026-11-09: After the re-review (`review-report.md`, "Re-review" section), L1, L2, L3, and F1 are resolved, so T01, T02, and T03 are marked `[x]`. T04 stays `[ ]` (L4 left open by the human, not yet accepted as residual risk). **T06 is reopened from `[x]` to `[ ]`**: new Low finding N1 (`src/TAQueuePage.tsx:127` shows the "Claimed by you" badge on RESOLVED tickets since the F1 change).

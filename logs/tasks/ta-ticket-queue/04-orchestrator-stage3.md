@@ -142,3 +142,23 @@ Input and output tokens are unavailable for all three runs.
 - Verdict: pass with follow-up. Findings: L1 (T03), L2 and L3 (T01), L4 (T04), and F1 (T02, list view); all are Low. The reviewer's results: full suite 988/0 failed, 1007/0 with the review tests, emulator 1/1, build OK.
 - The orchestrator confirmed L1 at `ta-claims.js:22-24`: `isEmptyBody(undefined)` is true, so a non-JSON body is accepted as empty. Port 8080 is free.
 - Checkboxes: T05–T08 → `[x]`. T01–T04 stay `[ ]` pending the human's decision. The review branch is not yet merged into `ta-ticket-queue`.
+
+## Review-fix cycle (2026-11-09)
+
+- The human chose to fix L1–L3 now (L4 left as is) and set the F1 rule so the list matches the detail view.
+  - Spec amendment `1201090`: the amendment entry was written first, then R1 was clarified.
+  - Review branch merged as `38d6f93`.
+- Implementer T03, run 3 (resumed, review-fix): the task notification reports `subagent_tokens` 96,360 (9 tool uses, 142.9 s). This appears cumulative over runs 1–3; not confirmed.
+- Commit `90effbe`:
+  - Production changes: `store.js`, `ta-claims.js`, `ta-routes.js`, `ta-views.js`.
+  - New test file: `test/ta-tickets.review-fixes.test.js`. No existing test was edited.
+  - It also **accidentally committed `src/codeclinic/firestore-debug.log`** (84 lines). A grep for key, token, secret, password, and `@` found 0 matches. Removed in `ef05784`. The file remains in local history at `90effbe`, unpushed; it can be squashed out before any push.
+- Merged as `6f1cc68`. Full suite: 46 suites passed, 4 skipped; 1025 tests passed, 4 skipped, 0 failed.
+- Re-review dispatched: the reviewer was resumed, in detached worktree `review2` at `ef05784`.
+
+## Re-review reconciliation (2026-11-09)
+
+- Reviewer run 2 (resumed): the task notification reports `subagent_tokens` 168,907 (9 tool uses, 154.7 s). This appears cumulative with run 1's 147,931; not confirmed.
+- Commit `d9390d8` on `ta-ticket-queue-review2` changes only the review report, the security review, and the reviewer log. Merged into `ta-ticket-queue`.
+- Verdict: pass with follow-up. L1, L2, L3, and F1 are resolved. L4 is open. New finding N1 (Low): `src/TAQueuePage.tsx:127-128` checks `claimedByMe` before `claimed`, so after F1 a resolver sees "Claimed by you" on RESOLVED tickets. Confirmed by the orchestrator.
+- Checkboxes: T01, T02, and T03 → `[x]`. **T06 reopened `[x]` → `[ ]` (N1).** T04 stays `[ ]` (L4).

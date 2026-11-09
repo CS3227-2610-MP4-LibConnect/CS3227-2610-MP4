@@ -4,7 +4,7 @@ Specification: `workflow/specs/ta-ticket-queue.md` v0.1 (human-approved 2026-11-
 Checklist: `workflow/tasks/ta-ticket-queue/tasks.md` v0.1, grouping human-approved 2026-11-09
 Handoff: `workflow/tasks/ta-ticket-queue/handoff.md` v0.1 (human-approved 2026-11-09)
 Integration branch: local `ta-ticket-queue` (from `TA-coordinator` `3203bb1`). Nothing pushed.
-Status: the independent review is done (`review-report.md`: pass with follow-up; 5 Low findings). T05–T08 are `[x]`; T01–T04 are `[ ]` until the human decides on L1–L4 and F1.
+Status: the re-review is done (`review-report.md`, "Re-review": pass with follow-up). L1–L3 and F1 are fixed (`90effbe`). Open items: L4 (T04, left open by the human) and new N1 (T06, reopened). T01–T03, T05, T07, and T08 are `[x]`.
 
 ## Tasks
 
@@ -91,6 +91,8 @@ so resumed runs show the reported figure.
 | Implementer | T05, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 54,444 | task notification |
 | Implementer | T07, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 73,382 | task notification |
 | Reviewer | Whole task, run 1 | claude-opus-5-5 | unavailable | unavailable | 147,931 | task notification (41 tool uses, 528.6 s) |
+| Implementer | Review-fix (T03 agent), run 3 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 96,360 (reported; may include runs 1–2) | task notification (9 tool uses, 142.9 s) |
+| Reviewer | Re-review, run 2 (resumed) | claude-opus-5-5 | unavailable | unavailable | 168,907 (reported; may include run 1) | task notification (9 tool uses, 154.7 s) |
 | Implementer | T08, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 64,122 | task notification (23 tool uses, 573.3 s; stopped by the orchestrator after hand-back, with background work still open) |
 
 An aggregate is not given, for two reasons: the totals of the resumed runs
