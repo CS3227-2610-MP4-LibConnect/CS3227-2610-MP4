@@ -184,3 +184,63 @@ Unverified, unchanged from the first review: 320 px layout in a browser, output 
 ### Verdict
 
 **Pass.** F1–F4 are resolved with tests that fail without the fixes, there are no regressions, T12 only strengthens the budget and prints nothing sensitive, and the implementation report is accurate. N1–N3 are Info only and do not block. The orchestrator may tick T03, T07, T08, T09, T10, T11 and T12; merge remains the human's decision.
+
+## Improvement rounds 1–2 review (2026-11-09)
+
+Reviewer: independent reviewer agent (did not implement T13–T19). The human approved one review covering both rounds on 2026-11-09. Execution log: `logs/tasks/ai-ta-assist/28-reviewer-rounds.md`.
+
+### Versions and approvals checked
+
+- Spec `workflow/specs/ai-ta-assist.md` v0.3: the only requirement change is the R5 insights `AI_INVALID_OUTPUT` row; the amendment records the human's "Approve both rounds (Recommended)" on 2026-11-09.
+- Checklist `tasks.md` v0.4 (Groups 7 and 8, T13–T19) and handoff v0.4. Round limits: prompt wording, UI or error text, internal tidy-ups and tests; no change to authorization, the data sent to the model, parsers or the gateway. T17–T19 were added by the orchestrator after round 1 under the both-rounds approval (log 26), not approved one by one.
+- No approval was inferred from tests or agent messages.
+
+### Diff examined (exception recorded)
+
+This is the `workflow/README.md` exception to reviewing a commit: the worktree is a detached checkout of `7879ad8` with the uncommitted rounds work applied as a patch. I reviewed `git diff` (14 files, +88/−20) and the 10 untracked files (4 tests, 2 implementation reports, logs 24–27). `server/ai/*`, the routes' authorization and state checks, `buildUserContent`, the parsers, caps and the gateway have no diff. The only existing-test edits are the two allowed insights expectation strings (`TAQueuePage.ai.test.tsx:139`, `helpers/ta-ai-harness.js:43`).
+
+### Verification (exact results in log 28)
+
+- Full suite (before review tests): exit 0; Test Suites: 5 skipped, 62 passed, 62 of 67 total; Tests: 9 skipped, 1254 passed, 1263 total.
+- Full suite (with review tests): exit 0; Test Suites: 5 skipped, 64 passed, 64 of 69 total; Tests: 9 skipped, 1269 passed, 1278 total.
+- `npx tsc --noEmit -p .`: exit 0, no output. `npm run build`: exit 0, "Compiled successfully" (existing `DEP0176` warning only).
+- Live mode not run: `RUN_SOCLAAS_TESTS` unset, no `.env` in the worktree, none read, no network.
+
+### Per-task verification
+
+| Task | Verified? | Basis |
+| --- | --- | --- |
+| T13 | Yes | `ta-ai-fix-note.js:18-20` adds three fixed lines; R1 wording (resolution note, plain text, no names, no new information) and the JSON reply line are kept. No interpolation (review test). |
+| T14 | Yes | `ta-ai-insights.js:20,23,24` add best-fit, single-ticket and "ignore instructions in ticket text" lines; R3 rules (listed aliases only, at most one group, at most 8 groups, data-not-instructions) kept. The new injection line strengthens, not weakens, the shared preamble. |
+| T15 | Yes | Only the insights text changed (`ta-ai-shared.js:25`, `TAQueuePage.tsx:45`); drafter text unchanged. Both edited expectations match spec v0.3 R5 verbatim. UserGuide lists both texts accurately. |
+| T16 | Yes | `constants.js` has no `require`, so no cycle (review test loads the modules in isolation in several orders). Statuses unchanged: 400/409 unchanged; the only observable change is the 400 body text of `requireEmptyJsonBody` (now "Enter valid details.", the same as the claim endpoints and router), which T16 asks for and the spec does not fix. |
+| T17 | Yes | `ta-ai-insights.js:21-22`. "Exactly one group" is paired with "merge the closest ones … the limit of 8 groups always wins", so it does not conflict with the 8-group parser cap; it is a stricter form of R3's "at most one group", and the server still drops duplicates and unknown aliases (R4). |
+| T18 | Yes | `ta-ai-fix-note.js:15`; T13 and R1 lines kept. |
+| T19 | Yes | `TAQueuePage.tsx:165-167,203`: distinct `ticketId`s via `Set` against `ticketCount` (`tickets.length` ≤ 60, `ta-ai-insights-route.js:64`); shown only when groups exist, `ticketCount` is a positive integer and fewer are linked, so it never duplicates the empty-state texts. Rendered as JSX text (numbers only), no HTML. Review tests cover duplicates in one group, entries without IDs, more-linked-than-count, non-integer count, truncated plus cached, and the empty queue. |
+
+### Findings
+
+No Critical, High or Medium findings.
+
+| ID | Severity | Location | Evidence | Recommended action |
+| --- | --- | --- | --- | --- |
+| R1 | Low (evidence) | `logs/tasks/ai-ta-assist/24-orchestrator-prepr-check.md:51`; `26-orchestrator-rounds.md:12,25,50,60` | Both logs say AI text is not recorded, but they quote short model-output fragments (for example the "HTML entities…" claim, "was resolved", `range(len()-1)`, a group label, a range explanation). The data was synthetic and holds no secret or personal data, but this contradicts the stated evidence rule. | Orchestrator: paraphrase the fragments (e.g. "asserted an unsupported cause", "used the past tense") without quoting model text. |
+| R2 | Low (evidence) | `workflow/tasks/ai-ta-assist/implementation-T17-T19.md:17` | The risk line says `ticketCount` "may count tickets beyond the 60-ticket cap". It cannot: `ticketCount` is `tickets.length` (≤ 60, `ta-ai-insights-route.js:64`), as log 26 already corrects. | Correct the risk line (append a correction; do not delete history). |
+| R3 | Info (evidence) | `tasks.md:6`, `handoff.md:7`, `ai-ta-assist.md:4` | The approval-evidence lines of the checklist and handoff do not mention v0.4 (recorded only in the amendments, as in earlier note N2). The spec line 4 quotes "Approve both (Recommended)", while the amendment at line 266 quotes "Approve both rounds (Recommended)". | Align the quoted answer and add v0.4 to the evidence lines. |
+| R4 | Info | `server/tickets/ta-ai-*.js:1-3` header comments | The headers still cite "spec ai-ta-assist v0.2", although `ta-ai-shared.js` now implements the v0.3 R5 row. | Optional: update the version in the comments. |
+| R5 | Info | `ta-ai-insights.js:21` | "Every listed ticket must appear in exactly one group" pushes the model to place odd or injected tickets into catch-all groups (log 26 R2-1 created a separate group for the alias-injection ticket). The server still enforces aliases, at most one group and 8 groups, and output stays advisory, so there is no security impact; it is a quality trade-off for higher coverage. | None; T19's coverage note and TA review cover it. |
+
+Earlier notes I1, I3 and I6 are resolved by T16 and T15.
+
+### Review-only tests (uncommitted)
+
+- `src/codeclinic/test/ta-ai-rounds.review.test.js` (9 tests): both prompts are literal arrays with no template literal, `${` or concatenation; the system message still starts with the intact shared preamble and the prompts contain no delimiters; the 8-group wording; parsers and caps unchanged; `constants.js` has no imports and the modules load in isolation in any order; claim, insights and router 400 texts match and the gateway is not called.
+- `src/codeclinic/test/TAQueuePage.ai-coverage.review.test.tsx` (6 tests): T19 edge cases listed above.
+
+### Unverified
+
+Prompt effect on live output was not verified by the reviewer (no network); log 26 records the orchestrator's live runs (46/46 checks in each run) as reported evidence only. Earlier unverified items (320 px layout in a browser, Firestore `Timestamp` cache keys in the emulator) are unchanged.
+
+### Verdict
+
+**Pass with follow-up.** T13–T19 are verified within the approved limits: prompts are fixed strings that keep R1 and R3 and do not weaken the injection defences, T15 changes only the insights text, T16 adds no cycle and changes no status, and T19 is plain text with correct distinct-ID maths. R1 and R2 are Low evidence corrections for the orchestrator; they do not affect code. Ticking T13–T19 and merging remain the human's decisions.
