@@ -111,7 +111,7 @@ so resumed runs show the reported figure.
 | Implementer | T09 index file and test, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 44,302 | task notification (5 tool uses, 44.3 s) |
 | Implementer | T9-1 fix (T09 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 45,624 (reported; may include run 1) | task notification (2 tool uses, 21.0 s) |
 | Reviewer | T09 review, run 4 (resumed) | claude-opus-5-5 | unavailable | unavailable | 183,771 (reported; may include runs 1–3) | task notification (4 tool uses, 67.5 s) |
-| Reviewer | T9-1 re-check, run 5 (resumed) | claude-opus-5-5 | unavailable | unavailable | unavailable (no task notification received before close-out) | none |
+| Reviewer | T9-1 re-check, run 5 (resumed) | claude-opus-5-5 | unavailable | unavailable | 186,389 (reported; may include runs 1–4) | task notification (3 tool uses, 34.6 s; arrived after commit `907ec33`) |
 | Implementer | T08, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 64,122 | task notification (23 tool uses, 573.3 s; stopped by the orchestrator after hand-back, with background work still open) |
 
 An aggregate is not given, for two reasons: the totals of the resumed runs
