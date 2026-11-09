@@ -20,6 +20,7 @@ export default function AppHeader({ accountType, isManager = false, activePath, 
     <div className="app-header__actions">
       {!restricted && <nav className="app-header__nav" aria-label="Main navigation">
         <a href={account} aria-current={active === account ? 'page' : undefined}>Account</a>
+        {accountType === 'TA' && <a href="/ta/queue" aria-current={active === '/ta/queue' ? 'page' : undefined}>Queue</a>}
         {accountType === 'TA' && <a href="/ta/students" aria-current={active === '/ta/students' ? 'page' : undefined}>Students</a>}
         {accountType === 'TA' && isManager && <a href="/ta/tas" aria-current={active === '/ta/tas' ? 'page' : undefined}>TAs</a>}
         <NotificationBell active={active === '/notifications'} />
