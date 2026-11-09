@@ -19,8 +19,13 @@ function isPlainObject(value) {
 }
 
 /** The body must be absent or an object with no own keys. */
-function isEmptyBody(body) {
-  return body === undefined || (isPlainObject(body) && Object.keys(body).length === 0);
+function isEmptyBody(body, headers) {
+  if (body === undefined) {
+    // A body that was sent but not parsed as a JSON object (text/plain, form) is rejected, not ignored.
+    const length = Number(headers && headers['content-length']);
+    return !(length > 0) && !(headers && headers['transfer-encoding']);
+  }
+  return isPlainObject(body) && Object.keys(body).length === 0;
 }
 
 /** Returns the trimmed note, or `null` if the body is not exactly `{ fixNote }` of 1-2000 characters. */
@@ -56,7 +61,7 @@ function createClaimRoutes(shared) {
   function action(path, event, parseBody, run) {
     router.post(path, requireCsrf, safe(async (req, res) => {
       const { ticketId } = req.params;
-      const parsed = parseBody(req.body);
+      const parsed = parseBody(req.body, req.headers);
       if (parsed === null) return res.status(400).json({ message: messages.INVALID });
       if (!TICKET_ID_PATTERN.test(ticketId)) return res.status(404).json({ message: messages.NOT_FOUND });
       const result = await run(ticketId, req.actor.userId, parsed.value);
@@ -70,7 +75,7 @@ function createClaimRoutes(shared) {
     }));
   }
 
-  const emptyBody = (body) => (isEmptyBody(body) ? { value: undefined } : null);
+  const emptyBody = (body, headers) => (isEmptyBody(body, headers) ? { value: undefined } : null);
   const resolveBody = (body) => {
     const fixNote = parseResolveBody(body);
     return fixNote === null ? null : { value: fixNote };

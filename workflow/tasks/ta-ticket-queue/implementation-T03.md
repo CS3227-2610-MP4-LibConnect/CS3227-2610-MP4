@@ -20,3 +20,11 @@ Spec: `workflow/specs/ta-ticket-queue.md` v0.1 (R3, R4, R6, R7). Checklist v0.1,
 - List view left unchanged: R1 does not contradict it.
 - Tests: `ta-tickets` 264 pass; full suite 955 pass, 1 fail (T06 route wiring test, expected), 4 skipped; TATicketPage suite fails to load (expected).
 - Suggested regression test (not added): GET of a RESOLVED ticket by its resolver returns `claimedByMe: true`.
+
+## Review fixes (L1, L2, L3, F1)
+- L1 (`ta-claims.js`): when no body was parsed (`req.body` undefined) but `Content-Length` is above 0 or `Transfer-Encoding` is set (text/plain, form), claim and unclaim return 400. No body and `{}` still succeed. Resolve and replies already return 400 for an unparsed body (they require an object with the exact key), so no change there; tests cover both.
+- L2 (`store.js`): `transition()` now returns the ticket (and reply) built from the in-transaction read plus the written changes. Server timestamps are reported as the store clock time at commit (`deps.now`, default `Date.now`). For claim/unclaim/resolve a best-effort `getTicket` then supplies the real reply thread; if it throws, the in-transaction data (empty reply list) is used, so a committed write is never a 503 and `notify` still runs. `addReply` no longer re-reads.
+- L3 (`store.js`): `decodeCursor` rejects `createdAtMs` outside the Firestore Timestamp range and ticket IDs not matching `^[A-Za-z0-9_-]{1,128}$`; both stores then give 400 via `INVALID_CURSOR`.
+- F1 (`ta-views.js`, `ta-routes.js`): shared `isClaimedByViewer`; list `claimedByMe` follows it (including RESOLVED); `claimed` stays true only while CLAIMED.
+- Tests: new `ta-tickets.review-fixes.test.js`. Full suite 1025 pass, 4 skipped, 0 fail; emulator suite passes (port 8080 free afterwards); `npm run build` succeeds.
+- Not done: L4 (optional tidy-up) left as is.
