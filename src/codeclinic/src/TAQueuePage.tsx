@@ -33,6 +33,36 @@ function parseItems(body: unknown): { tickets: QueueItem[]; nextCursor: string |
   return { tickets: data.tickets as QueueItem[], nextCursor: typeof data.nextCursor === 'string' ? data.nextCursor : null };
 }
 
+interface InsightTicket { ticketId: string; title: string }
+interface InsightGroup { label: string; kind: string; summary: string; tickets: InsightTicket[] }
+interface InsightsResult { groups: InsightGroup[]; truncated: boolean; cached: boolean }
+type InsightsState = 'idle' | 'loading' | 'ready' | 'error';
+
+const INSIGHTS_ERRORS: Record<string, string> = {
+  AI_UNAVAILABLE: 'Queue insights are unavailable right now.',
+  AI_RATE_LIMITED: 'AI limit reached. Please try again in a minute.',
+  AI_INPUT_TOO_LARGE: 'The queue is too large to summarise.',
+  AI_INVALID_OUTPUT: 'The AI reply could not be used. Please try again or write the note yourself.',
+};
+const INSIGHTS_FALLBACK_ERROR = 'Queue insights are unavailable right now.';
+const KIND_LABEL: Record<string, string> = { CONCEPT: 'Concept', MISCONCEPTION: 'Misconception' };
+
+const str = (value: unknown): string => (typeof value === 'string' ? value : '');
+
+function parseInsights(body: unknown): InsightsResult {
+  const data = body as { groups?: unknown; truncated?: unknown; cached?: unknown } | null;
+  if (!data || !Array.isArray(data.groups)) throw new Error('Unexpected response.');
+  const groups = data.groups.map((raw): InsightGroup => {
+    const g = (raw ?? {}) as { label?: unknown; kind?: unknown; summary?: unknown; tickets?: unknown };
+    const tickets = Array.isArray(g.tickets) ? g.tickets.map((t) => {
+      const row = (t ?? {}) as { ticketId?: unknown; title?: unknown };
+      return { ticketId: str(row.ticketId), title: str(row.title) };
+    }).filter((t) => t.ticketId) : [];
+    return { label: str(g.label), kind: str(g.kind), summary: str(g.summary), tickets };
+  });
+  return { groups, truncated: data.truncated === true, cached: data.cached === true };
+}
+
 export default function TAQueuePage() {
   const [status, setStatus] = useState('ACTIVE');
   const [language, setLanguage] = useState('');
@@ -45,6 +75,10 @@ export default function TAQueuePage() {
   const [moreError, setMoreError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const generation = useRef(0);
+  const [insightsState, setInsightsState] = useState<InsightsState>('idle');
+  const [insights, setInsights] = useState<InsightsResult | null>(null);
+  const [insightsError, setInsightsError] = useState('');
+  const insightsBusy = useRef(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setConcept(conceptInput.trim()), 250);
@@ -95,6 +129,38 @@ export default function TAQueuePage() {
     void fetchPage(cursor);
   };
 
+  const generateInsights = async () => {
+    if (insightsBusy.current) return;
+    insightsBusy.current = true;
+    setInsightsState('loading');
+    setInsightsError('');
+    try {
+      const csrfResponse = await fetch('/api/auth/csrf', { method: 'GET', credentials: 'same-origin' });
+      if (csrfResponse.status === 401) { window.location.assign('/'); return; }
+      const csrfBody = csrfResponse.ok ? await csrfResponse.json() : null;
+      const csrfToken = (csrfBody as { csrfToken?: unknown } | null)?.csrfToken;
+      if (typeof csrfToken !== 'string' || !csrfToken) throw new Error('No CSRF token.');
+      const response = await fetch('/api/ta/tickets/insights', {
+        method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': csrfToken },
+      });
+      if (response.status === 401) { window.location.assign('/'); return; }
+      if (!response.ok) {
+        let code = '';
+        try { code = str(((await response.json()) as { code?: unknown } | null)?.code); } catch { /* fixed message below */ }
+        setInsightsError(INSIGHTS_ERRORS[code] ?? INSIGHTS_FALLBACK_ERROR);
+        setInsightsState('error');
+        return;
+      }
+      setInsights(parseInsights(await response.json()));
+      setInsightsState('ready');
+    } catch {
+      setInsightsError(INSIGHTS_FALLBACK_ERROR);
+      setInsightsState('error');
+    } finally {
+      insightsBusy.current = false;
+    }
+  };
+
   return <main className="ta-queue">
     <h1>Ticket queue</h1>
     <form className="ta-queue__filters" onSubmit={(event) => event.preventDefault()}>
@@ -109,10 +175,40 @@ export default function TAQueuePage() {
           {LANGUAGES.map((name) => <option key={name} value={name}>{name}</option>)}
         </select>
       </label>
-      <label>Concept
+      <label>Concept tag
         <input type="text" value={conceptInput} maxLength={30} placeholder="e.g. recursion" onChange={(event) => setConceptInput(event.target.value)} />
       </label>
     </form>
+
+    <section className="ta-queue__insights" aria-labelledby="ta-queue-insights-heading">
+      <div className="ta-queue__insights-head">
+        <h2 id="ta-queue-insights-heading">Queue insights</h2>
+        <span className="ta-queue__badge">AI suggestion</span>
+      </div>
+      <p className="ta-queue__insights-help">Groups the active queue into common concepts and misconceptions. Advisory only.</p>
+      <button type="button" disabled={insightsState === 'loading'} onClick={() => void generateInsights()}>
+        Generate insights
+      </button>
+      {insightsState === 'loading' && <p role="status">Analysing the queue…</p>}
+      {insightsState === 'error' && <p role="alert">{insightsError}</p>}
+      {insightsState === 'ready' && insights && <div className="ta-queue__insights-result">
+        {insights.truncated && <p className="ta-queue__note">Based on the oldest 60 active tickets.</p>}
+        {insights.cached && <p className="ta-queue__note">Cached result.</p>}
+        {insights.groups.length === 0 && <p className="ta-queue__empty">No insights: there are no active tickets to group.</p>}
+        {insights.groups.map((group, index) => <article key={index} className="ta-queue__group">
+          <div className="ta-queue__group-head">
+            <h3>{group.label}</h3>
+            <span className="ta-queue__badge">{KIND_LABEL[group.kind] ?? ''}</span>
+          </div>
+          <p>{group.summary}</p>
+          <ul className="ta-queue__group-tickets">
+            {group.tickets.map((ticket) => <li key={ticket.ticketId}>
+              <a href={`/ta/tickets/${encodeURIComponent(ticket.ticketId)}`}>{ticket.title}</a>
+            </li>)}
+          </ul>
+        </article>)}
+      </div>}
+    </section>
 
     {state === 'loading' && <p role="status">Loading tickets…</p>}
     {state === 'error' && <div className="ta-queue__error">

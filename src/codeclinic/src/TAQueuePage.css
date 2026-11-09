@@ -21,4 +21,14 @@
 .ta-queue button:disabled { opacity: .6; cursor: wait; }
 .ta-queue__more { display: block; margin: 16px auto 0; }
 .ta-queue a:focus-visible, .ta-queue button:focus-visible, .ta-queue select:focus-visible, .ta-queue input:focus-visible { outline: 3px solid var(--lc-color-focus); outline-offset: 2px; }
+.ta-queue__insights { margin: 20px 0; padding: 16px 18px; border: 1px solid var(--lc-color-border); border-radius: var(--lc-radius-surface); background: var(--lc-color-surface); box-shadow: var(--lc-shadow-surface); }
+.ta-queue__insights, .ta-queue__group, .ta-queue__group-head, .ta-queue__insights-head { min-width: 0; }
+.ta-queue__insights h2, .ta-queue__group h3 { margin: 0; font-family: var(--lc-font-display); color: var(--lc-color-navy); overflow-wrap: anywhere; }
+.ta-queue__group h3 { font-size: 1.05rem; }
+.ta-queue__insights-head, .ta-queue__group-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.ta-queue__insights-help, .ta-queue__note { color: var(--lc-color-muted); }
+.ta-queue__group { margin-top: 12px; padding: 12px 14px; border: 1px solid var(--lc-color-border); border-radius: var(--lc-radius-control); }
+.ta-queue__group p, .ta-queue__group-tickets li, .ta-queue__note { overflow-wrap: anywhere; }
+.ta-queue__group-tickets { margin: 0; padding-left: 20px; }
+.ta-queue__group-tickets a { color: var(--lc-color-blue-link); }
 @media (max-width: 640px) { .ta-queue { width: calc(100% - 24px); margin: 24px auto; } .ta-queue__filters { grid-template-columns: minmax(0, 1fr); } }
