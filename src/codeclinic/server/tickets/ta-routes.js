@@ -4,6 +4,7 @@
 const express = require('express');
 const { createAccountGuards } = require('../account/guards');
 const { STATUSES, LANGUAGES } = require('./constants');
+const { createTaRepliesRoutes } = require('./ta-replies');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const MAX_CONCEPT_LENGTH = 30;
@@ -170,6 +171,7 @@ function createTaTicketsRouter({ authStore, accountStore, ticketStore, notify, n
   // Mount them before the '/:ticketId' route so their '/:ticketId/<action>' paths are matched first.
   const shared = Object.freeze({ requireCsrf, ticketStore, accountStore, notify, safe, messages: MESSAGES });
   void shared;
+  router.use('/', createTaRepliesRoutes(shared));
 
   router.get('/:ticketId', safe(async (req, res) => {
     const { ticketId } = req.params;
