@@ -4,3 +4,6 @@
 - `ta-tickets.api`: 134 pass, 27 fail (T04 reply cases, DETAIL_KEYS defect, two composite tests).
 - Full suite: 916 pass, 27 fail, 4 skipped.
 - Committed on `ta-ticket-queue-t03`. No push, no merge.
+
+## T03-fix
+- Moved the R2 view into `ta-views.js`, removed the duplicate, fixed `claimedByMe` for RESOLVED. `ta-tickets` 264 pass; full suite 955 pass, 1 fail, 4 skipped. Committed on `ta-ticket-queue-t03fix`.
