@@ -5,16 +5,16 @@ Task ID: `ta-ticket-queue`
 Specification: `workflow/specs/ta-ticket-queue.md`, version 0.1 (the human approved it on 2026-11-09)
 Checklist approval evidence: the human replied "approved the checklist and handoff" to checklist v0.1 and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state.
 
-The tasks are listed in dependency order and are not grouped yet. The task
-grouper proposes groups after this checklist is approved, and you approve the
-grouping separately. Checkboxes track implementation only. The orchestrator
+The tasks are grouped below. The human approved this grouping on 2026-11-09
+(5 groups, revised from the task grouper's 6-group proposal in
+`grouping-proposal.md`). Checkboxes track implementation only. The orchestrator
 marks a task `[x]` only after independent review. All paths are under
 `src/codeclinic/`.
 
 Until `student-tickets` exists, the tests seed tickets and replies directly
 through the store module from T01. No task adds a ticket-creation endpoint.
 
-## Tasks
+## Group 1: Store and state machine — T01
 
 - [ ] **T01: Ticket store and state machine.** Add `server/tickets/`:
   - `constants.js`: the Q1 language list, the tag rules, and the four
@@ -30,6 +30,8 @@ through the store module from T01. No task adds a ticket-creation endpoint.
     rejection of bad input, and the store behaviour on the in-memory store.
   - (Spec C1, C2; scenarios 3, 4, 5, 6.)
 
+## Group 2: Queue list and detail API — T02
+
 - [ ] **T02: Queue list and detail API.** Add `server/tickets/ta-routes.js`
   with `GET /api/ta/tickets` (R1) and `GET /api/ta/tickets/:ticketId` (R2),
   using the existing `requireActiveActor` guard and a TA-only check. Mount it
@@ -41,6 +43,10 @@ through the store module from T01. No task adds a ticket-creation endpoint.
     `400` for bad filters and cursors, `401`, `403` for students, `401` for
     inactive TAs, `404`, `503`, and the allow-list.
   - (Spec R1, R2; scenarios 1, 2, 10.)
+
+## Group 3: Write API and queue page (parallel) — T03, T04, T06
+
+Collision handling: T04 puts its reply handler in its own module (e.g. `server/tickets/ta-replies.js`) mounted by T02's router, so it does not edit the claim/resolve handlers T03 adds to `ta-routes.js`. T06 and T07 are in different groups because both edit `src/index.tsx`, `server/index.js`, and `src/AppHeader.tsx`.
 
 - [ ] **T03: Claim, unclaim, and resolve API.** Add the three R3, R4, and R6
   `POST` endpoints, each with `requireCsrf`. The bodies are strictly
@@ -62,14 +68,6 @@ through the store module from T01. No task adds a ticket-creation endpoint.
     tickets, forbidden keys, CSRF, and one notification per reply.
   - (Spec R5, R7; scenarios 5, 7, 8, 11.)
 
-- [ ] **T05: Emulator integration tests.** Add
-  `test/ta-ticket-queue-emulator.integration.test.js`. Like the existing
-  emulator tests, it runs only when `RUN_FIRESTORE_EMULATOR_TESTS=1`.
-  - It covers the concurrent-claim race (exactly one winner), the
-    status/language/concept filter queries, and the notification documents
-    written for claim, reply, and resolve.
-  - (Spec C2, R1, R7; scenarios 1, 3, 8.)
-
 - [ ] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
   language, and concept filters, **Load more**, the claimed badges, and
   empty, loading, and error-with-retry states.
@@ -79,6 +77,16 @@ through the store module from T01. No task adds a ticket-creation endpoint.
   - Use `theme.css` tokens. Component tests cover the filters, pagination,
     each state, plain-text titles, and the 320-pixel layout.
   - (Spec R8; scenarios 1, 9.)
+
+## Group 4: Emulator tests and ticket page (parallel) — T05, T07
+
+- [ ] **T05: Emulator integration tests.** Add
+  `test/ta-ticket-queue-emulator.integration.test.js`. Like the existing
+  emulator tests, it runs only when `RUN_FIRESTORE_EMULATOR_TESTS=1`.
+  - It covers the concurrent-claim race (exactly one winner), the
+    status/language/concept filter queries, and the notification documents
+    written for claim, reply, and resolve.
+  - (Spec C2, R1, R7; scenarios 1, 3, 8.)
 
 - [ ] **T07: Ticket detail page.** Add the `/ta/tickets/:ticketId` page (R8):
   - It shows the ticket fields, the code files in `<pre>` as plain text, and
@@ -97,6 +105,8 @@ through the store module from T01. No task adds a ticket-creation endpoint.
     the `409` refresh, and the 320-pixel layout.
   - (Spec R7, R8; scenarios 6, 9.)
 
+## Group 5: Guides and evidence — T08
+
 - [ ] **T08: Guides and evidence.** Update `docs/UserGuide.md` (the TA queue
   and ticket pages) and `docs/DeveloperGuide.md` (the `server/tickets/`
   module, the shared ticket contract, and the endpoints).
@@ -114,3 +124,4 @@ dispatch, review, commit, and merge are separate human decisions.
 - 2026-11-09: Drafted at the human's direction after the human approved
   specification v0.1.
 - 2026-11-09: The human approved checklist v0.1 and handoff v0.1 ("approved the checklist and handoff").
+- 2026-11-09: Applied the human-approved 5-group grouping (revised from the task grouper's 6-group proposal); whole tasks moved without wording or checkbox changes.
