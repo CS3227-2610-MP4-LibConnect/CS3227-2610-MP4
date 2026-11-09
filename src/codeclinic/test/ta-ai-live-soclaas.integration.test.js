@@ -2,7 +2,8 @@
 // Opt-in LIVE SoCLaaS test (spec ai-ta-assist v0.2, "Live verification"; checklist T09).
 // Runs only when RUN_SOCLAAS_TESTS=1 AND loadAiConfig(process.env) is enabled; otherwise every
 // test is skipped. It never runs in CI or by an agent: only the human runs it, with their own
-// credentials. Synthetic tickets only, at most 3 provider calls (budget: 4). It asserts shape
+// credentials. Synthetic tickets only, at most 3 endpoint calls; the budget
+// counts real provider requests (fetch calls, retries included) and must be at most 4. It asserts shape
 // and safety only and never prints prompts, responses, process.env or the key.
 const request = require('supertest');
 const { loadAiConfig } = require('../server/ai/config');
@@ -48,7 +49,7 @@ function makeStubDb() {
 }
 
 describe('live SoCLaaS (opt-in, human-run)', () => {
-  let system; let taA; let db; let providerCalls = 0;
+  let system; let taA; let db; let fetchCalls = 0;
   const OPEN_IDS = ['live-open-1', 'live-open-2', 'live-open-3'];
   const DRAFT_ID = 'live-claimed-1';
   const INJ_ID = 'live-inject-1';
@@ -57,7 +58,9 @@ describe('live SoCLaaS (opt-in, human-run)', () => {
   if (live) {
     beforeAll(() => {
       db = makeStubDb();
-      const gateway = createAiGateway({ env: process.env, db });
+      // Counts real provider requests (retries included). Never logs the URL, headers or body.
+      const countingFetch = (...args) => { fetchCalls += 1; return globalThis.fetch(...args); };
+      const gateway = createAiGateway({ env: process.env, db, fetch: countingFetch });
       registerTaAiFeatures(gateway);
       system = buildAiSystem(gateway);
       ({ taA } = system.standardCast());
@@ -81,7 +84,6 @@ describe('live SoCLaaS (opt-in, human-run)', () => {
     const before = await snapshotAll();
     const usageBefore = db.usageWrites.length;
     const res = await post(`/api/ta/tickets/${DRAFT_ID}/fix-note-draft`);
-    providerCalls += 1;
     expect(res.status).toBe(200);
     expect(typeof res.body.draft).toBe('string');
     expect(res.body.draft.trim().length).toBeGreaterThan(0);
@@ -94,7 +96,6 @@ describe('live SoCLaaS (opt-in, human-run)', () => {
     const before = await snapshotAll();
     const usageBefore = db.usageWrites.length;
     const res = await post('/api/ta/tickets/insights');
-    providerCalls += 1;
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.groups)).toBe(true);
     expect(res.body.groups.length).toBeLessThanOrEqual(8);
@@ -109,7 +110,6 @@ describe('live SoCLaaS (opt-in, human-run)', () => {
     const before = await snapshotAll();
     const usageBefore = db.usageWrites.length;
     const res = await post(`/api/ta/tickets/${INJ_ID}/fix-note-draft`);
-    providerCalls += 1;
     expect([200, 502]).toContain(res.status);
     if (res.status === 200) {
       expect(typeof res.body.draft).toBe('string');
@@ -124,8 +124,8 @@ describe('live SoCLaaS (opt-in, human-run)', () => {
     expect(after.claimedByTaId).toBe(IDS.taA);
   }, TIMEOUT_MS);
 
-  liveTest('stays within the provider-call budget', () => {
-    expect(providerCalls).toBeLessThanOrEqual(4);
+  liveTest('stays within the provider-call budget (real fetch calls, retries included)', () => {
+    expect(fetchCalls).toBeLessThanOrEqual(4);
   });
 
   // Keeps the suite from being reported as empty when the gate is closed.
