@@ -114,6 +114,18 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
   - Write `implementation-report.md` with the Subagent token usage table, and
     the logs under `logs/tasks/ta-ticket-queue/`.
 
+## Group 6: Production query indexes — T09
+
+- [ ] **T09: Firestore composite indexes.** Add
+  `src/codeclinic/firestore.indexes.json` with the composite indexes on
+  `tickets` that the Q4 resolution lists (each ending with `createdAt`
+  ascending; `conceptTags` uses `arrayConfig: CONTAINS`).
+  - Add a unit test that parses the file and checks that every filter
+    combination `server/tickets/store.js` can build (status alone, or with
+    language and/or concept) has a matching index.
+  - Do not edit `firebase.json`, CI, or deployment configuration.
+  - (Spec Q4 as amended; R1.)
+
 ## Approval boundary
 
 Checklist v0.1 and handoff v0.1 are human-approved (2026-11-09). Grouping,
@@ -128,3 +140,4 @@ dispatch, review, commit, and merge are separate human decisions.
 - 2026-11-09: After the independent review (`review-report.md`, verdict "pass with follow-up"), the orchestrator marked T05, T06, T07, and T08 `[x]`. T01 (L2, L3), T02 (F1, list view), T03 (L1), and T04 (L4) stay `[ ]` because each has a Low finding awaiting the human's decision.
 - 2026-11-09: After the re-review (`review-report.md`, "Re-review" section), L1, L2, L3, and F1 are resolved, so T01, T02, and T03 are marked `[x]`. T04 stays `[ ]` (L4 left open by the human, not yet accepted as residual risk). **T06 is reopened from `[x]` to `[ ]`**: new Low finding N1 (`src/TAQueuePage.tsx:127` shows the "Claimed by you" badge on RESOLVED tickets since the F1 change).
 - 2026-11-09: After the final re-check (`review-report.md`, "Final re-check": pass, no findings), N1 (`8727ef6`) and L4 (`d1b9165`) are resolved, so T04 and T06 are marked `[x]`. All eight tasks are complete.
+- 2026-11-09: The human approved the Q4 amendment proposal: this task adds `src/codeclinic/firestore.indexes.json` (composite indexes for R1's queries) and a coverage test as new task T09 in Group 6. Referencing the file in `firebase.json`, deploying it, and the deploy permission belong to `environments-and-deployment` and are recorded there as a cross-feature request, not edited by this task.

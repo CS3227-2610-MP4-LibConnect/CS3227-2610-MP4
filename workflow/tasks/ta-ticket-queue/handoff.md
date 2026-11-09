@@ -18,7 +18,8 @@ Out of scope:
   (`student-tickets`).
 - AI features (`ai-ta-assist`) and the Bug FAQ.
 - A coordinator "Release claim" action (Q3).
-- Production Firestore indexes (Q4).
+- Deploying the Firestore indexes, and referencing them in `firebase.json`
+  (Q4; owned by `environments-and-deployment`). T09 adds only the index file.
 
 ## Preflight
 
@@ -44,13 +45,16 @@ Out of scope:
   - `src/NotificationsRoute.tsx`: pass the TA `ticketHref`.
 - `docs/UserGuide.md`, `docs/DeveloperGuide.md`, and this task's evidence
   files.
+- T09 only: the new file `src/codeclinic/firestore.indexes.json` and its new
+  test under `src/codeclinic/test/`.
 
 Not allowed:
 
 - New dependencies.
 - Changes to `server/notifications/`, `server/account/`, `server/auth/`, or
   `server/ai/`; use them, don't edit them.
-- CI or deployment changes, Firestore rules, or index files.
+- CI or deployment changes, Firestore rules, `firebase.json`, or any index
+  file other than T09's `firestore.indexes.json`.
 
 ## Trusted and untrusted inputs; authorization
 
@@ -118,8 +122,11 @@ Every acceptance scenario 1–12 is cited by at least one task.
   reopen T01 and could affect T02–T07.
 - Until `student-tickets` ships, the running app cannot create a ticket.
   Manual checks need tickets seeded in the emulator.
-- Production queries with filters will fail without composite indexes (Q4
-  follow-up).
+- Filtered production queries will fail until `environments-and-deployment`
+  references `firestore.indexes.json` in `firebase.json`, deploys it (for
+  example with `--only firestore:rules,firestore:indexes`), and grants the
+  deploy service account index permissions. This is a cross-feature request,
+  and T09 does not cover it.
 
 ## Approval state
 
@@ -129,3 +136,4 @@ merge are separate decisions.
 
 ## Amendments
 - 2026-11-09: The human approved checklist v0.1 and handoff v0.1 ("approved the checklist and handoff").
+- 2026-11-09: The human approved the Q4 amendment proposal: this task adds `src/codeclinic/firestore.indexes.json` (composite indexes for R1's queries) and a coverage test as new task T09 in Group 6. Referencing the file in `firebase.json`, deploying it, and the deploy permission belong to `environments-and-deployment` and are recorded there as a cross-feature request, not edited by this task.

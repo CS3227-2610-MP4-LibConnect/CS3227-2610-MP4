@@ -276,9 +276,16 @@ maps `ticketId` to `/ta/tickets/:ticketId`.
 - **Q4. Firestore indexes.** Production composite indexes for the filters
   need a `firestore.indexes.json` file and its deployment. That is a
   deployment-configuration change, which needs separate approval and is
-  coordinated with `environments-and-deployment`. Resolved: this task adds
-  no index file; the emulator needs no indexes. Production indexes are a
-  follow-up that needs its own approval.
+  coordinated with `environments-and-deployment`. Resolved (amended
+  2026-11-09): this task adds `src/codeclinic/firestore.indexes.json` with a
+  composite index on `tickets` for each filter combination R1 can produce
+  (`status`; `status` + `language`; `status` + `conceptTags` array-contains;
+  `status` + `language` + `conceptTags`; each followed by `createdAt`
+  ascending). The emulator does not enforce indexes, so a unit test checks
+  that the file covers every query shape. Referencing the file in
+  `firebase.json`, deploying it, and the deploy service account's index
+  permission belong to `environments-and-deployment`. Until that ships,
+  filtered production queries remain at risk.
 
 ## Amendments
 
@@ -290,3 +297,4 @@ maps `ticketId` to `/ta/tickets/:ticketId`.
   the requirements are unchanged.
 - 2026-11-09: After the independent review (finding F1), the human chose that the R1 list item's `claimedByMe` follows the same rule as R2: it is true whenever the viewer is the ticket's `claimedByTaId`, including on `RESOLVED` tickets. Clarified in R1; no other requirement changed.
 - 2026-11-09: The human reported that the Student owner agreed to the shared ticket data contract (section C). The section's sign-off note is updated; no requirement changed.
+- 2026-11-09: The human approved the Q4 amendment proposal: this task adds `src/codeclinic/firestore.indexes.json` (composite indexes for R1's queries) and a coverage test as new task T09 in Group 6. Referencing the file in `firebase.json`, deploying it, and the deploy permission belong to `environments-and-deployment` and are recorded there as a cross-feature request, not edited by this task.
