@@ -31,4 +31,8 @@
 .ta-ticket button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: var(--lc-color-surface); color: var(--lc-color-blue); cursor: pointer; font: inherit; }
 .ta-ticket button:disabled { opacity: .6; cursor: not-allowed; }
 .ta-ticket a:focus-visible, .ta-ticket button:focus-visible, .ta-ticket textarea:focus-visible { outline: 3px solid var(--lc-color-focus); outline-offset: 2px; }
+.ta-ticket__ai { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 12px; padding: 10px 12px; border: 1px dashed var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: var(--lc-color-accent-surface); }
+.ta-ticket__ai-label { flex-basis: 100%; color: var(--lc-color-muted); font-size: .85rem; font-weight: 600; }
+.ta-ticket__ai-note, .ta-ticket__ai [role="alert"] { flex-basis: 100%; margin: 0; }
+.ta-ticket__ai-note { color: var(--lc-color-navy); }
 @media (max-width: 640px) { .ta-ticket { width: calc(100% - 24px); margin: 24px auto; } .ta-ticket__meta { grid-template-columns: minmax(0, 1fr); } }

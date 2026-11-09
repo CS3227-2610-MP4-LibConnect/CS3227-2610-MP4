@@ -21,6 +21,16 @@ const MAX_REPLY = 4000;
 const MAX_FIX_NOTE = 2000;
 const STALE_MESSAGE = 'This ticket changed. The latest version is shown.';
 const STATUS_LABEL: Record<string, string> = { OPEN: 'Open', CLAIMED: 'Claimed', RESOLVED: 'Resolved', CLOSED: 'Closed' };
+const AI_NOTE = 'AI draft. Review and edit before resolving.';
+const AI_REPLACE_PROMPT = 'Replace the text in the fix note with the AI draft?';
+const AI_MESSAGES: Record<string, string> = {
+  AI_UNAVAILABLE: 'AI help is unavailable right now. You can still write the note yourself.',
+  AI_RATE_LIMITED: 'AI limit reached. Please try again in a minute.',
+  AI_INPUT_TOO_LARGE: 'This ticket is too long for an AI draft.',
+  AI_INVALID_OUTPUT: 'The AI reply could not be used. Please try again or write the note yourself.',
+};
+const AI_STATUS_CODES: Record<number, string> = { 503: 'AI_UNAVAILABLE', 429: 'AI_RATE_LIMITED', 422: 'AI_INPUT_TOO_LARGE', 502: 'AI_INVALID_OUTPUT' };
+const AI_GENERIC_ERROR = 'The AI draft could not be created. You can still write the note yourself.';
 const GITHUB_URL = /^https:\/\/github\.com\/[^\s]+$/;
 
 function formatDate(value: string | null): string {
@@ -62,7 +72,12 @@ export default function TATicketPage({ ticketId }: { ticketId: string }) {
   const [replyText, setReplyText] = useState('');
   const [fixNote, setFixNote] = useState('');
   const [confirming, setConfirming] = useState(false);
+  const [drafting, setDrafting] = useState(false);
+  const [draftError, setDraftError] = useState('');
+  const [aiNote, setAiNote] = useState(false);
   const mounted = useRef(true);
+  const fixNoteRef = useRef('');
+  fixNoteRef.current = fixNote;
   const base = `/api/ta/tickets/${encodeURIComponent(ticketId)}`;
 
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
@@ -140,6 +155,42 @@ export default function TATicketPage({ ticketId }: { ticketId: string }) {
     const note = fixNote.trim();
     if (!note || note.length > MAX_FIX_NOTE) return;
     void post('resolve', { fixNote: note }, async (data) => { setConfirming(false); setFixNote(''); await applyView(data); });
+  };
+
+  // Asks the server for a draft and puts it in the text area. It never submits the resolve form.
+  // The AI text is only ever set as the value of the text area (plain text).
+  const draftWithAi = async () => {
+    if (drafting || busy) return;
+    setDrafting(true);
+    setDraftError('');
+    try {
+      const token = await fetchCsrfToken();
+      if (!token) { setDraftError(AI_GENERIC_ERROR); return; }
+      const response = await fetch(`${base}/fix-note-draft`, {
+        method: 'POST', credentials: 'same-origin', headers: { 'X-CSRF-Token': token },
+      });
+      if (!mounted.current) return;
+      if (response.status === 401) { window.location.assign('/'); return; }
+      if (response.status === 409) {
+        setConfirming(false);
+        await load();
+        if (mounted.current) setNotice(STALE_MESSAGE);
+        return;
+      }
+      if (!response.ok) { setDraftError(AI_MESSAGES[AI_STATUS_CODES[response.status]] ?? AI_GENERIC_ERROR); return; }
+      const body = await response.json().catch(() => null) as { draft?: unknown } | null;
+      if (!mounted.current) return;
+      const draft = body && typeof body.draft === 'string' ? body.draft : '';
+      if (!draft.trim()) { setDraftError(AI_MESSAGES.AI_INVALID_OUTPUT); return; }
+      if (fixNoteRef.current.trim() && !window.confirm(AI_REPLACE_PROMPT)) return;
+      setFixNote(draft);
+      setConfirming(false);
+      setAiNote(true);
+    } catch {
+      if (mounted.current) setDraftError(AI_GENERIC_ERROR);
+    } finally {
+      if (mounted.current) setDrafting(false);
+    }
   };
 
   if (state === 'loading') return <main className="ta-ticket"><p role="status">Loading ticket…</p></main>;
@@ -241,6 +292,13 @@ export default function TATicketPage({ ticketId }: { ticketId: string }) {
         <textarea value={fixNote} rows={4} onChange={(event) => { setFixNote(event.target.value); setConfirming(false); }} />
       </label>
       <span className={`ta-ticket__count${fixNote.length > MAX_FIX_NOTE ? ' ta-ticket__count--over' : ''}`}>{fixNote.length} / {MAX_FIX_NOTE}</span>
+      <div className="ta-ticket__ai">
+        <span className="ta-ticket__ai-label">AI suggestion</span>
+        <button type="button" disabled={busy || drafting} onClick={() => void draftWithAi()}>Draft with AI</button>
+        {drafting && <span role="status" className="ta-ticket__muted">Drafting…</span>}
+        {aiNote && <p className="ta-ticket__ai-note">{AI_NOTE}</p>}
+        {draftError && <p role="alert">{draftError}</p>}
+      </div>
       <button type="submit" disabled={busy}>Resolve…</button>
       {confirming && <div className="ta-ticket__confirm">
         <p>Resolving closes this ticket to further replies and cannot be undone.</p>
