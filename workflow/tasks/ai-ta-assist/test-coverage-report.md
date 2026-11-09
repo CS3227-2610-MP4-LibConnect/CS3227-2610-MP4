@@ -1,6 +1,6 @@
 # Test coverage report: ai-ta-assist
 
-Specification: `workflow/specs/ai-ta-assist.md` v0.1. Checklist v0.1. Handoff v0.1. All human-approved 2026-11-09.
+Specification: `workflow/specs/ai-ta-assist.md` v0.1. Checklist v0.1. Handoff v0.1. All human-approved 2026-11-09. (Written against v0.1. v0.2 added only T09, the live test, which is covered by T09's own file. T01–T07 tests are unchanged.)
 Log: `logs/tasks/ai-ta-assist/02-test-writer.md`.
 Status: failing-first. Server suites fail with `Cannot find module`; UI suites fail on missing UI. Nothing passes yet by design. Server-suite assertions have not been executed.
 

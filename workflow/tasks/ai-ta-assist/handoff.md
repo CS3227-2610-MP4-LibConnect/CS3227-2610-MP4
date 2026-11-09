@@ -1,14 +1,14 @@
 # Analyst handoff: ai-ta-assist
 
-Handoff version: 0.2 (2026-11-09)
+Handoff version: 0.3 (2026-11-09)
 Task ID: `ai-ta-assist`
 Specification: `workflow/specs/ai-ta-assist.md`, version 0.2 (human-approved 2026-11-09)
-Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.2 (human-approved 2026-11-09)
+Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.3 (human-approved 2026-11-09)
 Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer.
 
 ## Scope
 
-Implement T01–T09: the shared helpers, two gateway feature definitions, two
+Implement T01–T12 (T10–T12 are the review follow-ups): the shared helpers, two gateway feature definitions, two
 TA-only endpoints, the UI on the existing TA pages, and the guides.
 
 Out of scope:
@@ -53,6 +53,10 @@ Features must not repeat any of that.
   `ta-ai-insights.js`, `ta-ai-draft-route.js`, and `ta-ai-insights-route.js`,
   plus new tests under `test/`, including T09's
   `test/ta-ai-live-soclaas.integration.test.js`.
+- Review follow-ups (v0.3): T10 edits `server/tickets/ta-ai-insights.js` and adds
+  `test/ta-ai-insights.cache-prune.test.js`. T11 edits `src/TAQueuePage.tsx`
+  and adds `test/TAQueuePage.ai-empty.test.tsx`. T12 edits
+  `test/ta-ai-live-soclaas.integration.test.js` to strengthen it only.
 - One-line edits:
   - `server/tickets/ta-routes.js`: one mount line each for T04 and T05.
     Insights goes before `/:ticketId`.
@@ -161,3 +165,4 @@ and this handoff v0.2 are human-approved: the human chose "Approve both (Recomme
 - 2026-11-09: The human approved checklist v0.1, the proposed grouping, and handoff v0.1 ("approve").
 - 2026-11-09 (v0.2): Following spec v0.2, the human replied "ok" to the orchestrator's proposal. Added the T09 live-test file to the allowed files, the human-only live-run permission, and the live-test risks. Agents still may not read `.env`, use credentials, or run the live test.
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
+- 2026-11-09 (v0.3): The human chose "Fix all now (Recommended)" after the independent review (pass with follow-up, F1–F4 Low) on 2026-11-09. T10–T12 were added to the allowed files. T12 may edit `test/ta-ai-live-soclaas.integration.test.js` to strengthen its budget assertion; it may not weaken any assertion. All other rules are unchanged.
