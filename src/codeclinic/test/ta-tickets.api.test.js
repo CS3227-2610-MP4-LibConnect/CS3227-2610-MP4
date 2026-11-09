@@ -15,7 +15,7 @@ const post = (system, url, actor, body, opts) => {
 const LIST_KEYS = ['claimed', 'claimedByMe', 'conceptTags', 'createdAt', 'language', 'status', 'ticketId', 'title'];
 const DETAIL_KEYS = [
   'actualBehaviour', 'attempted', 'claimedByMe', 'claimedByName', 'conceptTags', 'createdAt', 'errorOutput',
-  'expectedBehaviour', 'files', 'fixNote', 'language', 'repoFilePaths', 'repoUrl', 'replies', 'resolvedAt',
+  'expectedBehaviour', 'files', 'fixNote', 'language', 'replies', 'repoFilePaths', 'repoUrl', 'resolvedAt',
   'status', 'studentName', 'ticketId', 'title', 'updatedAt',
 ];
 const REPLY_VIEW_KEYS = ['authorName', 'authorRole', 'createdAt', 'isMine', 'message', 'replyId'];

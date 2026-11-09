@@ -63,3 +63,6 @@ UI:
 8. Whether `claim` with `{}` and with no body both succeed: both assumed `200`.
 9. The 409-on-reply UI refresh and the "confirm" button disabled-state behaviour are inferred from R8; the spec does not mandate the exact wording of those controls.
 10. Production Firestore indexes are out of scope (Q4); the emulator test needs none.
+
+## Amendments
+- 2026-11-09: With the human's approval, `DETAIL_KEYS` in `test/ta-tickets.api.test.js` was reordered into sorted order (`replies` before `repoFilePaths`). The test compares it with sorted response keys, so the old order could never pass. The key set and the assertions are unchanged. Found by implementer T02 and confirmed by the orchestrator.
