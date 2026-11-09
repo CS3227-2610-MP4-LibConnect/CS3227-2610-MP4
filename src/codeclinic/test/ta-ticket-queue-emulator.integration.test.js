@@ -35,6 +35,8 @@ emulatorTest('TA ticket queue: concurrent claim race, filter queries, and notifi
         await persistence.createAccount({ accountType, name: 'Synthetic ' + label, email, password, ...(accountType === 'TA' ? { employeeId: 'SYN-' + crypto.randomUUID() } : {}) });
         const key = emailKeyFor(email); createdKeys.add(key);
         const userId = (await db.collection('emailKeys').doc(key).get()).data().userId; createdUsers.add(userId);
+        // TA registrations start INACTIVE until a coordinator activates them; do that directly here.
+        if (accountType === 'TA') await db.collection('users').doc(userId).update({ accountStatus: 'ACTIVE' });
         return { userId, email, accountType };
       };
       const signIn = async (account) => {
@@ -61,6 +63,7 @@ emulatorTest('TA ticket queue: concurrent claim race, filter queries, and notifi
         student = await register('STUDENT', 'student');
         const taA = await register('TA', 'taa');
         const taB = await register('TA', 'tab');
+        step = 'sign in';
         const a = await signIn(taA);
         const b = await signIn(taB);
         const tag = 'emu' + suffix.slice(0, 8);
