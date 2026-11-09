@@ -4,6 +4,7 @@
 const express = require('express');
 const { createAccountGuards } = require('../account/guards');
 const { STATUSES, LANGUAGES } = require('./constants');
+const { createClaimRoutes } = require('./ta-claims');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const MAX_CONCEPT_LENGTH = 30;
@@ -169,6 +170,7 @@ function createTaTicketsRouter({ authStore, accountStore, ticketStore, notify, n
   // The shared dependencies below are the guards, store, and notify those sub-routers receive.
   // Mount them before the '/:ticketId' route so their '/:ticketId/<action>' paths are matched first.
   const shared = Object.freeze({ requireCsrf, ticketStore, accountStore, notify, safe, messages: MESSAGES });
+  router.use('/', createClaimRoutes(shared));
   void shared;
 
   router.get('/:ticketId', safe(async (req, res) => {
