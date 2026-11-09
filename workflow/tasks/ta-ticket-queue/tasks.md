@@ -116,7 +116,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
 
 ## Group 6: Production query indexes — T09
 
-- [ ] **T09: Firestore composite indexes.** Add
+- [x] **T09: Firestore composite indexes.** Add
   `src/codeclinic/firestore.indexes.json` with the composite indexes on
   `tickets` that the Q4 resolution lists (each ending with `createdAt`
   ascending; `conceptTags` uses `arrayConfig: CONTAINS`).
@@ -141,3 +141,4 @@ dispatch, review, commit, and merge are separate human decisions.
 - 2026-11-09: After the re-review (`review-report.md`, "Re-review" section), L1, L2, L3, and F1 are resolved, so T01, T02, and T03 are marked `[x]`. T04 stays `[ ]` (L4 left open by the human, not yet accepted as residual risk). **T06 is reopened from `[x]` to `[ ]`**: new Low finding N1 (`src/TAQueuePage.tsx:127` shows the "Claimed by you" badge on RESOLVED tickets since the F1 change).
 - 2026-11-09: After the final re-check (`review-report.md`, "Final re-check": pass, no findings), N1 (`8727ef6`) and L4 (`d1b9165`) are resolved, so T04 and T06 are marked `[x]`. All eight tasks are complete.
 - 2026-11-09: The human approved the Q4 amendment proposal: this task adds `src/codeclinic/firestore.indexes.json` (composite indexes for R1's queries) and a coverage test as new task T09 in Group 6. Referencing the file in `firebase.json`, deploying it, and the deploy permission belong to `environments-and-deployment` and are recorded there as a cross-feature request, not edited by this task.
+- 2026-11-09: T09 was reviewed (pass with follow-up, T9-1 Low). T9-1 was fixed (`97a2018`) and re-checked (pass). T09 is marked `[x]`. All nine tasks are complete.

@@ -176,3 +176,12 @@ Input and output tokens are unavailable for all three runs.
 - Reviewer run 3 (resumed): `subagent_tokens` 175,221 (4 tool uses, 61.2 s); this appears cumulative over runs 1–3. Verdict: pass, no findings. Commit `0413544` on `ta-ticket-queue-review3` changes only the review report and the reviewer log. Merged.
 - T04 and T06 are marked `[x]`; all eight tasks are `[x]`.
 - The human chose to merge `ta-ticket-queue` into `TA-coordinator` locally, without pushing.
+
+## T09 (Q4 amendment) (2026-11-09)
+
+- The human approved the amendment proposal (commit `1c163a1`) and a lean run.
+- Implementer T09, run 1: total 44,302 (5 tool uses, 44.3 s). Commit `4922f7a` adds `firestore.indexes.json` (4 composite indexes on `tickets`) and `test/ta-tickets.indexes.test.js`. The orchestrator checked the index fields from the file.
+- Reviewer run 4 (resumed): total 183,771, reported and probably cumulative (4 tool uses, 67.5 s). Verdict: pass with follow-up, T9-1 Low (the direction of the `__name__` sort is not asserted). The human chose to fix it.
+- Implementer T09, run 2 (resumed): total 45,624, reported and probably cumulative (2 tool uses, 21.0 s). Commit `97a2018` adds one assertion.
+- Reviewer run 5 (resumed): pass; commits `87afc2f` and `e0c2ee2`. No usage notification was received before close-out.
+- Merged into `TA-coordinator`. T09 is marked `[x]`.

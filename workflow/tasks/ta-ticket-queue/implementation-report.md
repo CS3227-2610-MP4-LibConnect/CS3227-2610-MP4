@@ -4,7 +4,7 @@ Specification: `workflow/specs/ta-ticket-queue.md` v0.1 (human-approved 2026-11-
 Checklist: `workflow/tasks/ta-ticket-queue/tasks.md` v0.1, grouping human-approved 2026-11-09
 Handoff: `workflow/tasks/ta-ticket-queue/handoff.md` v0.1 (human-approved 2026-11-09)
 Integration branch: local `ta-ticket-queue` (from `TA-coordinator` `3203bb1`). Nothing pushed.
-Status: **complete**. The final re-check passed with no open findings, and all of T01–T08 are `[x]`. The human chose a local merge into `TA-coordinator` (no push).
+Status: **complete**. The final re-checks passed with no open findings, and all of T01–T09 are `[x]` (T09, the Firestore indexes, was added by amendment on 2026-11-09). The human chose a local merge into `TA-coordinator` (no push).
 
 ## Tasks
 
@@ -60,8 +60,9 @@ The reports are `review-report.md` and `security-review.md`.
 
 - Shared ticket contract (spec section C): not yet confirmed by the Student
   owner.
-- Production composite indexes (Q4) are not added, so filtered queries may
-  fail in production.
+- The production composite indexes are defined in `firestore.indexes.json`
+  (T09), but `firebase.json` does not reference the file yet and it is not
+  deployed. That is a cross-feature request to `environments-and-deployment`.
 - No ticket-creation path exists in the app until `student-tickets` ships.
 - The emulator suite passes only according to the implementers' reports. The
   orchestrator has not re-run it; the reviewer must.
@@ -107,6 +108,10 @@ so resumed runs show the reported figure.
 | Implementer | N1 fix (T06 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 75,115 (reported; may include run 1) | task notification (4 tool uses, 65.4 s) |
 | Implementer | L4 tidy-up (T04 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 63,038 (reported; may include run 1) | task notification (5 tool uses, 59.9 s) |
 | Reviewer | Final re-check, run 3 (resumed) | claude-opus-5-5 | unavailable | unavailable | 175,221 (reported; may include runs 1–2) | task notification (4 tool uses, 61.2 s) |
+| Implementer | T09 index file and test, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 44,302 | task notification (5 tool uses, 44.3 s) |
+| Implementer | T9-1 fix (T09 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 45,624 (reported; may include run 1) | task notification (2 tool uses, 21.0 s) |
+| Reviewer | T09 review, run 4 (resumed) | claude-opus-5-5 | unavailable | unavailable | 183,771 (reported; may include runs 1–3) | task notification (4 tool uses, 67.5 s) |
+| Reviewer | T9-1 re-check, run 5 (resumed) | claude-opus-5-5 | unavailable | unavailable | unavailable (no task notification received before close-out) | none |
 | Implementer | T08, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 64,122 | task notification (23 tool uses, 573.3 s; stopped by the orchestrator after hand-back, with background work still open) |
 
 An aggregate is not given, for two reasons: the totals of the resumed runs
