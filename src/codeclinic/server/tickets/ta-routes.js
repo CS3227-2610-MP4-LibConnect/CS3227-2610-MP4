@@ -7,6 +7,7 @@ const { STATUSES, LANGUAGES } = require('./constants');
 const { isClaimedByViewer, toIsoString, createUserLookup, toDetailView } = require('./ta-views');
 const { createClaimRoutes } = require('./ta-claims');
 const { createTaRepliesRoutes } = require('./ta-replies');
+const { createAiDraftRoutes } = require('./ta-ai-draft-route');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const MAX_CONCEPT_LENGTH = 30;
@@ -114,6 +115,7 @@ function createTaTicketsRouter({ authStore, accountStore, ticketStore, notify, n
   const shared = Object.freeze({ requireCsrf, ticketStore, accountStore, notify, safe, messages: MESSAGES });
   router.use('/', createClaimRoutes(shared));
   router.use('/', createTaRepliesRoutes(shared));
+  router.use('/', createAiDraftRoutes(shared));
 
   router.get('/:ticketId', safe(async (req, res) => {
     const { ticketId } = req.params;
