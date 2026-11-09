@@ -130,6 +130,9 @@ with a generic message.
   with an opaque `nextCursor`. A bad filter or cursor returns `400`.
 - Each item contains only: `ticketId`, `title`, `language`, `conceptTags`,
   `status`, `claimedByMe` (boolean), `claimed` (boolean), and `createdAt`.
+  `claimedByMe` is true whenever the viewer is the ticket's `claimedByTaId`,
+  including on `RESOLVED` tickets, as in R2; `claimed` is true only while
+  `CLAIMED`.
   It never contains the student's email or ID, file contents, or the other
   TA's identity.
 
@@ -285,3 +288,4 @@ maps `ticketId` to `/ta/tickets/:ticketId`.
 - 2026-11-09: The human replied "approved, go with your proposals for
   Q1–Q4" to version 0.1. Q1–Q4 are marked resolved with the proposed answers;
   the requirements are unchanged.
+- 2026-11-09: After the independent review (finding F1), the human chose that the R1 list item's `claimedByMe` follows the same rule as R2: it is true whenever the viewer is the ticket's `claimedByTaId`, including on `RESOLVED` tickets. Clarified in R1; no other requirement changed.
