@@ -60,9 +60,15 @@ The reports are `review-report.md` and `security-review.md`.
 
 - Shared ticket contract (spec section C): not yet confirmed by the Student
   owner.
-- The production composite indexes are defined in `firestore.indexes.json`
-  (T09), but `firebase.json` does not reference the file yet and it is not
-  deployed. That is a cross-feature request to `environments-and-deployment`.
+- Production indexes: on 2026-11-09 the human ran
+  `firebase deploy --only firestore:indexes --project prod` against
+  `libconnect-mp4`; it succeeded, and `firebase.json` now references the
+  file. The console has not yet confirmed that the indexes are Enabled.
+  App Hosting auto-rollouts do not deploy indexes, so future index changes
+  need the same manual deploy.
+- Deviation: `firebase.json` is owned by `environments-and-deployment`. The
+  `firestore.indexes` reference was added at the human's direction, and the
+  rules entry still belongs to that task.
 - No ticket-creation path exists in the app until `student-tickets` ships.
 - The emulator suite passes only according to the implementers' reports. The
   orchestrator has not re-run it; the reviewer must.

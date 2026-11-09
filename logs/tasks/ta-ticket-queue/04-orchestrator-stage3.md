@@ -186,3 +186,12 @@ Input and output tokens are unavailable for all three runs.
 - Reviewer run 5 (resumed): pass; commits `87afc2f` and `e0c2ee2`. No usage notification was received before close-out.
 - Merged into `TA-coordinator`. T09 is marked `[x]`.
 - Reviewer run 5 usage arrived after close-out: total 186,389, reported and probably cumulative (3 tool uses, 34.6 s). The implementation report row was updated.
+
+## Production index deployment (2026-11-09)
+
+- The teammate reported, via the human, that App Hosting auto-deploys on push to `main`. The orchestrator checked read-only (`git fetch`, and a search of all remote branches for `.github/workflows`, `firestore.rules`, and `firestore.indexes`): there is no workflow or Firestore deploy config, so index deployment is not automated.
+- At the human's direction, the orchestrator added `"firestore": {"indexes": "firestore.indexes.json"}` to `src/codeclinic/firebase.json`. This file is owned by `environments-and-deployment`; it is a recorded deviation.
+- The human ran (with their own credentials; no agent held production credentials): `firebase deploy --only firestore:indexes --project prod`.
+  - Output: "Deploying to 'libconnect-mp4'", then "deployed indexes in firestore.indexes.json successfully for (default) database", then "Deploy complete!".
+  - There was no prompt to delete indexes.
+- Open: confirming in the Firebase console that the 4 indexes are Enabled.
