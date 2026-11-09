@@ -162,3 +162,17 @@ Input and output tokens are unavailable for all three runs.
 - Commit `d9390d8` on `ta-ticket-queue-review2` changes only the review report, the security review, and the reviewer log. Merged into `ta-ticket-queue`.
 - Verdict: pass with follow-up. L1, L2, L3, and F1 are resolved. L4 is open. New finding N1 (Low): `src/TAQueuePage.tsx:127-128` checks `claimedByMe` before `claimed`, so after F1 a resolver sees "Claimed by you" on RESOLVED tickets. Confirmed by the orchestrator.
 - Checkboxes: T01, T02, and T03 → `[x]`. **T06 reopened `[x]` → `[ ]` (N1).** T04 stays `[ ]` (L4).
+
+## N1 and L4 fixes (2026-11-09)
+
+- The human chose to fix N1 and L4, then merge locally into `TA-coordinator` (no push).
+- Implementer T06, run 2 (resumed, N1): `subagent_tokens` 75,115 (4 tool uses, 65.4 s); this appears cumulative with run 1. Commit `8727ef6` changes `TAQueuePage.tsx` (+3/-2), adds the new test `TAQueuePage.n1.test.tsx`, and updates the T06 report and log.
+- Implementer T04, run 2 (resumed, L4): `subagent_tokens` 63,038 (5 tool uses, 59.9 s); this appears cumulative with run 1. Commit `d1b9165` changes `ta-replies.js` (net −8 lines), adds export-only lines to `constants.js` and `ta-claims.js`, and updates the T04 report and log. The check order was kept to avoid a status-code change.
+- The orchestrator checked both diffs: only the expected files changed, and there is no AI attribution. Both were merged as `71e369e`. Full suite: 47 suites passed, 4 skipped; 1026 tests passed, 4 skipped, 0 failed.
+- Final focused re-check dispatched (reviewer run 3, resumed).
+
+## Final re-check and close-out (2026-11-09)
+
+- Reviewer run 3 (resumed): `subagent_tokens` 175,221 (4 tool uses, 61.2 s); this appears cumulative over runs 1–3. Verdict: pass, no findings. Commit `0413544` on `ta-ticket-queue-review3` changes only the review report and the reviewer log. Merged.
+- T04 and T06 are marked `[x]`; all eight tasks are `[x]`.
+- The human chose to merge `ta-ticket-queue` into `TA-coordinator` locally, without pushing.

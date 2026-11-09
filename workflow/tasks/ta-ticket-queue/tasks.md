@@ -59,7 +59,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
     not fail the action, and injection-style ticket text that has no effect.
   - (Spec R3, R4, R6, R7; scenarios 4, 6, 7, 8, 11, 12.)
 
-- [ ] **T04: Reply API.** Add `POST /api/ta/tickets/:ticketId/replies` (R5)
+- [x] **T04: Reply API.** Add `POST /api/ta/tickets/:ticketId/replies` (R5)
   with `requireCsrf` and a strict `{ message }` body of 1–4000 characters
   after trimming.
   - The server sets `replyId`, `authorUserId`, and `createdAt`. It calls
@@ -68,7 +68,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
     tickets, forbidden keys, CSRF, and one notification per reply.
   - (Spec R5, R7; scenarios 5, 7, 8, 11.)
 
-- [ ] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
+- [x] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
   language, and concept filters, **Load more**, the claimed badges, and
   empty, loading, and error-with-retry states.
   - Add the route to `src/index.tsx` behind the TA route guard, the SPA path
@@ -127,3 +127,4 @@ dispatch, review, commit, and merge are separate human decisions.
 - 2026-11-09: Applied the human-approved 5-group grouping (revised from the task grouper's 6-group proposal); whole tasks moved without wording or checkbox changes.
 - 2026-11-09: After the independent review (`review-report.md`, verdict "pass with follow-up"), the orchestrator marked T05, T06, T07, and T08 `[x]`. T01 (L2, L3), T02 (F1, list view), T03 (L1), and T04 (L4) stay `[ ]` because each has a Low finding awaiting the human's decision.
 - 2026-11-09: After the re-review (`review-report.md`, "Re-review" section), L1, L2, L3, and F1 are resolved, so T01, T02, and T03 are marked `[x]`. T04 stays `[ ]` (L4 left open by the human, not yet accepted as residual risk). **T06 is reopened from `[x]` to `[ ]`**: new Low finding N1 (`src/TAQueuePage.tsx:127` shows the "Claimed by you" badge on RESOLVED tickets since the F1 change).
+- 2026-11-09: After the final re-check (`review-report.md`, "Final re-check": pass, no findings), N1 (`8727ef6`) and L4 (`d1b9165`) are resolved, so T04 and T06 are marked `[x]`. All eight tasks are complete.

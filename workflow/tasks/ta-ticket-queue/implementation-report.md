@@ -4,7 +4,7 @@ Specification: `workflow/specs/ta-ticket-queue.md` v0.1 (human-approved 2026-11-
 Checklist: `workflow/tasks/ta-ticket-queue/tasks.md` v0.1, grouping human-approved 2026-11-09
 Handoff: `workflow/tasks/ta-ticket-queue/handoff.md` v0.1 (human-approved 2026-11-09)
 Integration branch: local `ta-ticket-queue` (from `TA-coordinator` `3203bb1`). Nothing pushed.
-Status: the re-review is done (`review-report.md`, "Re-review": pass with follow-up). L1–L3 and F1 are fixed (`90effbe`). Open items: L4 (T04, left open by the human) and new N1 (T06, reopened). T01–T03, T05, T07, and T08 are `[x]`.
+Status: **complete**. The final re-check passed with no open findings, and all of T01–T08 are `[x]`. The human chose a local merge into `TA-coordinator` (no push).
 
 ## Tasks
 
@@ -44,6 +44,17 @@ Reconciliation details for each group, with exact commands and results:
 - **Orchestrator error:** T01's assignment named `.claude/skills/`, which is
   absent in worktrees. T01 ran without its skills; later assignments used
   `.agents/skills/`.
+
+## Review outcome
+
+There were three review rounds:
+
+1. Pass with follow-up: L1–L4 and F1, all Low.
+2. Re-review after the fixes (`90effbe`): pass with follow-up, with one new
+   Low finding, N1, caused by the F1 change.
+3. Final re-check after the N1 and L4 fixes: **pass, no findings**.
+
+The reports are `review-report.md` and `security-review.md`.
 
 ## Unresolved risks
 
@@ -93,6 +104,9 @@ so resumed runs show the reported figure.
 | Reviewer | Whole task, run 1 | claude-opus-5-5 | unavailable | unavailable | 147,931 | task notification (41 tool uses, 528.6 s) |
 | Implementer | Review-fix (T03 agent), run 3 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 96,360 (reported; may include runs 1–2) | task notification (9 tool uses, 142.9 s) |
 | Reviewer | Re-review, run 2 (resumed) | claude-opus-5-5 | unavailable | unavailable | 168,907 (reported; may include run 1) | task notification (9 tool uses, 154.7 s) |
+| Implementer | N1 fix (T06 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 75,115 (reported; may include run 1) | task notification (4 tool uses, 65.4 s) |
+| Implementer | L4 tidy-up (T04 agent), run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 63,038 (reported; may include run 1) | task notification (5 tool uses, 59.9 s) |
+| Reviewer | Final re-check, run 3 (resumed) | claude-opus-5-5 | unavailable | unavailable | 175,221 (reported; may include runs 1–2) | task notification (4 tool uses, 61.2 s) |
 | Implementer | T08, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 64,122 | task notification (23 tool uses, 573.3 s; stopped by the orchestrator after hand-back, with background work still open) |
 
 An aggregate is not given, for two reasons: the totals of the resumed runs
