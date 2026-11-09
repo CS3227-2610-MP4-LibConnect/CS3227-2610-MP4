@@ -4,7 +4,7 @@ Specification: `workflow/specs/ai-ta-assist.md` v0.2 (v0.1 and v0.2 human-approv
 Checklist: `workflow/tasks/ai-ta-assist/tasks.md` v0.3 (v0.1–v0.3 human-approved 2026-11-09)
 Handoff: `workflow/tasks/ai-ta-assist/handoff.md` v0.3 (human-approved 2026-11-09)
 Integration branch: local `TA-coordinator`, from `9f34c4e`. Each task ran in its own worktree branch `ai-ta-assist-tNN` and was fast-forwarded in. Nothing was pushed.
-Status: **complete and accepted.** The human chose "Accept and commit evidence (Recommended)" on 2026-11-09. The work is local on `TA-coordinator`; nothing was pushed or merged to `main`. The independent review passed with follow-up, and the re-check of F1–F4 passed. All of T01–T12 are `[x]`.
+Status: **T01–T12 complete and accepted** (the human chose "Accept and commit evidence (Recommended)" on 2026-11-09). **Improvement rounds 1–2 (T13–T19) are implemented and reviewed, with the verdict "pass with follow-up" (evidence-only findings fixed), awaiting the human's commit and merge decision.** Nothing was pushed or merged to `main`. The independent review passed with follow-up, and the re-check of F1–F4 passed. All of T01–T12 are `[x]`.
 
 ## Tasks
 
@@ -90,7 +90,19 @@ No prompt, response, key or URL was recorded. Token counts for live calls are un
 | Implementer | T11 (Group 6), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,631 | Claude Code task notification `subagent_tokens` |
 | Implementer | T12 (Group 6), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,577 | Claude Code task notification `subagent_tokens` |
 | Reviewer | F1–F4 re-check, run 2 | claude-opus-5-5 | unavailable | unavailable | 85,365 | Claude Code task notification `subagent_tokens` |
+| Implementer | T13–T16 (Group 7, round 1), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 66,239 | Claude Code task notification `subagent_tokens` |
+| Implementer | T17–T19 (Group 8, round 2), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 51,624 | Claude Code task notification `subagent_tokens` |
+| Reviewer | T13–T19 rounds review, run 3 | claude-opus-5-5 | unavailable | unavailable | 100,030 | Claude Code task notification `subagent_tokens` |
 
 Every subagent reported its own counts as `unavailable`. The totals come from the runtime notifications. The task grouper was not run, because the grouping was approved inline.
 
-Aggregate total (15 runs, all with reported totals): **1,079,768** tokens. Input and output splits are unavailable.
+Aggregate total (18 runs, all with reported totals): **1,297,661** tokens. Input and output splits are unavailable.
+
+## Improvement rounds 1–2 (T13–T19)
+
+- Round 1: T13 (drafter: present tense, no guessing), T14 (insights coverage), T15 (insights invalid-output text, spec v0.3 R5) and T16 (shared message constants).
+- Round 2: T17 (every ticket in one group; concept-only summaries), T18 (at most four sentences) and T19 ("Grouped X of Y active tickets.").
+- Live measurements, two runs per stage, are in log 26. Each run passed 46/46 checks. Insights coverage went from 4/6 and 5/6 at baseline to 6/6 and 6/6 after round 2. Unsupported-cause drafts went from 2/2 to 0/2. The longest draft went from 750 characters (round 1) to 485 (round 2).
+- Final suite on the rounds tree with the review tests: Test Suites: 5 skipped, 64 passed. Tests: 9 skipped, 1269 passed. `tsc` and the build are clean.
+- Rounds review: pass with follow-up. R1–R3 were evidence-only and are fixed. R4 (stale "v0.2" in code header comments) and R5 (catch-all grouping) were left as optional or no-action notes.
+
