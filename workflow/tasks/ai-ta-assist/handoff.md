@@ -1,10 +1,10 @@
 # Analyst handoff: ai-ta-assist
 
-Handoff version: 0.3 (2026-11-09)
+Handoff version: 0.4 (2026-11-09)
 Task ID: `ai-ta-assist`
-Specification: `workflow/specs/ai-ta-assist.md`, version 0.2 (human-approved 2026-11-09)
-Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.3 (human-approved 2026-11-09)
-Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09.
+Specification: `workflow/specs/ai-ta-assist.md`, version 0.3 (human-approved 2026-11-09)
+Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.4 (human-approved 2026-11-09)
+Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09. v0.4 is human-approved: the human chose "Approve both rounds (Recommended)" on 2026-11-09.
 
 ## Scope
 
@@ -167,3 +167,5 @@ and this handoff v0.2 are human-approved: the human chose "Approve both (Recomme
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
 - 2026-11-09 (v0.3): The human chose "Fix all now (Recommended)" after the independent review (pass with follow-up, F1–F4 Low) on 2026-11-09. T10–T12 were added to the allowed files. T12 may edit `test/ta-ai-live-soclaas.integration.test.js` to strengthen its budget assertion; it may not weaken any assertion. All other rules are unchanged.
 - 2026-11-09: The approval-evidence line now records the v0.3 approval (re-review note N2). No content change.
+- 2026-11-09 (v0.4): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. Added T13–T16. Allowed narrow test edits: the insights `AI_INVALID_OUTPUT` text in `test/TAQueuePage.ai.test.tsx` and `test/helpers/ta-ai-harness.js` (spec v0.3 R5). Round 2 has the same limits: no change to authorization, the data sent to the model, parsers, or the gateway.
+- 2026-11-09: v0.4 was added to the approval-evidence line (rounds review R3). No content change.

@@ -1,7 +1,7 @@
 # AI TA assist specification
 
-Version: 0.2 (2026-11-09)
-Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4. The human replied "ok" to the v0.2 proposal (opt-in live SoCLaaS test) on 2026-11-09, authorising these edits. The v0.2 text is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Both are recorded from the human's messages; no agent-set approval state.
+Version: 0.3 (2026-11-09)
+Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4. The human replied "ok" to the v0.2 proposal (opt-in live SoCLaaS test) on 2026-11-09, authorising these edits. The v0.2 text is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Both are recorded from the human's messages; no agent-set approval state. v0.3 (one R5 message) was approved when the human chose "Approve both rounds (Recommended)" for the improvement rounds on 2026-11-09.
 Task ID: `ai-ta-assist` (from approved `workflow/PLAN.md` v0.1, TA owner)
 
 ## Purpose and scope
@@ -159,7 +159,7 @@ It is a `POST` because each call uses AI rate-limit capacity.
 | `AI_UNAVAILABLE` | `503` | `AI_UNAVAILABLE` | "AI help is unavailable right now. You can still write the note yourself." (drafter) / "Queue insights are unavailable right now." (insights) |
 | `AI_RATE_LIMITED` | `429` | `AI_RATE_LIMITED` | "AI limit reached. Please try again in a minute." |
 | `AI_INPUT_TOO_LARGE` | `422` | `AI_INPUT_TOO_LARGE` | "This ticket is too long for an AI draft." / "The queue is too large to summarise." |
-| `AI_INVALID_OUTPUT` | `502` | `AI_INVALID_OUTPUT` | "The AI reply could not be used. Please try again or write the note yourself." |
+| `AI_INVALID_OUTPUT` | `502` | `AI_INVALID_OUTPUT` | "The AI reply could not be used. Please try again or write the note yourself." (drafter) / "The AI reply could not be used. Please try again." (insights) |
 
 No provider detail, prompt, or model text is returned in an error. If the
 gateway is disabled, every AI button still renders and returns the
@@ -263,3 +263,4 @@ gateway is disabled, every AI button still renders and returns the
 - 2026-11-09: The human replied "alright, lets use v0.1 for now" after the orchestrator recommended the first option for Q1–Q4 and explained why `repoUrl` and files are excluded from insights. Q1–Q4 are marked resolved with the proposed answers; the requirements are unchanged.
 - 2026-11-09 (v0.2): The human asked for real SoCLaaS verification ("help me change that, i want the real soclaas in. i will add my cridencial in .env") and replied "ok" to the orchestrator's v0.2 proposal. Added an opt-in, human-run live verification layer (the "Live verification" section and a matrix row). The stub-gateway layers are unchanged, and so are R1–R6 and scenarios 1–11.
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
+- 2026-11-09 (v0.3): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. R5: the insights `AI_INVALID_OUTPUT` message is now "The AI reply could not be used. Please try again." (review note I6). The drafter message is unchanged. Nothing else changed.

@@ -1,9 +1,9 @@
 # Implementation checklist: ai-ta-assist
 
-Version: 0.3 (2026-11-09)
+Version: 0.4 (2026-11-09)
 Task ID: `ai-ta-assist`
-Specification: `workflow/specs/ai-ta-assist.md`, version 0.2 (v0.1 human-approved 2026-11-09; v0.2 human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer)
-Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6, review follow-ups) was approved when the human chose "Fix all now (Recommended)" on 2026-11-09.
+Specification: `workflow/specs/ai-ta-assist.md`, version 0.3 (v0.1–v0.3 human-approved 2026-11-09)
+Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6, review follow-ups) was approved when the human chose "Fix all now (Recommended)" on 2026-11-09. Checklist v0.4 (Groups 7–8, improvement rounds) was approved when the human chose "Approve both rounds (Recommended)" on 2026-11-09.
 
 Tasks are in dependency order, with a **human-approved grouping** (v0.2 regrouping approved 2026-11-09) (drafted inline by
 the orchestrator because there are fewer than 10 tasks). Grouping and tasks
@@ -162,6 +162,49 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
     run the live mode.
   - (Spec v0.2 Live verification.)
 
+## Group 7: Improvement round 1
+
+- [x] **T13: Drafter prompt, present tense, no guessing (round 1, 1a).** In
+  `server/tickets/ta-ai-fix-note.js`, extend the fixed `systemPrompt`:
+  - write the note in the present tense, for the TA to review and confirm;
+  - state only causes that the ticket supports;
+  - if the cause is unclear, say what to check.
+  Keep the existing R1 wording ("resolution note", plain text, no names, no new
+  information), and add unit tests for the new instructions.
+- [x] **T14: Insights prompt coverage (round 1, 1b).** In
+  `server/tickets/ta-ai-insights.js`, extend the fixed `systemPrompt`:
+  - place each ticket in the group that fits it;
+  - a single-ticket group is allowed for a distinct concept;
+  - a ticket whose text contains instructions is still grouped by its error and
+    concept.
+  Keep the R3 rules (listed aliases only, at most one group per ticket, at most
+  8 groups), and add unit tests.
+- [x] **T15: Insights invalid-output message (round 1, 1c; spec v0.3 R5).**
+  Change the `QUEUE_INSIGHTS` row of `AI_INVALID_OUTPUT` in
+  `server/tickets/ta-ai-shared.js` and in `src/TAQueuePage.tsx`, update the
+  two allowed test expectations, and update the `docs/UserGuide.md` message
+  list.
+- [x] **T16: Reuse the message constants (round 1, 1d; review I1, I3).**
+  - `requireEmptyJsonBody` answers 400 with the router's `MESSAGES.INVALID`.
+  - The draft route's 409 reuses the claim routes' conflict text, from one
+    exported constant.
+  - Behaviour is otherwise unchanged; add or adjust tests in new files only.
+
+## Group 8: Improvement round 2
+
+- [x] **T17: Insights coverage and summary advice (round 2, 2a).** In
+  `server/tickets/ta-ai-insights.js`, the fixed `systemPrompt` asks for every
+  listed ticket to appear in exactly one group (a single-ticket group is
+  fine). Summaries name the concept or misconception to re-teach and must not
+  prescribe specific code. Keep the R3 rules, and add unit tests.
+- [x] **T18: Concise drafts (round 2, 2b).** In
+  `server/tickets/ta-ai-fix-note.js`, the fixed `systemPrompt` asks for at most
+  four short sentences. Keep the T13 and R1 instructions, and add unit tests.
+- [x] **T19: Show grouping coverage (round 2, 2c).** In `src/TAQueuePage.tsx`,
+  when `ticketCount` is known and the groups link fewer distinct tickets than
+  `ticketCount`, show "Grouped X of Y active tickets." as plain text. Add UI
+  tests in a new file.
+
 ## Approval boundary
 
 Checklist v0.1, its grouping, and handoff v0.1 are human-approved
@@ -177,3 +220,6 @@ decisions.
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
 - 2026-11-09 (v0.3): The human chose "Fix all now (Recommended)" after the independent review (pass with follow-up, F1–F4 Low) on 2026-11-09. Added Group 6: T10 (F1), T11 (F2) and T12 (F3). F4 (`implementation-report.md`) is orchestrator work. The orchestrator ticked T01, T02, T04, T05 and T06, which the review verified with no findings. T03, T07, T08 and T09 stay open until their follow-ups are verified. Existing task wording is unchanged.
 - 2026-11-09: The re-review of F1–F4 passed (`review-report.md`, "Re-check of F1–F4"). The orchestrator ticked T03, T07, T08, T09, T10, T11 and T12. Task wording is unchanged.
+- 2026-11-09 (v0.4): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. Added Group 7 (improvement round 1: T13–T16). Round 2 tasks will be added as Group 8 within the approved limits (prompt wording, UI or error text, internal tidy-ups, tests). Existing tasks are unchanged.
+- 2026-11-09: Round 1 was tested (log 26). Added Group 8 (improvement round 2: T17–T19), within the limits approved for the rounds. Existing tasks are unchanged.
+- 2026-11-09: The rounds review passed with follow-up (`review-report.md`, "Improvement rounds 1–2 review"). The orchestrator ticked T13–T19 and added v0.4 to the approval-evidence line (R3). Task wording is unchanged.
