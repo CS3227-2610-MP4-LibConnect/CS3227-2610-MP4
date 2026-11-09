@@ -13,3 +13,6 @@ Verification:
 Deviations and risks:
 - `DashboardRouteGuard` is not in the allowed files, so `TADashboard` renders the queue when the pathname is `/ta/queue`. A cleaner guard-level route is a follow-up.
 - Concept input is debounced by 250 ms and sent trimmed; the server normalises case.
+
+## N1 fix
+Badges now render only while `claimed` is true: "Claimed by you" when `claimed && claimedByMe`, "Claimed" when `claimed && !claimedByMe`. Added `test/TAQueuePage.n1.test.tsx` (RESOLVED, claimedByMe true, claimed false: no badge).
