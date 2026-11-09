@@ -118,3 +118,69 @@ The follow-ups, all Low, can land before or after merge at the human's decision:
 - F2: the empty-state text.
 - F3: align the live budget with the spec.
 - F4: the missing `implementation-report.md` and token table. This should be resolved before T08 is marked complete.
+
+## Re-check of F1–F4 (2026-11-09)
+
+Reviewer: independent reviewer agent (did not implement this work). The human approved this re-check on 2026-11-09. This section is an assessment, not merge approval.
+Execution log: `logs/tasks/ai-ta-assist/23-reviewer-recheck.md`.
+
+### Versions and approvals checked
+
+- Spec `workflow/specs/ai-ta-assist.md` v0.2: approval lines unchanged.
+- Checklist `tasks.md` v0.3: approval line present ("Fix all now (Recommended)", recorded from the human).
+- Handoff `handoff.md` v0.3: the version line and the v0.3 amendment record the same approval. The header's "Handoff approval evidence" line still mentions only v0.1/v0.2 (N2).
+
+### Diff examined
+
+`git diff ca009ea..5a1ecfe` (13 files, +308/−13) in a clean detached worktree at `5a1ecfe`: `5cf2173` (T10), `60c9074` (T11), `6b12767` (T12), `5a1ecfe` (report and log 22). Production changes are limited to `server/tickets/ta-ai-insights.js` (`set`) and `src/TAQueuePage.tsx` (`ticketCount` parsing and the empty text), both in the v0.3 allowed files. No dependency, CI or config change. No existing test file other than the live test was edited.
+
+`ca009ea` ticks exactly T01, T02, T04, T05 and T06, which the first review found Met with no findings. T03 (F1), T07 (F2), T08 (F4) and T09 (F3) stay `[ ]`. Its wording-only edits to `spec.md` and the coverage header resolve I7. This matches the first verdict.
+
+### Findings resolution
+
+| Finding | Fix | Evidence | Status |
+| --- | --- | --- | --- |
+| F1 cache growth | `ta-ai-insights.js:100-106`: `set` deletes every entry with `t - at > ttlMs`, the same rule as `get`, before storing | `ta-ai-insights.cache-prune.test.js` (4 tests). Red check: against `ca009ea` production code, 2 of 4 fail ("removes entries older than the TTL", "prunes only the expired"); the other 2 guard against over-pruning | Resolved |
+| F2 empty text | `TAQueuePage.tsx:63-64,198`: `ticketCount` is parsed (non-negative integer, otherwise `null`); the empty-queue text shows only for `ticketCount === 0`, otherwise "No common patterns found." The server already returns `ticketCount` on both the empty and the normal path (`ta-ai-insights-route.js:37,64`) and in cache hits | `TAQueuePage.ai-empty.test.tsx` (3 tests). Red check: against `ca009ea`, 2 of 3 fail (tickets with no groups; missing `ticketCount`) | Resolved |
+| F3 live budget | `ta-ai-live-soclaas.integration.test.js:62-63,127-128`: a counting wrapper is passed as `fetch` to the real `createAiGateway`, which hands it to the transport, so every attempt (retries included) is counted. The budget asserts `fetchCalls <= 4` | Only the counter changed. No assertion was removed or relaxed: the endpoint-call counter (always 3) is replaced by a count that is ≥ 3. The wrapper logs and prints nothing; the URL, headers and body are only forwarded. Without the flag the suite skips (5 skipped) | Resolved offline; the stronger assertion has not run live |
+| F4 report | `implementation-report.md` added | Token rows match logs 03, 05, 08, 13, 15, 17 and 22 row by row; the aggregate 994,403 is the exact sum of the 14 totals. The live-run table matches log 15 (run 1: 3 failed, ~50 ms, no `fetch`; runs 2–3: 503 after 1.1–2.1 s, backend outage; run 4: 4/4 passed). Suite counts match this re-check. Deviations (D1, two-line mounts, `c91ff81`, test changes) are accurate. No key, base URL (other than the dummy `fake.invalid`), prompt or response text | Resolved; see N1 |
+
+### Verification (exact results in log 23)
+
+| Command (from `src/codeclinic`) | Result |
+| --- | --- |
+| Full suite at `5a1ecfe` | Test Suites: 5 skipped, 58 passed, 58 of 63 total; Tests: 9 skipped, 1228 passed, 1237 total; exit 0 |
+| `ta-ai-live` without the flag | Test Suites: 1 skipped, 0 of 1 total; Tests: 5 skipped, 5 total |
+| New T10/T11 tests against `ca009ea` production code (temporary scratch worktree, removed) | Test Suites: 2 failed; Tests: 4 failed, 3 passed, 7 total |
+| `npx tsc --noEmit -p .` | exit 0, no output |
+| `npm run build` | exit 0, "Compiled successfully." |
+
+The live mode was not run. `RUN_SOCLAAS_TESTS` was not set, no `.env` exists in the worktree, and no `.env` was read. No network was used.
+
+### New findings
+
+No Critical, High, Medium or Low findings.
+
+| ID | Severity | Location | Evidence | Recommended action |
+| --- | --- | --- | --- | --- |
+| N1 | Info (evidence) | `implementation-report.md` Tasks table (T10–T12 rows); `logs/tasks/ai-ta-assist/22-orchestrator-group6.md` | The rows say "see the Group 6 log" for the commit, but log 22 does not list the commits. They are `5cf2173` (T10), `60c9074` (T11) and `6b12767` (T12) | Add the three hashes to the report |
+| N2 | Info (evidence) | `handoff.md:7` | The "Handoff approval evidence" line still ends at v0.2; the v0.3 approval is recorded only in the version line and the amendments | Optional: add the v0.3 approval to that line |
+| N3 | Info | `ta-ai-live-soclaas.integration.test.js:127` | With 3 endpoint calls, the run now fails if more than one retry happens. This is the intended v0.2 budget, but a flaky provider can now fail a live run that previously passed. The budget test also relies on running after the other three tests (noted by the implementer) | None; the human should expect this on the next live run |
+
+### Per-task verification
+
+| Task | Verified now? | Basis |
+| --- | --- | --- |
+| T03 | Yes | First review Met; F1 resolved by T10 |
+| T07 | Yes | First review Met; F2 resolved by T11 |
+| T08 | Yes | Guides verified in the first review; F4 resolved (report present and accurate; N1 is cosmetic) |
+| T09 | Yes | Skip verified; human live run 4 passed; F3 resolved by T12 |
+| T10 | Yes | Fix plus tests that fail without it |
+| T11 | Yes | Fix plus tests that fail without it |
+| T12 | Yes, to its stated criterion (offline skip) | Strengthening only; the new assertion is unexercised until the human's next live run |
+
+Unverified, unchanged from the first review: 320 px layout in a browser, output usefulness, live behaviour of the stronger budget, and Firestore `Timestamp` cache keys in the emulator.
+
+### Verdict
+
+**Pass.** F1–F4 are resolved with tests that fail without the fixes, there are no regressions, T12 only strengthens the budget and prints nothing sensitive, and the implementation report is accurate. N1–N3 are Info only and do not block. The orchestrator may tick T03, T07, T08, T09, T10, T11 and T12; merge remains the human's decision.

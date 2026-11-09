@@ -31,3 +31,16 @@
 - `npx tsc --noEmit -p .`: clean. `npm run build`: compiled successfully.
 - F4: the orchestrator wrote `workflow/tasks/ai-ta-assist/implementation-report.md`.
 - 2026-11-09: The human chose "Commit, then re-review (Recommended)".
+
+## Re-review (2026-11-09)
+
+| Role | Task/group and run | Model | Input tokens | Output tokens | Total tokens | Usage source |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Reviewer | F1–F4 re-check, run 2 | claude-opus-5-5 | unavailable | unavailable | 85,365 | Claude Code task notification `subagent_tokens` (17 tool uses, 225.1 s) |
+
+- Verdict: **pass**. Detached checkout at `5a1ecfe`.
+- Results: full suite 58 passed and 5 skipped, with 1228 tests passed; `tsc` clean; build OK. The two new test files fail against `ca009ea` (4 failed, 3 passed), so they detect the fixed issues.
+- The appended section of `review-report.md` was checked: it only adds lines. `23-reviewer-recheck.md` was copied in.
+- The orchestrator ticked T03, T07, T08, T09, T10, T11 and T12. All of T01–T12 are now `[x]`.
+- Info notes N1 and N2 were applied to the evidence: the commit hashes in the report and the handoff approval line. N3 needs no action.
+- 2026-11-09: The human chose "Accept and commit evidence (Recommended)" at the merge gate. The work stays local on `TA-coordinator`, with no push and no merge to `main`.

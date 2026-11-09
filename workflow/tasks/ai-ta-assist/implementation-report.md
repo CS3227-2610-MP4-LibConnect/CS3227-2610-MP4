@@ -4,7 +4,7 @@ Specification: `workflow/specs/ai-ta-assist.md` v0.2 (v0.1 and v0.2 human-approv
 Checklist: `workflow/tasks/ai-ta-assist/tasks.md` v0.3 (v0.1–v0.3 human-approved 2026-11-09)
 Handoff: `workflow/tasks/ai-ta-assist/handoff.md` v0.3 (human-approved 2026-11-09)
 Integration branch: local `TA-coordinator`, from `9f34c4e`. Each task ran in its own worktree branch `ai-ta-assist-tNN` and was fast-forwarded in. Nothing was pushed.
-Status: **implementation complete; awaiting re-review of T10–T12 and the human merge decision.** T01, T02, T04, T05 and T06 are `[x]` after the independent review. T03, T07, T08 and T09 stay `[ ]` until their follow-ups (T10–T12) and this report are re-reviewed.
+Status: **complete and accepted.** The human chose "Accept and commit evidence (Recommended)" on 2026-11-09. The work is local on `TA-coordinator`; nothing was pushed or merged to `main`. The independent review passed with follow-up, and the re-check of F1–F4 passed. All of T01–T12 are `[x]`.
 
 ## Tasks
 
@@ -20,11 +20,11 @@ Status: **implementation complete; awaiting re-review of T10–T12 and the human
 | T07 insights panel | 3 | `6dad099`; follow-up T11 | `implementation-T07.md` | Deviation D1 accepted |
 | T09 opt-in live test | 4 | `7be00bc`; fix `c91ff81`; follow-up T12 | `implementation-T09.md` | Offline dry runs; human live run 4 passed 4/4 |
 | T08 guides | 5 | `8946830` | `implementation-T08.md` | Placeholders only |
-| T10 cache pruning (F1) | 6 | see the Group 6 log | `implementation-T10.md` | Red/green shown by the implementer |
-| T11 empty-insights text (F2) | 6 | see the Group 6 log | `implementation-T11.md` | 52/52 in the UI suites |
-| T12 real request count (F3) | 6 | see the Group 6 log | `implementation-T12.md` | Offline dry run: the counter equalled the fake fetch hits (3) |
+| T10 cache pruning (F1) | 6 | `5cf2173` | `implementation-T10.md` | Red/green shown by the implementer |
+| T11 empty-insights text (F2) | 6 | `60c9074` | `implementation-T11.md` | 52/52 in the UI suites |
+| T12 real request count (F3) | 6 | `6b12767` | `implementation-T12.md` | Offline dry run: the counter equalled the fake fetch hits (3) |
 
-Reconciliation logs: `logs/tasks/ai-ta-assist/03`, `05`, `08`, `13`, `15`, `17` and `22-orchestrator-*.md`.
+Reconciliation logs: `logs/tasks/ai-ta-assist/03`, `05`, `08`, `13`, `15`, `17` and `22-orchestrator-*.md`. Review logs: `18-reviewer.md` and `23-reviewer-recheck.md`.
 
 ## Deviations, findings, and test changes
 
@@ -37,6 +37,10 @@ Reconciliation logs: `logs/tasks/ai-ta-assist/03`, `05`, `08`, `13`, `15`, `17` 
   - F3: the budget counted endpoint calls, fixed by T12;
   - F4: this report was missing; it is this file.
   The review also added 9 review-only tests in `test/ta-ai-assist.review.test.js`.
+- **Re-check (pass):** F1–F4 are resolved, and each code fix has tests that fail without it. Info notes:
+  - N1: commit hashes added here;
+  - N2: the handoff approval line is updated;
+  - N3: a live run now fails if the provider needs more than one retry, which is the intended budget.
 - **Test changes after the test contract (`eb49679`):**
   - `c91ff81`: the live test docblock and a new helper;
   - T12: the live test budget now counts real `fetch` calls, and is strictly stronger;
@@ -84,7 +88,8 @@ No prompt, response, key or URL was recorded. Token counts for live calls are un
 | Implementer | T10 (Group 6), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 41,725 | Claude Code task notification `subagent_tokens` |
 | Implementer | T11 (Group 6), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,631 | Claude Code task notification `subagent_tokens` |
 | Implementer | T12 (Group 6), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,577 | Claude Code task notification `subagent_tokens` |
+| Reviewer | F1–F4 re-check, run 2 | claude-opus-5-5 | unavailable | unavailable | 85,365 | Claude Code task notification `subagent_tokens` |
 
 Every subagent reported its own counts as `unavailable`. The totals come from the runtime notifications. The task grouper was not run, because the grouping was approved inline.
 
-Aggregate total so far (14 runs, all with reported totals): **994,403** tokens. Input and output splits are unavailable. The re-review run will be added when it finishes.
+Aggregate total (15 runs, all with reported totals): **1,079,768** tokens. Input and output splits are unavailable.

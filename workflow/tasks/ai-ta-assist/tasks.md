@@ -43,7 +43,7 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
   - Each test passes the definition to `validateFeatureDefinition`.
   - (Spec R1; scenarios 3, 4.)
 
-- [ ] **T03: Queue Insights definition and cache.** Add
+- [x] **T03: Queue Insights definition and cache.** Add
   `server/tickets/ta-ai-insights.js`, exporting the `QUEUE_INSIGHTS`
   definition (`systemPrompt`, `buildUserContent` using T01's
   `errorSummary`, caps, `parse`) and `createInsightsCache({ now, ttlMs })`.
@@ -94,7 +94,7 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
     prompt, each error message, and HTML or script text shown literally.
   - (Spec R6; scenarios 1, 10.)
 
-- [ ] **T07: Insights panel on the queue page.** In `src/TAQueuePage.tsx`,
+- [x] **T07: Insights panel on the queue page.** In `src/TAQueuePage.tsx`,
   add the **Queue insights** panel with **Generate insights**.
   - It shows groups (label, kind, summary, and ticket links), the
     truncated and cached notes, and empty, loading, and error states. All
@@ -105,7 +105,7 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
 
 ## Group 4: Live verification
 
-- [ ] **T09: Opt-in live SoCLaaS test.** Add
+- [x] **T09: Opt-in live SoCLaaS test.** Add
   `test/ta-ai-live-soclaas.integration.test.js`, following spec v0.2 "Live
   verification".
   - It is gated on `RUN_SOCLAAS_TESTS === '1'` **and** an enabled
@@ -123,7 +123,7 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
 
 ## Group 5: Guides and evidence
 
-- [ ] **T08: Guides and evidence.** Update `docs/UserGuide.md` (both TA AI
+- [x] **T08: Guides and evidence.** Update `docs/UserGuide.md` (both TA AI
   features, the advisory nature, and the "don't paste secrets" warning from
   `ai-gateway` R6) and `docs/DeveloperGuide.md` (the modules, registration,
   the endpoints, the cache, and the alias design).
@@ -139,14 +139,14 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
 
 ## Group 6: Review follow-up (parallel)
 
-- [ ] **T10: Prune expired insights-cache entries (review F1).** In
+- [x] **T10: Prune expired insights-cache entries (review F1).** In
   `server/tickets/ta-ai-insights.js`, `createInsightsCache` removes expired
   entries when `set` is called, so the cache cannot grow without bound.
   - Add unit tests in a new `test/ta-ai-insights.cache-prune.test.js`: entries
     set before the TTL are removed on a later `set`, and live entries are kept.
   - (Spec R4 cache.)
 
-- [ ] **T11: Correct the empty insights message (review F2).** In
+- [x] **T11: Correct the empty insights message (review F2).** In
   `src/TAQueuePage.tsx`, show "No insights: there are no active tickets to
   group." only when `ticketCount === 0`. When there are tickets but no groups,
   show "No common patterns found."
@@ -154,7 +154,7 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
     cases.
   - (Spec R6; scenario 6.)
 
-- [ ] **T12: Count real provider requests in the live test (review F3).** In
+- [x] **T12: Count real provider requests in the live test (review F3).** In
   `test/ta-ai-live-soclaas.integration.test.js`, count actual `fetch` calls
   (by wrapping the `fetch` passed to the real gateway) and assert at most 4
   per run, including retries.
@@ -176,3 +176,4 @@ decisions.
 - 2026-11-09 (v0.2): Following spec v0.2, the human replied "ok" to the orchestrator's proposal. Added T09 (the opt-in live SoCLaaS test) as a new Group 4. The guides group (T08) is renumbered to Group 5, with its wording unchanged except for one added sub-bullet on the live-test setup. T01–T07 are unchanged.
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
 - 2026-11-09 (v0.3): The human chose "Fix all now (Recommended)" after the independent review (pass with follow-up, F1–F4 Low) on 2026-11-09. Added Group 6: T10 (F1), T11 (F2) and T12 (F3). F4 (`implementation-report.md`) is orchestrator work. The orchestrator ticked T01, T02, T04, T05 and T06, which the review verified with no findings. T03, T07, T08 and T09 stay open until their follow-ups are verified. Existing task wording is unchanged.
+- 2026-11-09: The re-review of F1–F4 passed (`review-report.md`, "Re-check of F1–F4"). The orchestrator ticked T03, T07, T08, T09, T10, T11 and T12. Task wording is unchanged.
