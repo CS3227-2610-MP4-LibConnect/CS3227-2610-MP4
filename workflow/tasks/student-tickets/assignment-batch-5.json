@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 5,
+  "items": ["T05"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.4" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.3" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.3" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/t05-ui-followup.md",
+  "implementer": {
+    "agentId": "orchestrator-tickets-t05-implementation",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/DashboardRouteGuard.tsx",
+      "src/codeclinic/src/tickets/TicketCreatePage.tsx",
+      "src/codeclinic/test/StudentTickets.test.tsx",
+      "workflow/specs/student-tickets.md",
+      "workflow/tasks/student-tickets/tasks.md",
+      "workflow/tasks/student-tickets/handoff.md",
+      "workflow/tasks/student-tickets/batch-plan.md",
+      "workflow/tasks/student-tickets/t05-ui-followup.md",
+      "workflow/tasks/student-tickets/assignment-batch-5.json",
+      "workflow/tasks/student-tickets/implementation-T05.md",
+      "logs/tasks/student-tickets/implementation-T05.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-t05",
+    "worktree": "shared-workspace",
+    "separationException": "The earlier implementation and T05 follow-up are uncommitted in a shared workspace. Reviewer inspects current source and records the baseline diff limitation.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T05": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T05.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T05.md",
+      "checks": [
+        { "command": "npm test -- --watch=false --runInBand StudentTickets.test.tsx", "result": "pass" },
+        { "command": "npm run build", "result": "pass" },
+        { "command": "git diff --check", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T05.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T05.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

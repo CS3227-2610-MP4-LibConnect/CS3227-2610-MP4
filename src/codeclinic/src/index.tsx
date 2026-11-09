@@ -22,6 +22,7 @@ function App() {
 
   if (path === '/register') return <RegistrationPage />;
   if (path === '/student/dashboard') return <DashboardRouteGuard accountType="STUDENT" />;
+  if (path === '/student/tickets/new') return <DashboardRouteGuard accountType="STUDENT" />;
   if (path === '/ta/dashboard') return <DashboardRouteGuard accountType="TA" />;
   if (path === '/student/account') return <DashboardRouteGuard accountType="STUDENT" />;
   if (path === '/ta/account' || path === '/ta/students' || path === '/ta/tas') return <DashboardRouteGuard accountType="TA" />;

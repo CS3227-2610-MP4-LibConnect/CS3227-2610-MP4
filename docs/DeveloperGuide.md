@@ -15,6 +15,7 @@ and the former application path `src/libconnect-mp4`.
 - [Running the development server](#running-the-development-server)
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
+- [Student ticket creation](#student-ticket-creation)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
 - [Security design](#security-design)
@@ -125,6 +126,36 @@ The login form posts email, password, and the selected Student or TA type to `PO
 On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. Express serves the frontend for only these two dashboard paths; the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
 
 Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; any future protected API must enforce its own server-side authorization on every request.
+
+## Student ticket creation
+
+The shipped ticket scope is create-only. `TicketCreatePage` is protected by the
+session route guard at `/student/tickets/new`; the dashboard's **Ask for Help**
+section and Student header link navigate to that route. The form validates
+required text, the seven fixed language choices, up to five trimmed lowercase
+unique tags, optional source context, and the approved text and byte limits.
+Source context is either up to three inline code files or a public GitHub URL
+with relative file paths. The browser requests a CSRF token and submits the
+allowlisted fields to `POST /api/tickets`; it never reads or writes the ticket
+collection directly.
+
+The ticket router independently checks the cookie-backed session, reloads the
+active Student account, checks CSRF, parses at most 128 KiB, and validates the
+request. `createFirestoreTicketStore` generates the Firestore document ID and
+writes one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains
+the server-derived owner, Firestore `Timestamp` values, null initial claim and
+resolution fields, and empty arrays/null values for absent optional fields.
+Repository URLs are stored as references and are not fetched. Creation does
+not create a persisted notification. A successful `201` lets the client return
+to the Student dashboard with transient confirmation; failures remain on the
+form. Ticket lists, details, edits, closes, replies, and TA transitions are
+outside this implementation.
+
+Focused UI, API, and storage checks are in `test/StudentTickets.test.tsx`,
+`test/student-tickets.api.test.js`, and `test/student-tickets.storage.test.js`.
+The storage test verifies the exact C1 document shape and Firestore timestamp
+types; it uses a controlled Firestore interface. The task's local emulator
+assertion is recorded separately in `workflow/tasks/student-tickets/implementation-T04.md`.
 
 ```mermaid
 sequenceDiagram

@@ -1,0 +1,35 @@
+.ticket-create-page {
+  min-height: calc(100vh - 72px);
+  padding: 28px 16px 48px;
+  background: radial-gradient(ellipse at 10% 0%, var(--lc-color-page-glow-dashboard), transparent 36%), var(--lc-color-page);
+}
+.ticket-create-card {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 28px clamp(16px, 5vw, 40px) 36px;
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-surface);
+  background: var(--lc-color-surface);
+  box-shadow: var(--lc-shadow-surface);
+}
+.ticket-create-card h1 { margin: 18px 0 8px; color: var(--lc-color-navy); font: 500 clamp(1.8rem, 5vw, 2.4rem) var(--lc-font-display); overflow-wrap: anywhere; }
+.ticket-create-card > p { color: var(--lc-color-muted); line-height: 1.55; }
+.ticket-create-card form { display: grid; gap: 10px; margin-top: 24px; }
+.ticket-create-card label, .ticket-source legend { color: var(--lc-color-navy); font-weight: 650; }
+.ticket-create-card label span, .ticket-source legend span { color: var(--lc-color-muted); font-size: .9rem; font-weight: 400; }
+.ticket-create-card input, .ticket-create-card select, .ticket-create-card textarea {
+  box-sizing: border-box; width: 100%; min-width: 0; min-height: 46px; padding: 10px 12px;
+  border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control);
+  background: white; color: var(--lc-color-navy); font: inherit;
+}
+.ticket-create-card textarea { min-height: 100px; resize: vertical; }
+.ticket-create-card input:focus-visible, .ticket-create-card select:focus-visible, .ticket-create-card textarea:focus-visible, .ticket-create-card button:focus-visible, .ticket-create-card a:focus-visible { outline: 3px solid var(--lc-color-focus); outline-offset: 2px; }
+.ticket-create-card [aria-invalid="true"] { border-color: var(--lc-color-error); }
+.ticket-field-error, .ticket-form-message { margin: 0 0 6px; color: var(--lc-color-error); }
+.ticket-help { color: var(--lc-color-muted); line-height: 1.45; }
+.ticket-back-link { color: var(--lc-color-blue-link); }
+.ticket-source { display: grid; gap: 10px; min-width: 0; margin: 12px 0; padding: 16px; border: 1px solid var(--lc-color-border); border-radius: 12px; }
+.ticket-file { display: grid; gap: 10px; min-width: 0; padding: 14px; border-radius: 10px; background: var(--lc-color-accent-surface); }
+.ticket-secondary-button { justify-self: start; min-height: 40px; padding: 7px 12px; border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: white; color: var(--lc-color-blue); font: inherit; cursor: pointer; }
+.ticket-submit { justify-self: start; margin-top: 6px; }
+@media (max-width: 360px) { .ticket-create-page { padding: 16px 8px 24px; } .ticket-create-card { padding: 20px 12px 24px; } .ticket-source { padding: 12px 8px; } }

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 4,
+  "items": ["T01"],
+  "splitReason": "Correct and independently re-review the reopened T01 server wiring before resuming T04; Batch 3 remains on hold.",
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/t01-server-wiring-correction.md",
+  "implementer": {
+    "agentId": "implementer-tickets-t01-wiring",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/test/server.test.js",
+      "src/codeclinic/test/registration.api.test.js",
+      "src/codeclinic/test/registration.endpoint.test.js",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "workflow/tasks/student-tickets/implementation-T01-wiring.md",
+      "logs/tasks/student-tickets/implementation-T01-wiring.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-t01-wiring",
+    "worktree": "shared-workspace",
+    "separationException": "The implementation is uncommitted in the shared workspace; reviewer must inspect the exact source/diff and independently rerun focused checks, documenting the limitation.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T01-wiring.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T01-wiring.md",
+      "checks": [
+        { "command": "npm test -- --runInBand --watchAll=false --verbose registration.api.test registration.endpoint.test student-tickets.api.test server.test", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --verbose student-tickets.storage.test account-r7-server.test", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --verbose registration.api.test registration.endpoint.test student-tickets.api.test student-tickets.storage.test account-r7-server.test server.test", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --verbose", "result": "pass" },
+        { "command": "git diff --check", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T01-wiring.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T01-wiring.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

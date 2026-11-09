@@ -5,8 +5,9 @@ problems as tickets, and TAs claim, answer, and resolve them. AI coaches student
 with hints and helps TAs, without doing the work for them.
 
 The current build provides registration, sign-in, account updates, account
-support, and a notifications inbox. Tickets and role-specific AI features are not available yet;
-[Planned features](#planned-features) lists them.
+support, a notifications inbox, and Student ticket creation. Ticket editing,
+viewing, replies, TA workflows, and role-specific AI features are not available
+yet; [Planned features](#planned-features) lists them.
 
 ## Accessing the app
 
@@ -63,6 +64,23 @@ The Student dashboard is a landing page headed **Student Dashboard**. It shows
 top left to return to the dashboard, or **Log out** at the top right to sign
 out. The navigation also includes **Account** and **Notifications**.
 
+## Creating a ticket
+
+On the Student dashboard, use **Ask for Help** or select **Create Ticket** in
+the header. Enter a title, language, expected behaviour, actual behaviour, and
+what you have tried. **Other** is available in the language list; put the
+specific language name in the title or another detail. Error output, up to five
+concept tags, and source context are optional. For source context, attach up to
+three small code files or provide a public GitHub repository URL and relevant
+file paths. Choose one source method. The form checks the size and format limits
+before sending.
+
+Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
+you to the Student dashboard and shows a confirmation. If a check or request
+fails, the form stays open with your entries so you can correct them or retry.
+Ticket creation does not yet provide ticket details, editing, replies, or TA
+responses.
+
 ## TA dashboard
 
 The TA dashboard is headed **TA Dashboard**. Its navigation includes **Account**,
@@ -113,7 +131,7 @@ These CodeClinic features are planned and **not available in the current build**
 
 | Role | Planned feature |
 | --- | --- |
-| Student | Create, edit, close, and view tickets with code files and error output |
+| Student | View, edit, and close tickets |
 | Student | Reply in a ticket's thread |
 | Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |
