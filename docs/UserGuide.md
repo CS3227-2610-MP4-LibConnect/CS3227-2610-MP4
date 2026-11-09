@@ -68,6 +68,34 @@ out. The navigation also includes **Account** and **Notifications**.
 The TA dashboard is headed **TA Dashboard**. Its navigation includes **Account**,
 **Students**, and **Notifications**. A TA Coordinator also sees **TAs**.
 
+## Ticket queue (TAs)
+
+Select **Queue** in the TA navigation, or **Open the ticket queue** on the TA
+dashboard. The **Ticket queue** page lists tickets oldest first. Use the
+**Status** filter (default **Active (open and claimed)**; also **Open**,
+**Claimed**, **Resolved**, **Closed**), the **Language** filter, and the
+**Concept** box (an exact concept tag, such as `recursion`). A ticket that is
+claimed shows **Claimed by you** or **Claimed**. Select **Load more** to see the
+next 20 tickets, or **Retry** if the list fails to load.
+
+Select a ticket to open it. The page shows the student's name, the code,
+error output, and what the student tried, followed by the **Replies** thread.
+
+- **Claim** an open ticket to take it. Only one TA can claim a ticket, and only
+  that TA can **Unclaim** it.
+- Type a message in **Reply** and select **Send reply**. Any TA can reply while
+  the ticket is open or claimed (up to 4000 characters).
+- To finish, the TA who claimed the ticket writes a **Fix note** (up to 2000
+  characters), selects **Resolve…**, then **Confirm resolve**. A resolved ticket
+  accepts no more replies, and the note cannot be changed.
+
+If another action changed the ticket first, you see "This ticket changed. The
+latest version is shown." Review it and try again. The student is notified when
+you claim, reply to, or resolve their ticket.
+
+Tickets are created by students, which is not available yet, so the queue is
+empty until that feature is released.
+
 ## Updating your account
 
 Select **Account** in the dashboard navigation. Under **Profile**, update your
@@ -117,7 +145,6 @@ These CodeClinic features are planned and **not available in the current build**
 | Student | Reply in a ticket's thread |
 | Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |
-| TA | Ticket queue with filters; claim, reply, and resolve with a fix note |
 | TA | AI Fix Note Drafter and AI Queue Insights |
 | Optional | Live session requests and approvals |
 
