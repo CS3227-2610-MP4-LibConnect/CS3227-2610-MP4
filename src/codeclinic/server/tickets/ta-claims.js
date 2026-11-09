@@ -88,4 +88,4 @@ function createClaimRoutes(shared) {
   return router;
 }
 
-module.exports = { createClaimRoutes, isPlainObject };
+module.exports = { createClaimRoutes, isPlainObject, isEmptyBody };
