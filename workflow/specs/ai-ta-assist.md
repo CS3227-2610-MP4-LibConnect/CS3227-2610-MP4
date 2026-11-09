@@ -1,7 +1,7 @@
 # AI TA assist specification
 
-Version: 0.1 (2026-11-09)
-Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4; recorded from the human's message; no agent-set approval state.
+Version: 0.2 (2026-11-09)
+Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4. The human replied "ok" to the v0.2 proposal (opt-in live SoCLaaS test) on 2026-11-09, authorising these edits. The v0.2 text is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Both are recorded from the human's messages; no agent-set approval state.
 Task ID: `ai-ta-assist` (from approved `workflow/PLAN.md` v0.1, TA owner)
 
 ## Purpose and scope
@@ -219,7 +219,32 @@ gateway is disabled, every AI button still renders and returns the
 | Unit | Each `buildUserContent` (the fields included and excluded; the error-summary rule); each `parse` (valid and invalid shapes, caps); alias mapping and cleaning; the cache key and TTL |
 | API (stub gateway) | Authorization and state rules; CSRF and body checks; the R5 mapping; no writes; the empty-queue short-circuit; caching; the prompt-injection fixtures |
 | UI | Draft button visibility; fill-without-submit; the replace confirmation; the insights panel states; plain-text rendering; 320 px |
-| Not provable locally | Real SoCLaaS output quality and token counts. One manual smoke check with the real key in development is recorded in the evidence, with no prompt text stored |
+| Live (opt-in, human-run) | `test/ta-ai-live-soclaas.integration.test.js` against the real SoCLaaS API; see "Live verification" |
+| Not provable automatically | Whether the real output is *useful* (draft and grouping quality). The human judges this during the live run or a manual smoke check, and the evidence records no prompt or response text |
+
+## Live verification (opt-in, added in v0.2)
+
+- **Gate.** The live test runs only when `RUN_SOCLAAS_TESTS=1` is set **and**
+  `loadAiConfig(process.env)` is enabled. Otherwise every live test is skipped.
+  It never runs in CI or by an agent. Only the human runs it, with their own
+  credentials in the gitignored `src/codeclinic/.env`.
+- **Setup.** The real gateway (`createAiGateway`) with the real transport. The
+  ticket store is in memory and holds synthetic tickets only (no real personal
+  data). A stub `db` takes the `aiUsage` writes, so Firestore is never used.
+  The test calls `registerTaAiFeatures`, and both endpoints go through the
+  normal app with a TA session.
+- **Assertions (shape and safety only, not wording):**
+  - The draft for a `CLAIMED` ticket returns `200` with a non-empty draft of at
+    most 2000 characters, and the store is unchanged.
+  - Insights over at least 3 seeded tickets return `200` with 0–8 groups.
+    Every ticket reference is a seeded `ticketId`, and the store is unchanged.
+  - A ticket whose text tries prompt injection changes no state. The response
+    is still schema-valid, or is `502 AI_INVALID_OUTPUT`.
+  - Each successful call produces one `aiUsage` write to the stub `db`.
+  - The test makes few calls: at most 4 provider calls per run.
+- **Evidence.** Only the date, the pass/skip/fail counts, the model name, and
+  the token counts, if available. Never the prompt text, response text, key,
+  or base URL with credentials.
 
 ## Resolved questions (the human accepted the proposals, 2026-11-09)
 
@@ -236,3 +261,5 @@ gateway is disabled, every AI button still renders and returns the
 
 - 2026-11-09: Drafted at the human's direction.
 - 2026-11-09: The human replied "alright, lets use v0.1 for now" after the orchestrator recommended the first option for Q1–Q4 and explained why `repoUrl` and files are excluded from insights. Q1–Q4 are marked resolved with the proposed answers; the requirements are unchanged.
+- 2026-11-09 (v0.2): The human asked for real SoCLaaS verification ("help me change that, i want the real soclaas in. i will add my cridencial in .env") and replied "ok" to the orchestrator's v0.2 proposal. Added an opt-in, human-run live verification layer (the "Live verification" section and a matrix row). The stub-gateway layers are unchanged, and so are R1–R6 and scenarios 1–11.
+- 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.

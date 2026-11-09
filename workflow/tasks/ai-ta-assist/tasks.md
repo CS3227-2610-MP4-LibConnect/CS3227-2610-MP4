@@ -1,11 +1,11 @@
 # Implementation checklist: ai-ta-assist
 
-Version: 0.1 (2026-11-09)
+Version: 0.2 (2026-11-09)
 Task ID: `ai-ta-assist`
-Specification: `workflow/specs/ai-ta-assist.md`, version 0.1 (the human approved it on 2026-11-09)
-Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state.
+Specification: `workflow/specs/ai-ta-assist.md`, version 0.2 (v0.1 human-approved 2026-11-09; v0.2 human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer)
+Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer.
 
-Tasks are in dependency order, with a **human-approved grouping** (drafted inline by
+Tasks are in dependency order, with a **human-approved grouping** (v0.2 regrouping approved 2026-11-09) (drafted inline by
 the orchestrator because there are fewer than 10 tasks). Grouping and tasks
 are approved together. Tasks in a group run in parallel in separate worktrees;
 groups run in order. Checkboxes track implementation only. The orchestrator
@@ -13,7 +13,7 @@ marks `[x]` only after independent review. All paths are under
 `src/codeclinic/`.
 
 The tests use a **stub gateway** (`{ register, run }`). No task calls the real
-SoCLaaS API.
+SoCLaaS API, except T09's opt-in live test, which only the human runs.
 
 ## Group 1: Shared helpers
 
@@ -103,12 +103,34 @@ SoCLaaS API.
     320 px.
   - (Spec R6; scenarios 8, 10.)
 
-## Group 4: Guides and evidence
+## Group 4: Live verification
+
+- [ ] **T09: Opt-in live SoCLaaS test.** Add
+  `test/ta-ai-live-soclaas.integration.test.js`, following spec v0.2 "Live
+  verification".
+  - It is gated on `RUN_SOCLAAS_TESTS === '1'` **and** an enabled
+    `loadAiConfig(process.env)`. Otherwise it uses `test.skip`, like the
+    emulator suites.
+  - It uses the real `createAiGateway`, an in-memory store with synthetic
+    tickets, a stub `db` for `aiUsage`, and `registerTaAiFeatures`. It makes
+    at most 4 provider calls.
+  - It asserts shape and safety only: draft length, alias-valid insights, the
+    injection ticket, no store change, and `aiUsage` writes.
+  - **The agent only checks that it skips** without the flag. It must not read
+    `.env` or run the live mode. The human runs it, and the orchestrator
+    records only the date, counts, model, and tokens.
+  - (Spec v0.2 Live verification; scenarios 1, 3, 5, 6, 11.)
+
+## Group 5: Guides and evidence
 
 - [ ] **T08: Guides and evidence.** Update `docs/UserGuide.md` (both TA AI
   features, the advisory nature, and the "don't paste secrets" warning from
   `ai-gateway` R6) and `docs/DeveloperGuide.md` (the modules, registration,
   the endpoints, the cache, and the alias design).
+  - In the Developer Guide, document the T09 setup: the `.env` variables
+    (`SOCLAAS_API_KEY`, `SOCLAAS_BASE_URL`, `SOCLAAS_MODEL`, and optionally
+    `AI_GLOBAL_LIMIT_PER_MINUTE`) and the `RUN_SOCLAAS_TESTS=1` command,
+    with no real values.
   - Run the full suite and the build.
   - Record a **human-run** manual smoke check with the real key in local
     development, if the human chooses to do one, without prompt or response
@@ -117,8 +139,8 @@ SoCLaaS API.
 
 ## Approval boundary
 
-Checklist v0.1, the grouping, and handoff v0.1 are human-approved
-(2026-11-09). Test writing, dispatch, review, commit, and merge are separate human
+Checklist v0.1, its grouping, and handoff v0.1 are human-approved
+(2026-11-09). Checklist v0.2, its grouping, and handoff v0.2 are human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Test writing, dispatch, review, commit, and merge are separate human
 decisions.
 
 ## Amendments
@@ -126,3 +148,5 @@ decisions.
 - 2026-11-09: Drafted at the human's direction after the human approved
   specification v0.1. The grouping was proposed inline by the orchestrator.
 - 2026-11-09: The human approved checklist v0.1, the proposed grouping, and handoff v0.1 ("approve").
+- 2026-11-09 (v0.2): Following spec v0.2, the human replied "ok" to the orchestrator's proposal. Added T09 (the opt-in live SoCLaaS test) as a new Group 4. The guides group (T08) is renumbered to Group 5, with its wording unchanged except for one added sub-bullet on the live-test setup. T01–T07 are unchanged.
+- 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
