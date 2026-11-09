@@ -15,6 +15,7 @@ and the former application path `src/libconnect-mp4`.
 - [Running the development server](#running-the-development-server)
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
+- [TA ticket queue](#ta-ticket-queue)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
 - [Security design](#security-design)
@@ -209,6 +210,61 @@ The list query needs a Firestore composite index on `recipientUserId` ascending
 and `createdAt` descending. That production prerequisite remains with the
 Firebase/deployment owner; the local emulator does not enforce index creation.
 The current task does not configure or deploy cloud indexes.
+
+## TA ticket queue
+
+Spec: `workflow/specs/ta-ticket-queue.md`. The shared ticket data contract
+(collections, field rules, and the state machine) is
+[section C of the spec](../workflow/specs/ta-ticket-queue.md#c-shared-ticket-data-contract-needs-student-owner-sign-off);
+`student-tickets` uses the same contract.
+
+Modules in `server/tickets/`:
+
+| Module | Responsibility |
+| --- | --- |
+| `constants.js` | Statuses, languages, size limits, concept-tag validation |
+| `transitions.js` | Pure state-machine guard (`evaluateTransition`) |
+| `store.js` | In-memory and Firestore ticket stores (list, get, claim, unclaim, resolve, reply) |
+| `ta-routes.js` | Router: auth, queue list, ticket detail; mounts the two below |
+| `ta-claims.js` | Claim, unclaim, and resolve routes and their notifications |
+| `ta-replies.js` | Reply route and notification |
+| `ta-views.js` | Maps stored tickets and replies to client views, without internal IDs |
+
+The UI is `src/TAQueuePage.tsx` (`/ta/queue`) and `src/TATicketPage.tsx`
+(`/ta/tickets/:ticketId`).
+
+All endpoints require an active TA session; every `POST` also requires CSRF.
+Unknown body keys return `400`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/ta/tickets?status=&language=&concept=&cursor=` | Queue page of 20, oldest first |
+| `GET /api/ta/tickets/:ticketId` | Ticket detail with up to 200 replies |
+| `POST /api/ta/tickets/:ticketId/claim` | `OPEN` to `CLAIMED` |
+| `POST /api/ta/tickets/:ticketId/unclaim` | `CLAIMED` to `OPEN`, claiming TA only |
+| `POST /api/ta/tickets/:ticketId/replies` | Add a reply (`message`) |
+| `POST /api/ta/tickets/:ticketId/resolve` | `CLAIMED` to `RESOLVED` (`fixNote`), claiming TA only |
+
+Every transition runs in a Firestore transaction that re-reads `status` and
+`claimedByTaId`, so two concurrent claims leave one winner and the other gets
+`409`. Views omit `studentId`, `claimedByTaId`, and email addresses.
+
+After a successful commit, claim, TA reply, and resolve call `notify` for the
+ticket's student (`TICKET_CLAIMED`, `TICKET_REPLY`, `TICKET_RESOLVED`).
+Unclaiming sends nothing. A notification failure never rolls back the action.
+
+`server/index.js` builds the ticket store lazily (`createLazyTicketStore`).
+The Firestore store loads `firebase-admin/firestore` when it is created, so
+building it on first use keeps `createServerApp` constructible with the fake
+databases used by unit tests.
+
+Run the emulator-backed integration test from `src/codeclinic` (needs the
+Firebase CLI and Java); it is skipped unless `RUN_FIRESTORE_EMULATOR_TESTS=1`:
+
+```bash
+CI=true RUN_FIRESTORE_EMULATOR_TESTS=1 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 CODECLINIC_FIRESTORE_MODE=local-emulator CODECLINIC_FIRESTORE_PROJECT_ID=demo-codeclinic \
+firebase emulators:exec --only firestore --project demo-codeclinic "npm test -- --watch=false --runInBand --runTestsByPath test/ta-ticket-queue-emulator.integration.test.js"
+```
 
 ## Shared AI gateway
 

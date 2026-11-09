@@ -24,6 +24,7 @@ function App() {
   if (path === '/student/dashboard') return <DashboardRouteGuard accountType="STUDENT" />;
   if (path === '/ta/dashboard') return <DashboardRouteGuard accountType="TA" />;
   if (path === '/student/account') return <DashboardRouteGuard accountType="STUDENT" />;
+  if (path === '/ta/queue' || path.startsWith('/ta/tickets/')) return <DashboardRouteGuard accountType="TA" />;
   if (path === '/ta/account' || path === '/ta/students' || path === '/ta/tas') return <DashboardRouteGuard accountType="TA" />;
   if (path === '/account/password-change') return <AccountPages mode="password-change" />;
   if (path === '/notifications') return <NotificationsRoute />;
