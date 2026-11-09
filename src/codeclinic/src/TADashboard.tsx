@@ -1,12 +1,17 @@
 import React from 'react';
 import DashboardLogout from './DashboardLogout';
 import TAQueuePage from './TAQueuePage';
+import TATicketPage from './TATicketPage';
 import './DashboardViews.css';
 
 export function TADashboard({ onLogoutConfirmed, isManager = false }: { onLogoutConfirmed: () => void; isManager?: boolean }) {
   // DashboardRouteGuard renders this component for every TA path it has no dedicated view for.
   if (window.location.pathname === '/ta/queue') {
     return <DashboardLogout onConfirmed={onLogoutConfirmed} isManager={isManager}><TAQueuePage /></DashboardLogout>;
+  }
+  const ticketMatch = /^\/ta\/tickets\/([A-Za-z0-9_-]{1,128})$/.exec(window.location.pathname);
+  if (ticketMatch) {
+    return <DashboardLogout onConfirmed={onLogoutConfirmed} isManager={isManager}><TATicketPage ticketId={ticketMatch[1]} /></DashboardLogout>;
   }
   return (
     <DashboardLogout onConfirmed={onLogoutConfirmed} isManager={isManager}>
