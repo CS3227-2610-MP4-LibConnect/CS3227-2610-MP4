@@ -130,3 +130,15 @@ No external services, production credentials, or secrets were used.
     store code changed. Committed the appended review report and this log
     on the new branch `ta-ticket-queue-review4` (from `4922f7a`). Nothing
     was pushed or merged.
+
+## T9-1 re-check (2026-11-09)
+
+26. Ran `git checkout --detach 97a2018`. Then ran
+    `git diff --stat 4922f7a..97a2018`: 3 files, +4 (one added test
+    assertion and two evidence notes).
+    - The index test, with the command from step 23, gave
+      `Tests: 22 passed, 22 total`.
+    - The full suite gave `Test Suites: 4 skipped, 48 passed`;
+      `Tests: 4 skipped, 1048 passed, 1052 total`.
+    - The branch `ta-ticket-queue-review5` was created from `97a2018`, and
+      the review notes from `a233e09` were cherry-picked onto it.

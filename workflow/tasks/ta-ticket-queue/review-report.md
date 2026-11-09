@@ -295,3 +295,13 @@ Not verifiable here:
   request.
 
 `security-review.md` is unchanged: T09 has no security relevance.
+
+## T9-1 re-check (2026-11-09)
+
+- `git diff 4922f7a..97a2018` adds one assertion to
+  `test/ta-tickets.indexes.test.js`: the last recorded `orderBy` must be
+  `__name__ asc`. The commit also adds the T09 evidence notes; no
+  production code or index file changed.
+- T9-1 is resolved. The index test passed 22/22. The full suite passed
+  1048 tests, skipped 4, and failed none.
+- **Verdict for T09: pass.**
