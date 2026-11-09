@@ -119,3 +119,28 @@ listed at the end.
 4. L1–L3 above.
 5. The store trusts its caller to have enforced the TA role (see
    "Authentication and authorization").
+
+## Re-review (2026-11-09)
+
+Head `ef05784`, fixes from `90effbe`.
+
+- **L1 closed.** A body that was sent but not parsed as JSON now gets `400`
+  on claim and unclaim. Request headers are used only to reject a request,
+  never to authorize or populate a field. Empty and `{}` bodies still work.
+- **L2 closed.** Responses and notifications use data read and written
+  inside the transaction. The state decision is unchanged (it still uses
+  the in-transaction read), and the emulator race test passes. A failed
+  re-read after commit no longer causes a false `503` or a lost
+  notification.
+- **L3 closed.** Crafted cursors are rejected with `400` in both stores
+  before any Firestore call.
+- **F1.** The list's `claimedByMe` now follows R2. It exposes only whether
+  the viewer is the claimer, never another TA's identity, so there is no new
+  data exposure (tests check that other TAs see `false`).
+- **Debug log** (`90effbe`, removed in `ef05784`): it held no secrets or
+  personal data, only emulator output and stack traces.
+- **New:** N1 (Low, UI only) is the badge display on `RESOLVED` tickets. It
+  has no security impact.
+
+The residual risks are unchanged: items 1–3 and 5 of the first review, and
+L4 (code duplication, no security effect).

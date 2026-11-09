@@ -53,3 +53,39 @@
     log in one review commit. Nothing was pushed or merged.
 
 No external services, production credentials, or secrets were used.
+
+## Re-review (2026-11-09)
+
+12. Created a fresh worktree with
+    `git worktree add --detach <scratchpad>/wt/review2 ef05784` and
+    symlinked the shared `node_modules`.
+    - `git diff --stat 38d6f93..ef05784`: 7 files, +220/−22 (store.js,
+      ta-claims.js, ta-routes.js, ta-views.js, the new
+      ta-tickets.review-fixes.test.js, and the T03 evidence files).
+    - `git show 1201090 -- workflow/specs`: an R1 clarification and an
+      amendment entry.
+    - `git diff --stat c49c539..ef05784 -- src/codeclinic/test`: only the
+      new review-fixes test file (+156).
+    - `git show 90effbe:src/codeclinic/firestore-debug.log`, grepped for
+      `token|secret|password|key|cred|@|bearer|session|users/|email`: no
+      matches. Grepped for `/Users|tickets/|demo-codeclinic/`: 0 matches.
+      The content is emulator startup lines and "Transaction lock timeout"
+      stack traces.
+13. Full suite:
+    `cd src/codeclinic && CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false < /dev/null`
+    → `Test Suites: 4 skipped, 46 passed, 46 of 50 total`;
+    `Tests: 4 skipped, 1025 passed, 1029 total`.
+14. `lsof -nP -iTCP:8080 -sTCP:LISTEN` → no output. Then ran the emulator
+    suite with the step-8 command (`perl -e 'alarm 300; exec @ARGV'`
+    timeout, stdin from `/dev/null`) → exit 0.
+    `PASS test/ta-ticket-queue-emulator.integration.test.js`;
+    `Tests: 1 passed, 1 total`; "Script exited successfully (code 0)";
+    the emulators shut down.
+    Port 8080 check afterwards: no output. Removed the generated debug logs.
+15. `npm run build < /dev/null` → `Compiled successfully.`
+16. Code reading for N1: `src/TAQueuePage.tsx:127` renders
+    `ticket.claimedByMe ? 'Claimed by you' : ticket.claimed ? 'Claimed' : null`.
+    After F1, `claimedByMe` can be true on `RESOLVED` items.
+17. Committed the three appended files on the new branch
+    `ta-ticket-queue-review2` (from `ef05784`). Nothing was pushed or
+    merged.

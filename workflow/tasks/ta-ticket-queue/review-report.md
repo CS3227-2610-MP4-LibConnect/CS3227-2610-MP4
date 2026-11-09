@@ -171,3 +171,45 @@ No production code or existing test was modified.
 
 No checklist task is found failing. T01–T08 remain `[ ]`. The orchestrator
 updates the checklist after the human's decision.
+
+## Re-review (2026-11-09)
+
+Scope: `git diff 38d6f93..ef05784`. This covers fix commit `90effbe`, merge
+`6f1cc68`, and `ef05784`, which removes a debug log. The R1 clarification
+`1201090` (the spec amendment for F1) is checked against the code. Reviewed
+head: `ef05784`; review branch: `ta-ticket-queue-review2`. Log: step 12 of
+`logs/tasks/ta-ticket-queue/13-reviewer.md`.
+
+**Updated verdict: pass with follow-up.** L1, L2, L3, and F1 are resolved as
+recommended. L4 stays open by the human's choice. There is one new Low
+finding (N1).
+
+| ID | Status | Evidence |
+| --- | --- | --- |
+| L1 | Resolved | `isEmptyBody` in `ta-claims.js` rejects an unparsed body when `Content-Length` > 0 or `Transfer-Encoding` is set. An absent body, a zero-length body, and `{}` are still accepted; the browser's body-less `POST` sends `Content-Length: 0`. No client field is trusted: the headers only cause a rejection. Resolve and reply already rejected these bodies, and new tests cover all four routes. |
+| L2 | Resolved | `transition()` builds the ticket and reply from the in-transaction read plus the written changes. The timestamps are reported as the commit-time local clock, while the stored values remain server timestamps. A failed re-read afterwards falls back to that data (`withThread`), so a committed write can no longer return `503`. Notify still runs only after a successful result. The decision is still made inside the transaction, and the emulator race passes. |
+| L3 | Resolved | `decodeCursor` is shared by both stores. It bounds `createdAtMs` to the Firestore Timestamp range (years 0001–9999) and requires the ticket-ID pattern. Normal cursors still work (tests), and Firestore auto-IDs match the pattern. |
+| F1 | Resolved | `isClaimedByViewer` is shared by `toListItem` and `toDetailView`, and `claimed` is still true only while `CLAIMED`. This matches amended R1 and R2 (tests). |
+| L4 | Open (human decision) | Unchanged. |
+
+New finding:
+
+| ID | Severity | Location | Issue | Recommended action |
+| --- | --- | --- | --- | --- |
+| N1 | Low | `src/TAQueuePage.tsx` line 127 (unchanged) | The badge checks `claimedByMe` before `claimed`. After F1, the resolver of a `RESOLVED` ticket now sees a **Claimed by you** badge in the Resolved filter. R8 describes the badge as "for claimed tickets". | Show the badge only when `claimed` is true (`claimed && claimedByMe`), or confirm with the human that the badge is wanted on resolved tickets. Add a component test. |
+
+Other checks:
+
+- Test integrity: `git diff --stat c49c539..ef05784 -- src/codeclinic/test`
+  shows only the new `ta-tickets.review-fixes.test.js`. No approved or
+  review-only test was edited.
+- Debug log: the `firestore-debug.log` committed in `90effbe` and removed
+  in `ef05784` held only emulator startup lines and Java stack traces
+  ("Transaction lock timeout" from the race test). It contained no
+  credentials, tokens, emails, user or ticket data, or local user paths.
+  The file stays in the history of `90effbe`, which is harmless.
+- Results:
+  - Full suite: 46 suites passed, 4 skipped; 1025 tests passed, 4 skipped,
+    0 failed.
+  - Emulator suite: 1/1 passed; port 8080 was free before and after.
+  - `npm run build`: compiled successfully.
