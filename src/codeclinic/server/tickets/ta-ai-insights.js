@@ -98,7 +98,12 @@ function createInsightsCache({ now = Date.now, ttlMs = DEFAULT_TTL_MS } = {}) {
       return entry.data;
     },
     set(key, data) {
-      entries.set(key, { at: now(), data });
+      const t = now();
+      // Sweep expired entries so keys that are never read again cannot accumulate.
+      for (const [k, entry] of entries) {
+        if (t - entry.at > ttlMs) entries.delete(k);
+      }
+      entries.set(key, { at: t, data });
     },
   };
 }
