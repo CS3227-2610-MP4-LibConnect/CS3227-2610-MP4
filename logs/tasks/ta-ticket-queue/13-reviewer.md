@@ -109,3 +109,36 @@ No external services, production credentials, or secrets were used.
     branch `ta-ticket-queue-review3` (from `71e369e`). `security-review.md`
     is unchanged because the changes have no security relevance. Nothing
     was pushed or merged.
+
+## T09 review (2026-11-09)
+
+22. The worktree `review4` was detached at `4922f7a`; `git status` was
+    clean.
+    - `git diff --stat 1c163a1..4922f7a`: 4 files, +128. They are the T09
+      log, `firestore.indexes.json`, the new `ta-tickets.indexes.test.js`,
+      and `implementation-T09.md`.
+    - `src/codeclinic/firebase.json` is unchanged (emulator config only).
+    - Grepped for the Q4 amendment entry: found in the spec (line 300),
+      `tasks.md`, and `handoff.md`.
+23. `CI=true npx react-scripts test --roots test --testMatch '**/test/**/ta-tickets.indexes.test.js' --watchAll=false < /dev/null`
+    → `Tests: 22 passed, 22 total`.
+24. Full suite:
+    `CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false < /dev/null`
+    → `Test Suites: 4 skipped, 48 passed, 48 of 52 total`;
+    `Tests: 4 skipped, 1048 passed, 1052 total`.
+25. Did not run the emulator, because indexes are ignored there and no
+    store code changed. Committed the appended review report and this log
+    on the new branch `ta-ticket-queue-review4` (from `4922f7a`). Nothing
+    was pushed or merged.
+
+## T9-1 re-check (2026-11-09)
+
+26. Ran `git checkout --detach 97a2018`. Then ran
+    `git diff --stat 4922f7a..97a2018`: 3 files, +4 (one added test
+    assertion and two evidence notes).
+    - The index test, with the command from step 23, gave
+      `Tests: 22 passed, 22 total`.
+    - The full suite gave `Test Suites: 4 skipped, 48 passed`;
+      `Tests: 4 skipped, 1048 passed, 1052 total`.
+    - The branch `ta-ticket-queue-review5` was created from `97a2018`, and
+      the review notes from `a233e09` were cherry-picked onto it.

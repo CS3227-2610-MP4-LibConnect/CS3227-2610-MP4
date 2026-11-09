@@ -237,3 +237,71 @@ Other checks:
 - Full suite: 47 suites passed, 4 skipped; 1026 tests passed, 4 skipped, 0
   failed.
 - `npm run build`: compiled successfully.
+
+## T09 review (2026-11-09)
+
+Scope: `git diff 1c163a1..4922f7a` (commit `4922f7a`).
+- Changed files: `src/codeclinic/firestore.indexes.json`, the new
+  `test/ta-tickets.indexes.test.js`, and the T09 evidence files.
+- Branch: `ta-ticket-queue-review4`. Log: steps 22–25.
+- Approval: the Q4 amendment entry (2026-11-09) is present in the spec, the
+  checklist, and the handoff.
+
+**Verdict: pass with follow-up.** There is one Low finding.
+
+What I checked:
+
+- **Correct and complete.** `listTickets` builds a `status` filter (`==`, or
+  `in` for ACTIVE), an optional `language ==`, an optional
+  `conceptTags array-contains`, and then `orderBy createdAt asc, __name__
+  asc`. There are four filter shapes (with or without language, with or
+  without concept), and each has exactly one index. In each index:
+  - the equality fields come first, then `CONTAINS`, then
+    `createdAt ASCENDING`;
+  - `__name__ ASC` is implicit;
+  - `in` uses the same index as `==`;
+  - `startAfter(createdAt, id)` follows the index order and needs no extra
+    index.
+  No index is missing and none is unused.
+- **Valid format.** The file uses `collectionGroup`,
+  `queryScope: COLLECTION`, `order: ASCENDING`, and
+  `arrayConfig: CONTAINS`, and `fieldOverrides` is empty.
+- **Replies query.** The `tickets/{id}/replies` query has no filters and
+  orders by `createdAt asc, __name__ asc`. The automatic single-field index
+  serves it, so it needs no composite index.
+- **The test is real.** It records the `where` and `orderBy` calls that the
+  real `createFirestoreTicketStore().listTickets` makes for 20 filter
+  combinations and requires exactly one matching index for each. It also
+  requires that every index is used. A new filter, a removed filter, or a
+  different sort field would make it fail.
+- **Scope.** No change to `firebase.json`, CI, deploy, or IAM. No existing
+  test was edited.
+- **Results.**
+  - New test: 22/22 passed.
+  - Full suite: 48 suites passed, 4 skipped; 1048 tests passed, 4 skipped,
+    0 failed.
+
+| ID | Severity | Location | Issue | Recommended action |
+| --- | --- | --- | --- | --- |
+| T9-1 | Low | `test/ta-tickets.indexes.test.js` `requiredFields` | The test drops every `__name__` order and does not check its direction. If the store's tie-break changed to `__name__ desc` while `createdAt` stayed `asc`, a production index would need an explicit `__name__ DESCENDING`, but the test would still pass. | Assert that the recorded `__name__` order is `asc`, or map it into the expected fields when its direction differs from the last order field. Optional. |
+
+Not verifiable here:
+
+- Whether Firestore accepts the file on deploy, and whether production
+  queries use these indexes. The emulator ignores indexes, and deploying
+  is out of scope.
+- The file has no effect until `environments-and-deployment` references it
+  in `firebase.json` and deploys it. That is the recorded cross-feature
+  request.
+
+`security-review.md` is unchanged: T09 has no security relevance.
+
+## T9-1 re-check (2026-11-09)
+
+- `git diff 4922f7a..97a2018` adds one assertion to
+  `test/ta-tickets.indexes.test.js`: the last recorded `orderBy` must be
+  `__name__ asc`. The commit also adds the T09 evidence notes; no
+  production code or index file changed.
+- T9-1 is resolved. The index test passed 22/22. The full suite passed
+  1048 tests, skipped 4, and failed none.
+- **Verdict for T09: pass.**
