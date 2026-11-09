@@ -57,3 +57,27 @@ The implementer reported its own counts as `unavailable`.
   - Result: Test Suites: 1 skipped, 1 passed. Tests: 5 skipped, 1 passed.
   - The probe was deleted afterwards.
 - Awaiting live run 2 by the human.
+
+## Live runs 2 and 3 by the human (2026-11-09): provider outage
+
+- Runs 2 and 3 used the same command after the fix (`c91ff81`). Each gave Tests: 3 failed, 1 passed, 4 total. The draft, insights and injection tests each received `503`, after about 1.1–2.1 s per call, so real network requests were made.
+- Diagnosis: the human ran a one-off orchestrator-written script, `<scratchpad>/soclaas-diagnose.js .` (not committed). It prints only statuses and the provider's short error message, never the key, URL, model value, prompts or replies.
+  - A. Gateway transport as-is: `UPSTREAM_SERVER_ERROR (HTTP 503)`, attempts 2.
+  - B. Without `reasoning_effort`: HTTP 503, "no healthy provider backends for backend group "79"".
+  - C. Without `max_tokens`: the same 503.
+  - D. Without either field: the same 503.
+- Conclusion: SoCLaaS accepted the request (auth and routing passed) but has no healthy backend for the configured model's backend group. This is a provider-side outage. It is not a defect in the gateway, the TA AI features, T09 or the request fields.
+- The gateway behaved as specified: it retried once, then mapped the failure to `AI_UNAVAILABLE` (503) with no provider detail.
+- The live verification is still pending a run while the provider is healthy.
+
+## Model check and live run 4 (2026-11-09): passed
+
+- Model list: the human ran an orchestrator-written script, `<scratchpad>/soclaas-models.js .` (one `GET /models` request, printing IDs only). It listed 20 models. The configured `gemma4:26b` was among them, but its backend group was unhealthy.
+- Model probe: the human ran `<scratchpad>/soclaas-diagnose.js . default qwen3.6:35b qwen3.8:27b nemotron3.5:30b llama3.1:8b`, one tiny request per model through the real transport. All five returned `ok (reply received), attempts 1`.
+- The orchestrator recommended `qwen3.6:35b`, and the human then updated `SOCLAAS_MODEL` in their `.env`. The exact value used was not shown to the orchestrator: recorded as "the human's chosen model, recommended `qwen3.6:35b`".
+- Live run 4: `RUN_SOCLAAS_TESTS=1 CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false ta-ai-live`
+  - Result: PASS. Tests: 4 passed, 4 total. The draft took 1002 ms, insights 1326 ms, the injection draft 931 ms, and the call budget passed.
+  - Token counts: unavailable, because the test does not print them, by design.
+- The live verification (spec v0.2) now has a passing human run. No prompt text, response text or key was recorded.
+- New risk: if `gemma4:26b` was the planned production `SOCLAAS_MODEL`, the production secret (`environments-and-deployment`) should use a healthy model. Backend health can change over time.
+- 2026-11-09: The human chose "Commit log, start T08 (Recommended)".
