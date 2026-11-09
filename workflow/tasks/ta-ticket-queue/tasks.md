@@ -68,7 +68,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
     tickets, forbidden keys, CSRF, and one notification per reply.
   - (Spec R5, R7; scenarios 5, 7, 8, 11.)
 
-- [ ] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
+- [x] **T06: Queue page.** Add the `/ta/queue` page (R8). It has status,
   language, and concept filters, **Load more**, the claimed badges, and
   empty, loading, and error-with-retry states.
   - Add the route to `src/index.tsx` behind the TA route guard, the SPA path
@@ -80,7 +80,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
 
 ## Group 4: Emulator tests and ticket page (parallel) — T05, T07
 
-- [ ] **T05: Emulator integration tests.** Add
+- [x] **T05: Emulator integration tests.** Add
   `test/ta-ticket-queue-emulator.integration.test.js`. Like the existing
   emulator tests, it runs only when `RUN_FIRESTORE_EMULATOR_TESTS=1`.
   - It covers the concurrent-claim race (exactly one winner), the
@@ -88,7 +88,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
     written for claim, reply, and resolve.
   - (Spec C2, R1, R7; scenarios 1, 3, 8.)
 
-- [ ] **T07: Ticket detail page.** Add the `/ta/tickets/:ticketId` page (R8):
+- [x] **T07: Ticket detail page.** Add the `/ta/tickets/:ticketId` page (R8):
   - It shows the ticket fields, the code files in `<pre>` as plain text, and
     the reply thread.
   - It has **Claim** and **Unclaim**, the reply form, and the resolve form
@@ -107,7 +107,7 @@ Collision handling: T04 puts its reply handler in its own module (e.g. `server/t
 
 ## Group 5: Guides and evidence — T08
 
-- [ ] **T08: Guides and evidence.** Update `docs/UserGuide.md` (the TA queue
+- [x] **T08: Guides and evidence.** Update `docs/UserGuide.md` (the TA queue
   and ticket pages) and `docs/DeveloperGuide.md` (the `server/tickets/`
   module, the shared ticket contract, and the endpoints).
   - Run the full suite, the emulator suite, and the build.
@@ -125,3 +125,4 @@ dispatch, review, commit, and merge are separate human decisions.
   specification v0.1.
 - 2026-11-09: The human approved checklist v0.1 and handoff v0.1 ("approved the checklist and handoff").
 - 2026-11-09: Applied the human-approved 5-group grouping (revised from the task grouper's 6-group proposal); whole tasks moved without wording or checkbox changes.
+- 2026-11-09: After the independent review (`review-report.md`, verdict "pass with follow-up"), the orchestrator marked T05, T06, T07, and T08 `[x]`. T01 (L2, L3), T02 (F1, list view), T03 (L1), and T04 (L4) stay `[ ]` because each has a Low finding awaiting the human's decision.

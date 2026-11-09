@@ -4,7 +4,7 @@ Specification: `workflow/specs/ta-ticket-queue.md` v0.1 (human-approved 2026-11-
 Checklist: `workflow/tasks/ta-ticket-queue/tasks.md` v0.1, grouping human-approved 2026-11-09
 Handoff: `workflow/tasks/ta-ticket-queue/handoff.md` v0.1 (human-approved 2026-11-09)
 Integration branch: local `ta-ticket-queue` (from `TA-coordinator` `3203bb1`). Nothing pushed.
-Status: implementation complete. **Awaiting independent review**: no checklist item is marked `[x]` yet.
+Status: the independent review is done (`review-report.md`: pass with follow-up; 5 Low findings). T05–T08 are `[x]`; T01–T04 are `[ ]` until the human decides on L1–L4 and F1.
 
 ## Tasks
 
@@ -90,7 +90,8 @@ so resumed runs show the reported figure.
 | Implementer | T03-fix, run 2 (resumed) | claude-sonnet-5-5 | unavailable | unavailable | 74,305 (reported; may include run 1) | task notification |
 | Implementer | T05, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 54,444 | task notification |
 | Implementer | T07, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 73,382 | task notification |
+| Reviewer | Whole task, run 1 | claude-opus-5-5 | unavailable | unavailable | 147,931 | task notification (41 tool uses, 528.6 s) |
 | Implementer | T08, run 1 | claude-sonnet-5-5 | unavailable | unavailable | 64,122 | task notification (23 tool uses, 573.3 s; stopped by the orchestrator after hand-back, with background work still open) |
 
 An aggregate is not given, for two reasons: the totals of the resumed runs
-may double-count earlier runs, and the reviewer rows are still pending.
+may double-count earlier runs, so totals across runs would not be reliable.

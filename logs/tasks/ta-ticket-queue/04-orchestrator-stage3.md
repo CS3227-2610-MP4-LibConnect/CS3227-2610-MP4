@@ -135,3 +135,10 @@ Input and output tokens are unavailable for all three runs.
 - Implementer T08, run 1: claude-sonnet-5-5, total 64,122 (task notification; 23 tool uses, 573.3 s).
 - After the hand-back, the agent still had background work open. The orchestrator stopped it with TaskStop. `lsof -iTCP:8080 -sTCP:LISTEN` showed no listener.
 - Commit `5628e32` changes only `docs/UserGuide.md` (+29/-1), `docs/DeveloperGuide.md` (+56), and the T08 log. Merged as `1cb8dc8`.
+
+## Review reconciliation (2026-11-09)
+
+- Reviewer run 1: claude-opus-5-5, total 147,931 (task notification; 41 tool uses, 528.6 s). It worked in a detached worktree at `bd51540`. Review commit `c49c539` is on branch `ta-ticket-queue-review` and holds the reports, the log, and 19 review-only tests. It has no AI attribution.
+- Verdict: pass with follow-up. Findings: L1 (T03), L2 and L3 (T01), L4 (T04), and F1 (T02, list view); all are Low. The reviewer's results: full suite 988/0 failed, 1007/0 with the review tests, emulator 1/1, build OK.
+- The orchestrator confirmed L1 at `ta-claims.js:22-24`: `isEmptyBody(undefined)` is true, so a non-JSON body is accepted as empty. Port 8080 is free.
+- Checkboxes: T05–T08 → `[x]`. T01–T04 stay `[ ]` pending the human's decision. The review branch is not yet merged into `ta-ticket-queue`.
