@@ -81,6 +81,17 @@ unverified criterion, a deviation, or an unresolved risk to shorten a report.
 Use `workflow/tasks/<task-id>/execution_logs/` only as a legacy location for
 existing records; write new factual logs under `logs/tasks/<task-id>/`.
 
+For an active task, the orchestrator may maintain a short
+`workflow/tasks/<task-id>/current-state.md` index. Agents read it when joining
+or resuming a phase, then verify relevant claims against the approved spec,
+checklist, handoff, assignment manifests, reports, and logs. Include artifact
+versions, checklist status, open findings and verification gaps, the next
+permitted action, approval boundaries, and links to primary evidence. Update
+it after a material result, approval, blocker, or change in the next permitted
+action, not after every command. The index cannot grant approval, replace an
+approved handoff, or override a primary record; correct any conflict from the
+primary record before relying on the index.
+
 For new workflows, the analyst orders checklist items by dependency. The
 orchestrator checks the order and proposes consecutive batches of one or two
 items. A batch may contain one item when it is the last item or a dependency

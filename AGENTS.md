@@ -113,6 +113,26 @@ summaries under `logs/chat/<name>/`. Only a human may record an approval as gran
 an agent must not approve its own specification, implementation, or review.
 Evidence must be reproducible and must not contain secrets or unnecessary
 personal data.
+For active tasks, read `workflow/tasks/<task-id>/current-state.md` when joining
+or resuming a phase, if it exists. Treat it as a navigation index and verify
+its claims against the approved artifacts and linked evidence; it grants no
+approval or permission. The orchestrator updates it at meaningful checkpoints
+as described in `workflow/README.md`.
+
+### Efficient evidence collection
+
+- Search for relevant files and lines before opening whole files. Read changed
+  files and the applicable sections of the approved spec and handoff; avoid
+  rereading unchanged material already available in the current context.
+- Capture verbose test output in a task-local log. Inspect the suite summary and
+  first distinct failure before expanding to the relevant stack trace or test
+  case. Keep the complete output available as evidence, and report every failing
+  suite and unresolved risk even when failures share a cause.
+- Bound command output and agent handoffs to the files, findings, and questions
+  needed for the next step. Give independent reviewers enough context to verify
+  the change without duplicating large file dumps or repeated test output.
+- Never reduce required verification or discard failure evidence solely to save
+  input tokens.
 
 ## Repository Structure
 
