@@ -4,6 +4,7 @@
 // after a successful commit and can never fail the action.
 const express = require('express');
 const { MAX_FIX_NOTE_LENGTH } = require('./constants');
+const { createUserLookup, toDetailView } = require('./ta-views');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const CONFLICT_MESSAGE = 'This ticket can no longer be changed that way. Refresh and try again.';
@@ -12,13 +13,6 @@ const NOTIFICATIONS = Object.freeze({
   claim: { notificationType: 'TICKET_CLAIMED', message: (title) => `A TA is now helping with "${title}".` },
   resolve: { notificationType: 'TICKET_RESOLVED', message: (title) => `"${title}" was resolved.` },
 });
-
-function toIsoString(value) {
-  if (value instanceof Date) return value.toISOString();
-  if (value && typeof value.toDate === 'function') return value.toDate().toISOString();
-  if (typeof value === 'number') return new Date(value).toISOString();
-  return null;
-}
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -36,55 +30,6 @@ function parseResolveBody(body) {
   if (keys.length !== 1 || keys[0] !== 'fixNote' || typeof body.fixNote !== 'string') return null;
   const fixNote = body.fixNote.trim();
   return fixNote.length >= 1 && fixNote.length <= MAX_FIX_NOTE_LENGTH ? fixNote : null;
-}
-
-async function lookupName(accountStore, userId) {
-  if (typeof userId !== 'string') return null;
-  const account = await accountStore.getAccount(userId);
-  return account && typeof account.name === 'string' ? account.name : null;
-}
-
-/** The R2 detail view for the acting TA; `claimedByMe` is true whenever the actor is the claimer. */
-async function toDetailView(ticket, viewerId, accountStore) {
-  const names = new Map();
-  const nameOf = async (userId) => {
-    if (!names.has(userId)) names.set(userId, await lookupName(accountStore, userId));
-    return names.get(userId);
-  };
-  const replies = [];
-  for (const reply of Array.isArray(ticket.replies) ? ticket.replies : []) {
-    const author = typeof reply.authorUserId === 'string' ? await accountStore.getAccount(reply.authorUserId) : null;
-    replies.push({
-      replyId: reply.replyId,
-      message: reply.message,
-      createdAt: toIsoString(reply.createdAt),
-      authorName: author && typeof author.name === 'string' ? author.name : 'Unknown user',
-      authorRole: author && author.accountType === 'TA' ? 'TA' : 'STUDENT',
-      isMine: reply.authorUserId === viewerId,
-    });
-  }
-  return {
-    ticketId: ticket.ticketId,
-    title: ticket.title,
-    language: ticket.language,
-    conceptTags: Array.isArray(ticket.conceptTags) ? [...ticket.conceptTags] : [],
-    files: Array.isArray(ticket.files) ? ticket.files.map((f) => ({ name: f && f.name, content: f && f.content })) : [],
-    repoUrl: ticket.repoUrl === undefined ? null : ticket.repoUrl,
-    repoFilePaths: Array.isArray(ticket.repoFilePaths) ? [...ticket.repoFilePaths] : [],
-    errorOutput: ticket.errorOutput === undefined ? null : ticket.errorOutput,
-    expectedBehaviour: ticket.expectedBehaviour,
-    actualBehaviour: ticket.actualBehaviour,
-    attempted: ticket.attempted,
-    status: ticket.status,
-    fixNote: ticket.fixNote === undefined ? null : ticket.fixNote,
-    createdAt: toIsoString(ticket.createdAt),
-    updatedAt: toIsoString(ticket.updatedAt),
-    resolvedAt: toIsoString(ticket.resolvedAt),
-    studentName: await nameOf(ticket.studentId),
-    claimedByMe: typeof ticket.claimedByTaId === 'string' && ticket.claimedByTaId === viewerId,
-    claimedByName: ticket.claimedByTaId ? await nameOf(ticket.claimedByTaId) : null,
-    replies,
-  };
 }
 
 /** @param {{ requireCsrf: Function, ticketStore: object, accountStore: object, notify: Function, safe: Function, messages: object }} shared */
@@ -121,7 +66,7 @@ function createClaimRoutes(shared) {
           : res.status(409).json({ message: CONFLICT_MESSAGE });
       }
       await notifyStudent(event, result.ticket);
-      return res.status(200).json(await toDetailView(result.ticket, req.actor.userId, accountStore));
+      return res.status(200).json(await toDetailView(result.ticket, req.actor.userId, createUserLookup(accountStore)));
     }));
   }
 
