@@ -106,3 +106,16 @@ Aggregate total (18 runs, all with reported totals): **1,297,661** tokens. Input
 - Final suite on the rounds tree with the review tests: Test Suites: 5 skipped, 64 passed. Tests: 9 skipped, 1269 passed. `tsc` and the build are clean.
 - Rounds review: pass with follow-up. R1–R3 were evidence-only and are fixed. R4 (stale "v0.2" in code header comments) and R5 (catch-all grouping) were left as optional or no-action notes.
 
+## Improvement round 3 (T20–T21)
+
+- T20: a ticket that looks like an instruction is still grouped, with a self-check that every alias appears once. T21: no hedged speculation; tell the TA what to check.
+- The work came from another agent run by the human (logs 29–31, including its own live runs and review). The orchestrator's dispatched implementer had failed on the usage limit. The orchestrator verified the work independently (log 32).
+- Results: 1275 tests passed, and `tsc` and the build are clean. Across 10 live round 3 runs, all passed 46/46 checks. The injected ticket was grouped in 10/10 runs, against 3/5 before. Hedged drafts were 1/40, against 3/20 before. Inferred-cause wording remains in some HTML-fixture drafts (an advisory quality note).
+- Token usage: the orchestrator's round 3 implementer failed early, and the runtime reported no usable usage, so its row is `unavailable`. The other agent's runs are outside this runtime and are not counted. No further subagents ran.
+
+| Role | Task/group and run | Model | Input tokens | Output tokens | Total tokens | Usage source |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Implementer | T20–T21 (Group 9), run 1 (failed on the usage limit) | claude-sonnet-5-5 | unavailable | unavailable | unavailable | The runtime notification reported a failure with no usage |
+
+Because this run's total is unavailable, an aggregate covering all 19 runs is unavailable. The 18 earlier runs total 1,297,661 tokens.
+

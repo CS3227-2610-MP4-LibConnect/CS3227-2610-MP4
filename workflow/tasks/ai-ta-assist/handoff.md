@@ -1,10 +1,10 @@
 # Analyst handoff: ai-ta-assist
 
-Handoff version: 0.4 (2026-11-09)
+Handoff version: 0.5 (2026-11-10)
 Task ID: `ai-ta-assist`
 Specification: `workflow/specs/ai-ta-assist.md`, version 0.3 (human-approved 2026-11-09)
-Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.4 (human-approved 2026-11-09)
-Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09. v0.4 is human-approved: the human chose "Approve both rounds (Recommended)" on 2026-11-09.
+Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.5 (human-approved 2026-11-10)
+Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09. v0.4 is human-approved: the human chose "Approve both rounds (Recommended)" on 2026-11-09. v0.5 was approved by the human's "do the two better things" on 2026-11-10.
 
 ## Scope
 
@@ -169,3 +169,4 @@ and this handoff v0.2 are human-approved: the human chose "Approve both (Recomme
 - 2026-11-09: The approval-evidence line now records the v0.3 approval (re-review note N2). No content change.
 - 2026-11-09 (v0.4): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. Added T13–T16. Allowed narrow test edits: the insights `AI_INVALID_OUTPUT` text in `test/TAQueuePage.ai.test.tsx` and `test/helpers/ta-ai-harness.js` (spec v0.3 R5). Round 2 has the same limits: no change to authorization, the data sent to the model, parsers, or the gateway.
 - 2026-11-09: v0.4 was added to the approval-evidence line (rounds review R3). No content change.
+- 2026-11-10 (v0.5): After 5 more live runs on the PR code, the human said "do the two better things" on 2026-11-10. Added T20–T21, with the same limits as rounds 1–2: prompt wording and tests only, and no change to authorization, `buildUserContent`, parsers, caps, routes, or the gateway.
