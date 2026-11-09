@@ -35,3 +35,25 @@ The implementer reported its own counts as `unavailable`.
 - Repeated live runs within a minute may hit the gateway's per-user rate limit (429).
 - T09 stays `[ ]` until independent review, and the live run is recorded separately by the human.
 - 2026-11-09: The human chose "Commit T09 (Recommended)".
+
+## Live run 1 by the human (2026-11-09): failed, cause found
+
+- The human ran `RUN_SOCLAAS_TESTS=1 CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false ta-ai-live` with their own `src/codeclinic/.env`.
+- Result: Tests: 3 failed, 1 passed, 4 total. The draft, insights and injection tests each received `503` (about 50 ms each); the budget test passed.
+- The gate opened, so the config was valid.
+- Cause, confirmed by the orchestrator in the `.env`-free T09 worktree with a probe test:
+  - Under CRA's Jest 27.5.1 `node` environment, `typeof globalThis.fetch` is `undefined`, although host Node v24.2.0 has `fetch`.
+  - The gateway's default `fetch` is therefore missing, so the transport reports a config error and the route returns `AI_UNAVAILABLE`.
+  - No request reached SoCLaaS. Production (plain Node) is unaffected.
+- The orchestrator's earlier offline dry run did not catch this, because it injected a fake `fetch`.
+- `node_modules` has `node-fetch` 3.3.2 only as a transitive dependency. It is ESM-only, so it cannot be `require`d from Jest 27.
+
+## T09 fix (the human chose "Apply the fix (Recommended)")
+
+- Added `test/helpers/live-fetch-environment.js`. It extends `jest-environment-node`, which is already installed through react-scripts, and copies the host's `fetch`, `Headers`, `Request`, `Response`, `AbortController`, `AbortSignal`, `TextDecoder` and `TextEncoder` into the test context when they are missing.
+- The live test's docblock now names this environment. There are no production, config or dependency changes.
+- Offline check (no network, no `.env`): a temporary probe under that environment fetched a `data:` URL and read it through `body.getReader()` and `TextDecoder`. The live suite still skips without the flag.
+  - Command: `CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false zz-fetch-probe ta-ai-live`
+  - Result: Test Suites: 1 skipped, 1 passed. Tests: 5 skipped, 1 passed.
+  - The probe was deleted afterwards.
+- Awaiting live run 2 by the human.

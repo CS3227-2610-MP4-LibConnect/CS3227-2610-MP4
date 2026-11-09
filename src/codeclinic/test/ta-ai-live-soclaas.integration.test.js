@@ -1,4 +1,4 @@
-/** @jest-environment node */
+/** @jest-environment ./test/helpers/live-fetch-environment.js */
 // Opt-in LIVE SoCLaaS test (spec ai-ta-assist v0.2, "Live verification"; checklist T09).
 // Runs only when RUN_SOCLAAS_TESTS=1 AND loadAiConfig(process.env) is enabled; otherwise every
 // test is skipped. It never runs in CI or by an agent: only the human runs it, with their own
