@@ -13,3 +13,6 @@ Spec: `workflow/specs/ta-ticket-queue.md` v0.1 (R5, R7 TICKET_REPLY, C2). Checkl
 ## Deviations and risks
 - None from spec. Author name comes from the session actor if present, else `accountStore.getAccount`, else "Unknown user".
 - The Firestore store's `addReply` is not exercised here (no emulator tests).
+
+## L4 tidy-up
+`ta-replies.js` now reuses `toIsoString` (ta-views.js), `isPlainObject` (exported from ta-claims.js), and `TICKET_ID_PATTERN` (added to constants.js exports) instead of local copies. Check order was kept (ID 404 before body 400) because ta-claims.js checks the body first and swapping would change the status for requests with both a bad ID and bad body. Full suite: 1025 pass, 4 skipped, 0 fail.

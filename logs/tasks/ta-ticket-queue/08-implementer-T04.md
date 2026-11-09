@@ -4,3 +4,4 @@
 - Ran `ta-tickets.api`: 83 pass, 78 fail (all non-reply: T03 cases, DETAIL_KEYS defect, composites).
 - Full suite: 865 pass, 78 fail, 4 skipped.
 - Committed on `ta-ticket-queue-t04`. No push, no merge.
+- L4 tidy-up on `ta-ticket-queue-l4fix`: removed local helper/pattern copies from `ta-replies.js`; exports added in constants.js and ta-claims.js. Full suite 1025 pass, 4 skipped.

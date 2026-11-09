@@ -1,20 +1,13 @@
 // TA reply sub-router (spec ta-ticket-queue v0.1, R5 and the TICKET_REPLY row of R7).
 // Mounted by ta-routes.js after the TA guards, so `req.actor` is a verified active TA.
 const express = require('express');
-const { MAX_REPLY_LENGTH } = require('./constants');
-
-const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
-
-function toIsoString(value) {
-  if (value instanceof Date) return value.toISOString();
-  if (value && typeof value.toDate === 'function') return value.toDate().toISOString();
-  if (typeof value === 'number') return new Date(value).toISOString();
-  return null;
-}
+const { MAX_REPLY_LENGTH, TICKET_ID_PATTERN } = require('./constants');
+const { toIsoString } = require('./ta-views');
+const { isPlainObject } = require('./ta-claims');
 
 /** Returns the trimmed message when the body is exactly `{ message }` and valid, else `null`. */
 function parseReplyBody(body) {
-  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  if (!isPlainObject(body)) return null;
   const keys = Object.keys(body);
   if (keys.length !== 1 || keys[0] !== 'message' || typeof body.message !== 'string') return null;
   const message = body.message.trim();
