@@ -213,3 +213,27 @@ Other checks:
     0 failed.
   - Emulator suite: 1/1 passed; port 8080 was free before and after.
   - `npm run build`: compiled successfully.
+
+## Final re-check (2026-11-09)
+
+Scope: `git diff 93fce85..71e369e`. This covers N1 fix `8727ef6`, L4 tidy-up
+`d1b9165`, and two merges. Head: `71e369e`; branch:
+`ta-ticket-queue-review3`. Log: steps 18–21.
+
+**Final verdict: pass.** No new findings.
+
+| ID | Status | Evidence |
+| --- | --- | --- |
+| N1 | Resolved | `TAQueuePage.tsx` shows a badge only while `claimed` is true, then picks "Claimed by you" or "Claimed" by `claimedByMe`. Badges on `CLAIMED` tickets are unchanged. The new `TAQueuePage.n1.test.tsx` covers a `RESOLVED` item with `claimedByMe: true`. |
+| L4 | Resolved, behaviour-neutral | `ta-replies.js` now imports `TICKET_ID_PATTERN` (same regex, moved to `constants.js`), `toIsoString` (an identical copy, from `ta-views.js`), and `isPlainObject` (exported from `ta-claims.js`). The `parseReplyBody` guard accepts and rejects exactly the same values as before: undefined, null, primitives, and arrays are rejected; objects pass. The check order (ID, then body) is unchanged, so every status code is the same. The change creates no require cycle. |
+
+Other checks:
+
+- No store or Firestore code changed (the diff touches only
+  `constants.js`, `ta-claims.js`, `ta-replies.js`, and `TAQueuePage.tsx`),
+  so I did not re-run the emulator suite.
+- Test changes since `d9390d8`: only the new `TAQueuePage.n1.test.tsx`. No
+  existing or review-only test was edited.
+- Full suite: 47 suites passed, 4 skipped; 1026 tests passed, 4 skipped, 0
+  failed.
+- `npm run build`: compiled successfully.

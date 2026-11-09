@@ -89,3 +89,23 @@ No external services, production credentials, or secrets were used.
 17. Committed the three appended files on the new branch
     `ta-ticket-queue-review2` (from `ef05784`). Nothing was pushed or
     merged.
+
+## Final re-check (2026-11-09)
+
+18. In the review2 worktree, ran `git checkout --detach 71e369e`.
+    - `git diff --stat 93fce85..71e369e`: 9 files, +37/−14. The source
+      changes are in `constants.js`, `ta-claims.js`, `ta-replies.js`, and
+      `TAQueuePage.tsx`. There are no `store.js`, Firestore, or
+      `server/index.js` changes.
+    - `git diff --stat d9390d8 71e369e -- src/codeclinic/test`: only
+      `TAQueuePage.n1.test.tsx` (+16).
+19. Full suite:
+    `cd src/codeclinic && CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false < /dev/null`
+    → `Test Suites: 4 skipped, 47 passed, 47 of 51 total`;
+    `Tests: 4 skipped, 1026 passed, 1030 total`.
+20. `npm run build < /dev/null` → `Compiled successfully.`
+21. Did not re-run the emulator suite, because no store or Firestore code
+    changed. Committed the appended review report and this log on the new
+    branch `ta-ticket-queue-review3` (from `71e369e`). `security-review.md`
+    is unchanged because the changes have no security relevance. Nothing
+    was pushed or merged.
