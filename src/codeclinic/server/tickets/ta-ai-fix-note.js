@@ -20,6 +20,7 @@ const SYSTEM_PROMPT = [
   'If the cause is unclear, say what the TA should check instead of guessing.',
   'Do not offer explanations hedged with words such as "likely" or "probably".',
   'Do not explain how output is displayed or rendered unless the ticket states it.',
+  'Describe only what the ticket reports. If the ticket says how output appears on screen (such as HTML or script text shown literally), restate that observation and tell the TA to check it, without naming a possible cause such as XSS, sanitization, escaping, or filtering, unless the ticket itself states that cause.',
   'For anything the ticket leaves unexplained, say what the TA should check.',
   'Reply with exactly one JSON object of the form {"draft": "<the resolution note>"}.',
 ].join('\n');
