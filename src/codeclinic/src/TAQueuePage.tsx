@@ -35,7 +35,7 @@ function parseItems(body: unknown): { tickets: QueueItem[]; nextCursor: string |
 
 interface InsightTicket { ticketId: string; title: string }
 interface InsightGroup { label: string; kind: string; summary: string; tickets: InsightTicket[] }
-interface InsightsResult { groups: InsightGroup[]; truncated: boolean; cached: boolean }
+interface InsightsResult { groups: InsightGroup[]; ticketCount: number | null; truncated: boolean; cached: boolean }
 type InsightsState = 'idle' | 'loading' | 'ready' | 'error';
 
 const INSIGHTS_ERRORS: Record<string, string> = {
@@ -50,7 +50,7 @@ const KIND_LABEL: Record<string, string> = { CONCEPT: 'Concept', MISCONCEPTION: 
 const str = (value: unknown): string => (typeof value === 'string' ? value : '');
 
 function parseInsights(body: unknown): InsightsResult {
-  const data = body as { groups?: unknown; truncated?: unknown; cached?: unknown } | null;
+  const data = body as { groups?: unknown; ticketCount?: unknown; truncated?: unknown; cached?: unknown } | null;
   if (!data || !Array.isArray(data.groups)) throw new Error('Unexpected response.');
   const groups = data.groups.map((raw): InsightGroup => {
     const g = (raw ?? {}) as { label?: unknown; kind?: unknown; summary?: unknown; tickets?: unknown };
@@ -60,7 +60,8 @@ function parseInsights(body: unknown): InsightsResult {
     }).filter((t) => t.ticketId) : [];
     return { label: str(g.label), kind: str(g.kind), summary: str(g.summary), tickets };
   });
-  return { groups, truncated: data.truncated === true, cached: data.cached === true };
+  const ticketCount = typeof data.ticketCount === 'number' && Number.isInteger(data.ticketCount) && data.ticketCount >= 0 ? data.ticketCount : null;
+  return { groups, ticketCount, truncated: data.truncated === true, cached: data.cached === true };
 }
 
 export default function TAQueuePage() {
@@ -194,7 +195,7 @@ export default function TAQueuePage() {
       {insightsState === 'ready' && insights && <div className="ta-queue__insights-result">
         {insights.truncated && <p className="ta-queue__note">Based on the oldest 60 active tickets.</p>}
         {insights.cached && <p className="ta-queue__note">Cached result.</p>}
-        {insights.groups.length === 0 && <p className="ta-queue__empty">No insights: there are no active tickets to group.</p>}
+        {insights.groups.length === 0 && <p className="ta-queue__empty">{insights.ticketCount === 0 ? 'No insights: there are no active tickets to group.' : 'No common patterns found.'}</p>}
         {insights.groups.map((group, index) => <article key={index} className="ta-queue__group">
           <div className="ta-queue__group-head">
             <h3>{group.label}</h3>
