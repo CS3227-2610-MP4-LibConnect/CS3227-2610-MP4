@@ -44,3 +44,11 @@
 - The orchestrator ticked T03, T07, T08, T09, T10, T11 and T12. All of T01–T12 are now `[x]`.
 - Info notes N1 and N2 were applied to the evidence: the commit hashes in the report and the handoff approval line. N3 needs no action.
 - 2026-11-09: The human chose "Accept and commit evidence (Recommended)" at the merge gate. The work stays local on `TA-coordinator`, with no push and no merge to `main`.
+
+## Live run 5 (2026-11-09): passed, run by the orchestrator at the human's request
+
+- Authorization: the human wrote "you can run live SoCLaaS test". This is a one-time deviation from handoff v0.3, which says only the human runs the live test, and it was explicitly approved by the human.
+- The orchestrator did not open, read or print `.env`. The test runner loaded it, and the output was filtered to test names and counts.
+- Command, from `src/codeclinic` at `3d8c4e8`: `RUN_SOCLAAS_TESTS=1 CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false ta-ai-live < /dev/null`
+- Result: Test Suites: 1 passed. Tests: 4 passed, 4 total. The draft took 1472 ms, insights 1983 ms, the injection draft 1355 ms, and the real-fetch budget (T12, ≤ 4 requests including retries) passed.
+- This is the first live run of T12's request-count assertion. The model is the human's `.env` value, not shown to the orchestrator. No prompt, response, key or URL was recorded.

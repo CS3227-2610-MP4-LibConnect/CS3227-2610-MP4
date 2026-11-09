@@ -54,8 +54,9 @@ Reconciliation logs: `logs/tasks/ai-ta-assist/03`, `05`, `08`, `13`, `15`, `17` 
 | 1 | 3 failed (503, about 50 ms) | No `fetch` in Jest 27; fixed in `c91ff81` |
 | 2, 3 | 3 failed (503, 1–2 s) | Provider outage: "no healthy provider backends" for the configured model's backend group |
 | 4 | **4/4 passed** | The human switched to a healthy model (recommended `qwen3.6:35b`) |
+| 5 | **4/4 passed** | Run by the orchestrator at the human's explicit request, a one-time deviation from the handoff. It is the first live run of T12's real-fetch budget |
 
-No prompt, response, key or URL was recorded. Token counts for live calls are unavailable, because the test does not print them by design. T12's stronger budget has not run live yet.
+No prompt, response, key or URL was recorded. Token counts for live calls are unavailable, because the test does not print them by design. T12's stronger budget passed live in run 5.
 
 ## Final verification (orchestrator, combined tree with T10–T12)
 
