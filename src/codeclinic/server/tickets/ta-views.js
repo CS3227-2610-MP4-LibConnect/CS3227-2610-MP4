@@ -6,6 +6,11 @@ function toIsoString(value) {
   return null;
 }
 
+/** Shared rule (R1, R2): the viewer is the ticket's claimer, including on RESOLVED tickets. */
+function isClaimedByViewer(ticket, viewerId) {
+  return typeof ticket.claimedByTaId === 'string' && ticket.claimedByTaId === viewerId;
+}
+
 function toFileView(file) {
   return { name: file && file.name, content: file && file.content };
 }
@@ -53,10 +58,10 @@ async function toDetailView(ticket, viewerId, lookup) {
     updatedAt: toIsoString(ticket.updatedAt),
     resolvedAt: toIsoString(ticket.resolvedAt),
     studentName: student && typeof student.name === 'string' ? student.name : null,
-    claimedByMe: typeof ticket.claimedByTaId === 'string' && ticket.claimedByTaId === viewerId,
+    claimedByMe: isClaimedByViewer(ticket, viewerId),
     claimedByName: claimer && typeof claimer.name === 'string' ? claimer.name : null,
     replies,
   };
 }
 
-module.exports = { toIsoString, createUserLookup, toDetailView };
+module.exports = { isClaimedByViewer, toIsoString, createUserLookup, toDetailView };

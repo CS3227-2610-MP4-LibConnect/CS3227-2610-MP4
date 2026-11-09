@@ -4,7 +4,7 @@
 const express = require('express');
 const { createAccountGuards } = require('../account/guards');
 const { STATUSES, LANGUAGES } = require('./constants');
-const { toIsoString, createUserLookup, toDetailView } = require('./ta-views');
+const { isClaimedByViewer, toIsoString, createUserLookup, toDetailView } = require('./ta-views');
 const { createClaimRoutes } = require('./ta-claims');
 const { createTaRepliesRoutes } = require('./ta-replies');
 
@@ -25,7 +25,7 @@ function toListItem(ticket, viewerId) {
     language: ticket.language,
     conceptTags: Array.isArray(ticket.conceptTags) ? [...ticket.conceptTags] : [],
     status: ticket.status,
-    claimedByMe: claimed && ticket.claimedByTaId === viewerId,
+    claimedByMe: isClaimedByViewer(ticket, viewerId),
     claimed,
     createdAt: toIsoString(ticket.createdAt),
   };

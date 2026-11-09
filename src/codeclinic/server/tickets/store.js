@@ -9,6 +9,10 @@ const { STATUSES, PAGE_SIZE, MAX_REPLIES } = require('./constants');
 const MAX_CURSOR_LENGTH = 512;
 const MAX_CURSOR_ID_LENGTH = 128;
 const BASE64URL = /^[A-Za-z0-9_-]+$/;
+const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+// Firestore Timestamp range: 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z, in milliseconds.
+const MIN_TIMESTAMP_MS = -62135596800000;
+const MAX_TIMESTAMP_MS = 253402300799999;
 
 const CONFLICT = Object.freeze({ ok: false, reason: 'CONFLICT' });
 const NOT_FOUND = Object.freeze({ ok: false, reason: 'NOT_FOUND' });
@@ -38,7 +42,8 @@ function decodeCursor(cursor) {
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
   const { createdAtMs, ticketId } = parsed;
   if (typeof createdAtMs !== 'number' || !Number.isFinite(createdAtMs)) return null;
-  if (typeof ticketId !== 'string' || ticketId.length === 0 || ticketId.length > MAX_CURSOR_ID_LENGTH) return null;
+  if (createdAtMs < MIN_TIMESTAMP_MS || createdAtMs > MAX_TIMESTAMP_MS) return null;
+  if (typeof ticketId !== 'string' || !TICKET_ID_PATTERN.test(ticketId)) return null;
   return { createdAtMs, ticketId };
 }
 
@@ -190,6 +195,13 @@ function createFirestoreTicketStore(db, deps = {}) {
   const ticketRef = (ticketId) => ticketsCol().doc(ticketId);
   const validId = (id) => typeof id === 'string' && id.length > 0 && id.length <= MAX_CURSOR_ID_LENGTH && !id.includes('/');
 
+  const clock = deps.now || (() => Date.now());
+
+  /**
+   * Runs one transactional transition. The result is built from the data read and written
+   * inside the transaction; server timestamps are reported as the local clock time at commit
+   * (`now`), which is within the transaction's duration of the stored value.
+   */
   async function transition(ticketId, event, actorId, buildChanges) {
     if (!validId(ticketId)) return { ...NOT_FOUND };
     return db.runTransaction(async (transaction) => {
@@ -205,6 +217,7 @@ function createFirestoreTicketStore(db, deps = {}) {
         studentId: data.studentId,
       });
       if (!decision.allowed) return { ...CONFLICT };
+      const at = new Date(clock());
       const changes = { ...buildChanges(decision), updatedAt: FieldValue.serverTimestamp() };
       if (event === 'reply') {
         const replyRef = ref.collection('replies').doc();
@@ -216,17 +229,29 @@ function createFirestoreTicketStore(db, deps = {}) {
           createdAt: FieldValue.serverTimestamp(),
         });
         transaction.update(ref, { updatedAt: changes.updatedAt });
-        return { ok: true, replyId: replyRef.id };
+        return {
+          ok: true,
+          reply: { replyId: replyRef.id, ticketId, authorUserId: actorId, message: changes.message, createdAt: at },
+          ticket: { ...data, ticketId, updatedAt: at },
+        };
       }
       transaction.update(ref, changes);
-      return { ok: true };
+      const merged = { ...data, ...changes, ticketId, updatedAt: at, replies: [] };
+      if (changes.resolvedAt !== undefined) merged.resolvedAt = at;
+      return { ok: true, ticket: merged };
     });
   }
 
-  async function reload(ticketId, result) {
+  /** Best-effort refresh for the reply thread; a failed read never fails a committed write. */
+  async function withThread(self, result) {
     if (!result.ok) return result;
-    const ticket = await this.getTicket(ticketId);
-    return { ok: true, ticket };
+    try {
+      const fresh = await self.getTicket(result.ticket.ticketId);
+      if (fresh) return { ok: true, ticket: fresh };
+    } catch (error) {
+      // Fall back to the data built inside the transaction.
+    }
+    return result;
   }
 
   return {
@@ -268,27 +293,23 @@ function createFirestoreTicketStore(db, deps = {}) {
 
     async claimTicket(ticketId, actorId) {
       const result = await transition(ticketId, 'claim', actorId, (d) => ({ status: d.to, claimedByTaId: actorId }));
-      return reload.call(this, ticketId, result);
+      return withThread(this, result);
     },
 
     async unclaimTicket(ticketId, actorId) {
       const result = await transition(ticketId, 'unclaim', actorId, (d) => ({ status: d.to, claimedByTaId: null }));
-      return reload.call(this, ticketId, result);
+      return withThread(this, result);
     },
 
     async resolveTicket(ticketId, actorId, fixNote) {
       const result = await transition(ticketId, 'resolve', actorId, (d) => ({
         status: d.to, fixNote, resolvedAt: FieldValue.serverTimestamp(),
       }));
-      return reload.call(this, ticketId, result);
+      return withThread(this, result);
     },
 
     async addReply(ticketId, { authorUserId, message }) {
-      const result = await transition(ticketId, 'reply', authorUserId, () => ({ message }));
-      if (!result.ok) return result;
-      const ticket = await this.getTicket(ticketId);
-      const reply = ticket && ticket.replies.find((r) => r.replyId === result.replyId);
-      return { ok: true, reply: reply || { replyId: result.replyId, ticketId, authorUserId, message }, ticket };
+      return transition(ticketId, 'reply', authorUserId, () => ({ message }));
     },
   };
 }
