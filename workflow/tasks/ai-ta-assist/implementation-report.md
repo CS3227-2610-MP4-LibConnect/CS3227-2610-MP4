@@ -119,3 +119,21 @@ Aggregate total (18 runs, all with reported totals): **1,297,661** tokens. Input
 
 Because this run's total is unavailable, an aggregate covering all 19 runs is unavailable. The 18 earlier runs total 1,297,661 tokens.
 
+## Improvement round 4 (T22–T23)
+
+- T22: a positive drafter instruction to restate what the ticket reports about displayed output and tell the TA to check it, without naming a cause. T23 (review R4-1): the exception "unless the ticket itself states that cause".
+- Live results (logs 34 and 37):
+  - The HTML-fixture draft inferred a display cause in 0/10 round 4 runs, against 12/15 before.
+  - A new stated-cause fixture kept its stated cause in 5/5 runs.
+  - The final 5 runs each passed 51/51 checks, with 7/7 insights coverage.
+- Final suite: 1284 passed and 9 skipped. `tsc` and the build are clean. The reviews passed with follow-up (log 35, R4-1 fixed by T23), then passed (log 38). The remaining Info notes R4b-1 and R4b-2 are advisory-quality items with no action needed.
+
+| Role | Task/group and run | Model | Input tokens | Output tokens | Total tokens | Usage source |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Implementer | T22 (Group 10), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 44,114 | Claude Code task notification `subagent_tokens` |
+| Reviewer | T22 round 4 review, run 1 | claude-opus-5-5 | unavailable | unavailable | 59,916 | Claude Code task notification `subagent_tokens` |
+| Implementer | T23 (Group 10), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 43,469 | Claude Code task notification `subagent_tokens` |
+| Reviewer | T23 re-check, run 2 | claude-opus-5-5 | unavailable | unavailable | 56,674 | Claude Code task notification `subagent_tokens` |
+
+The aggregate stays unavailable because the round 3 implementer run has no total.
+
