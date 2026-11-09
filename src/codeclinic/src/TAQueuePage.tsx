@@ -124,8 +124,9 @@ export default function TAQueuePage() {
       {items.map((ticket) => <li key={ticket.ticketId} className="ta-queue__row">
         <div className="ta-queue__main">
           <a href={`/ta/tickets/${encodeURIComponent(ticket.ticketId)}`}>{ticket.title}</a>
-          {ticket.claimedByMe ? <span className="ta-queue__badge ta-queue__badge--mine">Claimed by you</span>
-            : ticket.claimed ? <span className="ta-queue__badge">Claimed</span> : null}
+          {ticket.claimed ? (ticket.claimedByMe
+            ? <span className="ta-queue__badge ta-queue__badge--mine">Claimed by you</span>
+            : <span className="ta-queue__badge">Claimed</span>) : null}
         </div>
         <div className="ta-queue__meta">
           <span>{ticket.language}</span>
