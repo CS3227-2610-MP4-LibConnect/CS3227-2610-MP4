@@ -1,6 +1,7 @@
 // Shared helpers for the TA AI-assist endpoints (spec ai-ta-assist v0.2, R4, R5; scenarios 6, 7, 9).
 // The draft and insights routes and features import these; they must not redefine them.
 const { isEmptyBody } = require('./ta-claims');
+const { INVALID_MESSAGE } = require('./constants');
 
 const AI_ERRORS = Object.freeze({
   AI_UNAVAILABLE: {
@@ -21,7 +22,7 @@ const AI_ERRORS = Object.freeze({
   AI_INVALID_OUTPUT: {
     status: 502,
     FIX_NOTE_DRAFTER: 'The AI reply could not be used. Please try again or write the note yourself.',
-    QUEUE_INSIGHTS: 'The AI reply could not be used. Please try again or write the note yourself.',
+    QUEUE_INSIGHTS: 'The AI reply could not be used. Please try again.',
   },
 });
 
@@ -72,7 +73,7 @@ function errorSummary(errorOutput) {
 /** Express middleware: the POST body must be absent or `{}` (same rule as the claim endpoints). */
 function requireEmptyJsonBody(req, res, next) {
   if (!isEmptyBody(req.body, req.headers)) {
-    return res.status(400).json({ message: 'This request does not take a body.' });
+    return res.status(400).json({ message: INVALID_MESSAGE });
   }
   return next();
 }

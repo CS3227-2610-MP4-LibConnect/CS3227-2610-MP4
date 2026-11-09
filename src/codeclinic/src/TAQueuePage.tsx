@@ -42,7 +42,7 @@ const INSIGHTS_ERRORS: Record<string, string> = {
   AI_UNAVAILABLE: 'Queue insights are unavailable right now.',
   AI_RATE_LIMITED: 'AI limit reached. Please try again in a minute.',
   AI_INPUT_TOO_LARGE: 'The queue is too large to summarise.',
-  AI_INVALID_OUTPUT: 'The AI reply could not be used. Please try again or write the note yourself.',
+  AI_INVALID_OUTPUT: 'The AI reply could not be used. Please try again.',
 };
 const INSIGHTS_FALLBACK_ERROR = 'Queue insights are unavailable right now.';
 const KIND_LABEL: Record<string, string> = { CONCEPT: 'Concept', MISCONCEPTION: 'Misconception' };
@@ -162,6 +162,10 @@ export default function TAQueuePage() {
     }
   };
 
+  const groupedCount = insights ? new Set(insights.groups.flatMap((group) => group.tickets.map((ticket) => ticket.ticketId))).size : 0;
+  const coverage = insights && insights.groups.length > 0 && insights.ticketCount !== null && insights.ticketCount > 0 && groupedCount < insights.ticketCount
+    ? { grouped: groupedCount, total: insights.ticketCount } : null;
+
   return <main className="ta-queue">
     <h1>Ticket queue</h1>
     <form className="ta-queue__filters" onSubmit={(event) => event.preventDefault()}>
@@ -196,6 +200,7 @@ export default function TAQueuePage() {
         {insights.truncated && <p className="ta-queue__note">Based on the oldest 60 active tickets.</p>}
         {insights.cached && <p className="ta-queue__note">Cached result.</p>}
         {insights.groups.length === 0 && <p className="ta-queue__empty">{insights.ticketCount === 0 ? 'No insights: there are no active tickets to group.' : 'No common patterns found.'}</p>}
+        {coverage && <p className="ta-queue__note">Grouped {coverage.grouped} of {coverage.total} active tickets.</p>}
         {insights.groups.map((group, index) => <article key={index} className="ta-queue__group">
           <div className="ta-queue__group-head">
             <h3>{group.label}</h3>

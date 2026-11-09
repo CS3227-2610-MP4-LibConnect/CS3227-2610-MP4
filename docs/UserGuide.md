@@ -127,8 +127,9 @@ If an AI feature fails, the rest of CodeClinic still works. The messages mean:
   the AI request limit. Wait and retry.
 - "This ticket is too long for an AI draft." or "The queue is too large to
   summarise.": the content is too long for the AI. Write the note yourself.
-- "The AI reply could not be used. Please try again or write the note yourself.":
-  the AI answered in an unusable form. Try again.
+- "The AI reply could not be used. Please try again or write the note yourself."
+  (fix note draft) or "The AI reply could not be used. Please try again."
+  (queue insights): the AI answered in an unusable form. Try again.
 
 Do not paste passwords, API keys, tokens, or other personal data into tickets
 or replies. Ticket text may be sent to the AI service, and automatic removal of

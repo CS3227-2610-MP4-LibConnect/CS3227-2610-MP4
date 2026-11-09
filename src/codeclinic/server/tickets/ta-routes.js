@@ -3,7 +3,7 @@
 // explicit allow-list, so stored fields that are not named here are never returned.
 const express = require('express');
 const { createAccountGuards } = require('../account/guards');
-const { STATUSES, LANGUAGES } = require('./constants');
+const { STATUSES, LANGUAGES, INVALID_MESSAGE } = require('./constants');
 const { isClaimedByViewer, toIsoString, createUserLookup, toDetailView } = require('./ta-views');
 const { createClaimRoutes } = require('./ta-claims');
 const { createTaRepliesRoutes } = require('./ta-replies');
@@ -15,7 +15,7 @@ const MAX_CONCEPT_LENGTH = 30;
 const MESSAGES = Object.freeze({
   FORBIDDEN: 'You do not have permission to do that.',
   NOT_FOUND: 'Ticket not found.',
-  INVALID: 'Enter valid details.',
+  INVALID: INVALID_MESSAGE,
   RETRY: 'The ticket queue is temporarily unavailable. Please try again.',
 });
 

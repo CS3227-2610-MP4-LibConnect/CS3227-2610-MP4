@@ -40,7 +40,7 @@ const R5 = Object.freeze({
   AI_INVALID_OUTPUT: {
     status: 502,
     FIX_NOTE_DRAFTER: 'The AI reply could not be used. Please try again or write the note yourself.',
-    QUEUE_INSIGHTS: 'The AI reply could not be used. Please try again or write the note yourself.',
+    QUEUE_INSIGHTS: 'The AI reply could not be used. Please try again.',
   },
 });
 

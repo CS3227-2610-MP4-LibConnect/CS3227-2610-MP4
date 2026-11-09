@@ -136,7 +136,7 @@ describe('Queue insights panel: errors (R5)', () => {
     [503, 'AI_UNAVAILABLE', 'Queue insights are unavailable right now.'],
     [429, 'AI_RATE_LIMITED', 'AI limit reached. Please try again in a minute.'],
     [422, 'AI_INPUT_TOO_LARGE', 'The queue is too large to summarise.'],
-    [502, 'AI_INVALID_OUTPUT', 'The AI reply could not be used. Please try again or write the note yourself.'],
+    [502, 'AI_INVALID_OUTPUT', 'The AI reply could not be used. Please try again.'],
   ])('%i %s shows the fixed message inline and the queue still works', async (status, code, message) => {
     mockApi(() => response({ code, message: 'server text is not trusted' }, status));
     await open();

@@ -12,8 +12,12 @@ const DRAFT_MAX_CHARS = 2000;
 const SYSTEM_PROMPT = [
   'Write a short, factual resolution note for a course help-desk ticket.',
   'Cover the problem, the cause, and the fix or the concept involved.',
+  'Keep the note to at most four short sentences.',
   'Write in plain text only, with no Markdown or HTML, and do not use any person\'s name.',
   'Do not add information beyond what the ticket contains.',
+  'Write in the present tense, as a note for the TA to review and confirm; never claim that the problem "was resolved".',
+  'State only causes that the ticket content supports.',
+  'If the cause is unclear, say what the TA should check instead of guessing.',
   'Reply with exactly one JSON object of the form {"draft": "<the resolution note>"}.',
 ].join('\n');
 

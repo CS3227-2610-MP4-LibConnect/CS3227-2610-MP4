@@ -21,7 +21,12 @@ function isValidConceptTags(tags) {
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
+const INVALID_MESSAGE = 'Enter valid details.';
+const CONFLICT_MESSAGE = 'This ticket can no longer be changed that way. Refresh and try again.';
+
 module.exports = {
+  INVALID_MESSAGE,
+  CONFLICT_MESSAGE,
   TICKET_ID_PATTERN,
   STATUSES,
   LANGUAGES,

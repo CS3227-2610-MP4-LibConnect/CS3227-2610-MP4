@@ -4,6 +4,7 @@
 // status and claimedByTaId plus the session actor, never client fields. The route reads and returns
 // text only: no store writes and no notifications. The gateway is read per request.
 const express = require('express');
+const { CONFLICT_MESSAGE } = require('./constants');
 const { toIsoString, createUserLookup } = require('./ta-views');
 const { FIX_NOTE_DRAFTER } = require('./ta-ai-fix-note');
 const { QUEUE_INSIGHTS } = require('./ta-ai-insights');
@@ -11,7 +12,6 @@ const { toAiErrorResponse, requireEmptyJsonBody } = require('./ta-ai-shared');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const FEATURE = 'FIX_NOTE_DRAFTER';
-const CONFLICT_MESSAGE = 'This ticket can no longer be changed that way. Refresh and try again.';
 
 /** Registers both TA AI feature definitions with the gateway (called once from startServer). */
 function registerTaAiFeatures(gateway) {

@@ -3,11 +3,10 @@
 // State changes happen only inside the store's transactional methods; notifications are sent
 // after a successful commit and can never fail the action.
 const express = require('express');
-const { MAX_FIX_NOTE_LENGTH } = require('./constants');
+const { MAX_FIX_NOTE_LENGTH, CONFLICT_MESSAGE } = require('./constants');
 const { createUserLookup, toDetailView } = require('./ta-views');
 
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
-const CONFLICT_MESSAGE = 'This ticket can no longer be changed that way. Refresh and try again.';
 
 const NOTIFICATIONS = Object.freeze({
   claim: { notificationType: 'TICKET_CLAIMED', message: (title) => `A TA is now helping with "${title}".` },
