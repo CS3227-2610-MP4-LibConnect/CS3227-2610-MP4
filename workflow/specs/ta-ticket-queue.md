@@ -42,8 +42,8 @@ Out of scope:
   The inbox's `ticketHref` decides where ticket links go.
 
 Conflict note: `student-tickets` is not drafted yet. Section C is proposed
-here at the human's direction (2026-11-09) and **needs the Student owner's
-sign-off**. If `student-tickets` later needs a different shape, both specs are
+here at the human's direction (2026-11-09). The human reported on 2026-11-09
+that the Student owner agreed to it. If `student-tickets` later needs a different shape, both specs are
 amended together.
 
 ## Actors and trust boundaries
@@ -62,7 +62,7 @@ amended together.
   ignored.
 - The server never fetches `repoUrl`.
 
-## C. Shared ticket data contract (needs Student owner sign-off)
+## C. Shared ticket data contract (Student owner agreed 2026-11-09)
 
 ### C1. Collections
 
@@ -289,3 +289,4 @@ maps `ticketId` to `/ta/tickets/:ticketId`.
   Q1–Q4" to version 0.1. Q1–Q4 are marked resolved with the proposed answers;
   the requirements are unchanged.
 - 2026-11-09: After the independent review (finding F1), the human chose that the R1 list item's `claimedByMe` follows the same rule as R2: it is true whenever the viewer is the ticket's `claimedByTaId`, including on `RESOLVED` tickets. Clarified in R1; no other requirement changed.
+- 2026-11-09: The human reported that the Student owner agreed to the shared ticket data contract (section C). The section's sign-off note is updated; no requirement changed.
