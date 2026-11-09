@@ -55,7 +55,7 @@ function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'
     app.get(['/student/dashboard', '/ta/dashboard'], (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
-    app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas',
+    app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas', '/ta/queue',
       '/account/password-change', '/notifications'], (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
