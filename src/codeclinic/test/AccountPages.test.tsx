@@ -303,3 +303,23 @@ test('password attempt limit is not attached to a field or described as a mismat
   expect(within(form).getByLabelText('Current password')).not.toHaveAttribute('aria-invalid', 'true');
   expect(alert).toHaveFocus();
 });
+
+test("TAs page hides support actions on the coordinator's own row but keeps them for others", async () => {
+  const self = { userId: 'u-self', name: 'Ada', email: ' ADA@example.edu ', accountType: 'TA', accountStatus: 'ACTIVE', registrationDateTime: null };
+  const other = { userId: 'u-ta', name: 'Other TA', email: 'other@example.edu', accountType: 'TA', accountStatus: 'ACTIVE', registrationDateTime: null };
+  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [self, other], nextCursor: null }), { status: 200 });
+    return new Response('{}', { status: 500 });
+  });
+
+  render(<AccountPages mode="tas" />);
+  const ownRow = (await screen.findByText('Ada', { selector: 'strong', exact: false })).closest('li')!;
+  expect(within(ownRow).getByText('(you)')).toBeInTheDocument();
+  expect(within(ownRow).queryByRole('button')).not.toBeInTheDocument();
+  expect(within(ownRow).getByRole('link', { name: 'Account page' })).toHaveAttribute('href', '/ta/account');
+  const otherRow = screen.getByText('Other TA').closest('li')!;
+  expect(within(otherRow).getByRole('button', { name: 'Deactivate' })).toBeInTheDocument();
+  expect(within(otherRow).getByRole('button', { name: 'Reset password' })).toBeInTheDocument();
+});

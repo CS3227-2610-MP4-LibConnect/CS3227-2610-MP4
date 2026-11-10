@@ -183,6 +183,10 @@ export default function AccountPages({ mode }: Props) {
     <p>{feedback.message}</p>{feedback.signIn && <> <a href="/">Sign in</a></>}
   </div>;
 
+  // Support actions on one's own account are refused by the server (account-management R4);
+  // hide them here so the page does not offer an action that can only fail.
+  const ownEmail = typeof account?.email === 'string' ? account.email.trim().toLowerCase() : '';
+  const isOwnEntry = (entry: Entry) => Boolean(ownEmail) && entry.email.trim().toLowerCase() === ownEmail;
   return <>{account && <AppHeader accountType={account.accountType} isManager={account.isManager} activePath={window.location.pathname} restricted={mode === 'password-change'} onLogout={() => void logout()} />}<main className="account-page">
     <p className="eyebrow">CodeClinic account</p>
     <h1>{mode === 'account' ? 'Account' : mode === 'students' ? 'Students' : mode === 'tas' ? 'TAs' : 'Change your password'}</h1>
@@ -220,9 +224,13 @@ export default function AccountPages({ mode }: Props) {
     {(mode === 'students' || mode === 'tas') && <section className="account-panel">
       {supportError && <div className="account-form-error" role="alert" tabIndex={-1} ref={supportAlert}><p>{supportError.message}</p>{supportError.signIn && <> <a href="/">Sign in</a></>}</div>}
       {!loading && !loadError && entries.length === 0 ? <p>No accounts found.</p> : entries.length > 0 && <ul className="account-list">{entries.map((entry) => <li key={entry.userId}>
-        <div><strong>{entry.name}</strong><span>{entry.email} · {entry.accountStatus}</span></div>
-        <button type="button" disabled={busy} onClick={() => void changeStatus(entry)}>{entry.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
-        <button type="button" disabled={busy} onClick={() => void resetPassword(entry)}>Reset password</button>
+        <div><strong>{entry.name}{isOwnEntry(entry) && <span className="account-self-badge"> (you)</span>}</strong><span>{entry.email} · {entry.accountStatus}</span></div>
+        {isOwnEntry(entry)
+          ? <p className="account-self-note">Manage your own account on your <a href="/ta/account">Account page</a>.</p>
+          : <>
+            <button type="button" disabled={busy} onClick={() => void changeStatus(entry)}>{entry.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
+            <button type="button" disabled={busy} onClick={() => void resetPassword(entry)}>Reset password</button>
+          </>}
       </li>)}</ul>}
       {nextCursor && <button type="button" disabled={busy} onClick={() => { setSupportError(null); void loadEntries(nextCursor).catch(() => setSupportError(actionFallback('support'))); }}>Load more</button>}
     </section>}
