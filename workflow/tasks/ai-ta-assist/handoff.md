@@ -1,10 +1,10 @@
 # Analyst handoff: ai-ta-assist
 
-Handoff version: 0.7 (2026-11-10)
+Handoff version: 0.8 (2026-11-10)
 Task ID: `ai-ta-assist`
-Specification: `workflow/specs/ai-ta-assist.md`, version 0.3 (human-approved 2026-11-09)
-Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.7 (human-approved 2026-11-10)
-Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09. v0.4 is human-approved: the human chose "Approve both rounds (Recommended)" on 2026-11-09. v0.5 was approved by the human's "do the two better things" on 2026-11-10. v0.6 was approved by the human's "continue improve" on 2026-11-10. v0.7 was approved by the human's "improve the prompt to fix" on 2026-11-10.
+Specification: `workflow/specs/ai-ta-assist.md`, version 0.4 (human-approved 2026-11-10)
+Checklist: `workflow/tasks/ai-ta-assist/tasks.md`, version 0.8 (human-approved 2026-11-10)
+Handoff approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits; v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. v0.3 is human-approved: the human chose "Fix all now (Recommended)" on 2026-11-09. v0.4 is human-approved: the human chose "Approve both rounds (Recommended)" on 2026-11-09. v0.5 was approved by the human's "do the two better things" on 2026-11-10. v0.6 was approved by the human's "continue improve" on 2026-11-10. v0.7 was approved by the human's "improve the prompt to fix" on 2026-11-10. v0.8 was approved by the human's request to fix R5-2 on 2026-11-10.
 
 ## Scope
 
@@ -175,3 +175,5 @@ and this handoff v0.2 are human-approved: the human chose "Approve both (Recomme
 - 2026-11-10 (v0.7): After round 4, the human said "improve the prompt to fix" the two remaining advisory notes (R4b-1: a guessed cause framed as a check; R4b-2: a detail not in the ticket) on 2026-11-10. Added T24, with the same limits: prompt wording and tests only.
 - 2026-11-10: Added T25 (a final self-check line, prompt wording and tests only) to Group 11 as a follow-up to T24 under the human's "improve the prompt to fix". Explicit human confirmation of T25 is pending (round 5 review R5-1).
 - 2026-11-10: T25 was explicitly confirmed when the human chose "Confirm T25, commit + push (Recommended)" on 2026-11-10 (round 5 review R5-1 resolved).
+- 2026-11-10 (v0.8): The human asked to fix round 5 review note R5-2 ("Name only what's in the ticket" could stop a draft from suggesting a library that would be the right fix) on 2026-11-10. Added T26, with the same limits: prompt wording and tests only.
+- 2026-11-10: The spec moved to v0.4 (R1 fix clarification) when the human chose "Clarify spec, commit + push (Recommended)" on 2026-11-10 to settle round 6 review R6-2.

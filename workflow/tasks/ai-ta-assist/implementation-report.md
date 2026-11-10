@@ -152,3 +152,21 @@ The aggregate stays unavailable because the round 3 implementer run has no total
 | Implementer | T24 (Group 11), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,688 | Claude Code task notification `subagent_tokens` |
 | Implementer | T25 (Group 11), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 43,208 | Claude Code task notification `subagent_tokens` |
 | Reviewer | T24–T25 round 5 review, run 1 | claude-opus-5-5 | unavailable | unavailable | 69,342 | Claude Code task notification `subagent_tokens` |
+
+## Improvement round 6 (T26)
+
+- T26: the drafter must always state a concrete fix. The name limits and the final self-check apply to the problem, the cause and the checks, not to the fix, which may name a standard language feature or common library function. Spec R1 was clarified to match in v0.4, as the human approved (review R6-2).
+- Live results (log 44), in 5 runs each with all 56/56 checks passing. The fix counts are by the orchestrator's reading by hand; the keyword metric is a rough proxy (see log 44's correction).
+  - The normal draft stated a fix in 2/5 runs before and **5/5** after.
+  - A new datefix fixture, whose fix needs a library the ticket never names, went from 0/5 to **5/5**.
+  - Trade-off: 1/25 drafts named an outside component inside a check ("framework"), against 0/25 before. The reviewer judged it a lapse within noise.
+- Review (log 45): pass with follow-up.
+  - R6-2 was resolved by spec v0.4.
+  - R6-3 (the implementer skipped its preflight) and R6-4 (the metric rescore) were corrected in the evidence.
+  - R6-1 (optional tighter wording) and R6-5 (the prompt is now 1,992 characters; consolidate in any later round) are Info.
+- Final suite: 1297 passed and 9 skipped. `tsc` and the build are clean.
+
+| Role | Task/group and run | Model | Input tokens | Output tokens | Total tokens | Usage source |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Implementer | T26 (Group 12), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 41,416 | Claude Code task notification `subagent_tokens` |
+| Reviewer | T26 round 6 review, run 1 | claude-opus-5-5 | unavailable | unavailable | 67,278 | Claude Code task notification `subagent_tokens` |
