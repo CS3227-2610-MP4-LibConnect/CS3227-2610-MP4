@@ -70,6 +70,16 @@ describe('registration page', () => {
     });
   });
 
+  test('duplicate email (409) shows a specific accessible message and keeps the form', async () => {
+    global.fetch = jest.fn().mockResolvedValue({ status: 409, json: async () => ({ message: 'An account with this email already exists.' }) }) as typeof fetch;
+    render(<RegistrationPage />);
+    fillCommonFields();
+    submit();
+    await waitFor(() => expect(screen.getAllByRole('alert').some((node) => /account with this email already exists/i.test(node.textContent || ''))).toBe(true));
+    expect(screen.getByRole('textbox', { name: /email/i })).toHaveValue('Reader@Example.Test');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
   test('blank and mismatched fields have accessible errors and cause no request', () => {
     const fetchMock = jest.fn();
     global.fetch = fetchMock as typeof fetch;

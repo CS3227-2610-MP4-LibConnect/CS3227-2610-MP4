@@ -43,9 +43,21 @@ test('Students page confirms deactivation and shows a reset password only once',
   await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/status'))).toBe(true));
   fireEvent.click(screen.getByRole('button', { name: 'Reset password' }));
   expect(await screen.findByText('SafePass23456789')).toBeInTheDocument();
-  expect(screen.getAllByText(/will not be shown again/i)).toHaveLength(2);
-  fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+  expect(screen.getByRole('heading', { name: 'Temporary password for Student Example' })).toBeInTheDocument();
+  expect(screen.getAllByText(/will not be shown again/i)).toHaveLength(1);
+  const writeText = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+  fireEvent.click(screen.getByRole('button', { name: 'Copy password' }));
+  expect(await screen.findByRole('button', { name: 'Copied ✓' })).toBeInTheDocument();
+  expect(writeText).toHaveBeenCalledWith('SafePass23456789');
+  expect(screen.getByText('Password copied to the clipboard.')).toBeInTheDocument();
+  writeText.mockRejectedValueOnce(new Error('denied'));
+  fireEvent.click(screen.getByRole('button', { name: 'Copied ✓' }));
+  expect(await screen.findByText(/copy it manually/i)).toBeInTheDocument();
+  expect(screen.getByText('Temporary password created for Student Example.')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Done' }));
   await waitFor(() => expect(screen.queryByText('SafePass23456789')).not.toBeInTheDocument());
+  expect(screen.queryByText(/Temporary password created/)).not.toBeInTheDocument();
 });
 
 test('TAs page is available to coordinator mode and forced password page presents the required change form', async () => {
@@ -278,7 +290,7 @@ test('support action failures remain in the support page and do not expose serve
   render(<AccountPages mode="students" />);
   await screen.findByText('Student Example');
   fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
-  expect(await screen.findByRole('alert')).toHaveTextContent('Could not complete this support action. Please try again.');
+  expect(await screen.findByRole('alert')).toHaveTextContent("You don't have permission to change this account.");
   expect(screen.queryByText('<script>unsafe</script>')).not.toBeInTheDocument();
   expect(screen.getByText('Student Example')).toBeInTheDocument();
 });
@@ -302,4 +314,57 @@ test('password attempt limit is not attached to a field or described as a mismat
   expect(alert).not.toHaveTextContent(/incorrect/i);
   expect(within(form).getByLabelText('Current password')).not.toHaveAttribute('aria-invalid', 'true');
   expect(alert).toHaveFocus();
+});
+
+test("TAs page hides support actions on the coordinator's own row but keeps them for others", async () => {
+  const self = { userId: 'u-self', name: 'Ada', email: ' ADA@example.edu ', accountType: 'TA', accountStatus: 'ACTIVE', registrationDateTime: null };
+  const other = { userId: 'u-ta', name: 'Other TA', email: 'other@example.edu', accountType: 'TA', accountStatus: 'ACTIVE', registrationDateTime: null };
+  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [self, other], nextCursor: null }), { status: 200 });
+    return new Response('{}', { status: 500 });
+  });
+
+  render(<AccountPages mode="tas" />);
+  const ownRow = (await screen.findByText('Ada', { selector: 'strong', exact: false })).closest('li')!;
+  expect(within(ownRow).getByText('(you)')).toBeInTheDocument();
+  expect(within(ownRow).queryByRole('button')).not.toBeInTheDocument();
+  expect(within(ownRow).getByRole('link', { name: 'Account page' })).toHaveAttribute('href', '/ta/account');
+  const otherRow = screen.getByText('Other TA').closest('li')!;
+  expect(within(otherRow).getByRole('button', { name: 'Deactivate' })).toBeInTheDocument();
+  expect(within(otherRow).getByRole('button', { name: 'Reset password' })).toBeInTheDocument();
+});
+
+test.each([
+  [404, 'This account no longer exists. Refresh the page to update the list.'],
+  [503, 'The account service is temporarily unavailable. Please try again in a moment.'],
+  [500, 'Could not complete this support action. Please try again.'],
+])('a support action failing with HTTP %i explains why with fixed text', async (status, expected) => {
+  jest.spyOn(window, 'confirm').mockReturnValue(true);
+  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [entry], nextCursor: null }), { status: 200 });
+    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
+    if (url.endsWith('/status')) return new Response(JSON.stringify({ message: 'Injected server text' }), { status });
+    return new Response('{}', { status: 500 });
+  });
+  render(<AccountPages mode="students" />);
+  await screen.findByText('Student Example');
+  fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(expected);
+  expect(screen.queryByText('Injected server text')).not.toBeInTheDocument();
+});
+
+test('support page uses the account the route guard loaded instead of fetching it again', async () => {
+  const fetchMock = jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [entry], nextCursor: null }), { status: 200 });
+    return new Response('{}', { status: 500 });
+  });
+  render(<AccountPages mode="tas" initialAccount={{ name: 'Ada', email: 'ada@example.edu', accountType: 'TA', isManager: true }} />);
+  expect(await screen.findByText('Student Example')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'TAs' })).toHaveAttribute('href', '/ta/tas');
+  expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url === '/api/account')).toHaveLength(0);
 });

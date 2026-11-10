@@ -38,10 +38,13 @@ async function main(argv = process.argv.slice(2)) {
   let options;
   try { options = parseArgs(argv); } catch { process.stderr.write('Usage: node scripts/bootstrap-coordinator.js --project <project-id> [--allow-additional]\n'); process.exitCode = 2; return; }
   try {
-    const admin = require('firebase-admin');
-    const app = admin.initializeApp({ projectId: options.project }, `codeclinic-bootstrap-${Date.now()}`);
+    // Use the modular Admin SDK entry points, as the server does; the
+    // namespaced `app.firestore()` API is not available in this SDK version.
+    const { initializeApp, deleteApp } = require('firebase-admin/app');
+    const { getFirestore } = require('firebase-admin/firestore');
+    const app = initializeApp({ projectId: options.project }, `codeclinic-bootstrap-${Date.now()}`);
     const email = process.env.CODECLINIC_COORDINATOR_EMAIL;
-    const result = await bootstrapCoordinator(app.firestore(), email, options);
+    const result = await bootstrapCoordinator(getFirestore(app), email, options);
     const messages = {
       promoted: 'TA Coordinator account activated.',
       'coordinator-exists': 'A TA Coordinator already exists; no changes made.',
@@ -50,7 +53,7 @@ async function main(argv = process.argv.slice(2)) {
       'invalid-email': 'A valid coordinator email is required; no changes made.',
     };
     process.stdout.write(`${messages[result.outcome]}\n`);
-    await app.delete();
+    await deleteApp(app);
     if (result.outcome !== 'promoted') process.exitCode = 1;
   } catch {
     process.stderr.write('Bootstrap failed; no sensitive details were printed.\n');
@@ -59,4 +62,4 @@ async function main(argv = process.argv.slice(2)) {
 }
 
 if (require.main === module) main();
-module.exports = { parseArgs, bootstrapCoordinator };
+module.exports = { parseArgs, bootstrapCoordinator, main };

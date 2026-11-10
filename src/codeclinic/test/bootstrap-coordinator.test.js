@@ -1,4 +1,8 @@
-const { parseArgs, bootstrapCoordinator } = require('../scripts/bootstrap-coordinator');
+jest.mock('firebase-admin/app', () => ({ initializeApp: jest.fn(() => ({ name: 'bootstrap-test' })), deleteApp: jest.fn(async () => {}) }), { virtual: true });
+jest.mock('firebase-admin/firestore', () => ({ getFirestore: jest.fn() }), { virtual: true });
+const { initializeApp, deleteApp } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
+const { parseArgs, bootstrapCoordinator, main } = require('../scripts/bootstrap-coordinator');
 const { emailKeyFor } = require('../server/auth/email');
 
 function makeDb(initial = {}) {
@@ -55,4 +59,32 @@ test('bootstrap refuses a missing or non-TA account without changing it', async 
   expect(await bootstrapCoordinator(db, 'missing@example.edu')).toEqual({ outcome: 'account-not-found' });
   expect(await bootstrapCoordinator(db, 'ta@example.edu')).toEqual({ outcome: 'not-ta' });
   expect(docs.get('users/student').accountType).toBe('STUDENT');
+});
+
+test('the CLI entry point connects through the modular Admin SDK and promotes the TA', async () => {
+  const key = emailKeyFor('ta@example.edu');
+  const { db, docs } = makeDb({ [`emailKeys/${key}`]: { userId: 'ta' }, 'users/ta': { userId: 'ta', email: 'ta@example.edu', canonicalEmailKey: 'ta@example.edu', accountType: 'TA', isManager: false, accountStatus: 'INACTIVE' } });
+  initializeApp.mockReturnValue({ name: 'bootstrap-test' });
+  deleteApp.mockResolvedValue(undefined);
+  getFirestore.mockReturnValue(db);
+  const stdout = jest.spyOn(process.stdout, 'write').mockImplementation(() => true);
+  const stderr = jest.spyOn(process.stderr, 'write').mockImplementation(() => true);
+  const originalEmail = process.env.CODECLINIC_COORDINATOR_EMAIL;
+  const originalExitCode = process.exitCode;
+  process.env.CODECLINIC_COORDINATOR_EMAIL = 'ta@example.edu';
+  try {
+    await main(['--project', 'demo-codeclinic']);
+    expect(initializeApp).toHaveBeenCalledWith({ projectId: 'demo-codeclinic' }, expect.any(String));
+    expect(getFirestore).toHaveBeenCalledWith({ name: 'bootstrap-test' });
+    expect(deleteApp).toHaveBeenCalledWith({ name: 'bootstrap-test' });
+    expect(stdout).toHaveBeenCalledWith('TA Coordinator account activated.\n');
+    expect(stderr).not.toHaveBeenCalled();
+    expect(docs.get('users/ta')).toMatchObject({ isManager: true, accountStatus: 'ACTIVE' });
+  } finally {
+    stdout.mockRestore();
+    stderr.mockRestore();
+    if (originalEmail === undefined) delete process.env.CODECLINIC_COORDINATOR_EMAIL;
+    else process.env.CODECLINIC_COORDINATOR_EMAIL = originalEmail;
+    process.exitCode = originalExitCode;
+  }
 });

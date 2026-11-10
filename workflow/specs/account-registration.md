@@ -1,8 +1,8 @@
 # Account registration specification
 
-Version: 0.7 (2026-11-08)  
-Approval evidence: the human replied "all aproved" to version 0.7 on 2026-11-08; recorded at the human's request; no agent-set approval state  
-Prior approval evidence: human replied "approved" to version 0.6 on 2026-11-08; human replied "approved" to version 0.5 on 2026-11-07, approved versions 0.4 and 0.3 on 2026-11-07 and version 0.2 on 2026-11-06; no agent-set approval state  
+Version: 0.8 (2026-11-10)  
+Approval evidence: the human replied "option 1, approved" to the version 0.8 change on 2026-11-10; recorded at the human's request; no agent-set approval state  
+Prior approval evidence: human replied "all aproved" to version 0.7 on 2026-11-08; human replied "approved" to version 0.6 on 2026-11-08; human replied "approved" to version 0.5 on 2026-11-07, approved versions 0.4 and 0.3 on 2026-11-07 and version 0.2 on 2026-11-06; no agent-set approval state  
 Task ID: `account-registration`
 
 ## Purpose and scope
@@ -26,7 +26,7 @@ Local development MUST use the Firestore emulator. Deployed production MUST be a
 - Proposed input policy for approval: the person enters `name`, `email`, `password`, `confirm password`, and, for TA only, `employeeId`. The server generates `userId`, `studentId` for Student, and `registrationDateTime`. Confirmation is client-only and is never stored. The server stores no plaintext password. The account type is selected explicitly and sent as a request value, but grants no privilege.
 - Proposed output policy for approval: success returns HTTP `201` with only `accountType` and `accountStatus` after the Firestore transaction commits. The UI announces success in an accessible status region, shows a visible five-second return-to-login countdown and an immediate login link, then automatically redirects to login. The login page retains a non-sensitive registration-success notice after redirect so the outcome remains available to assistive technology. The TA notice explains that TA Coordinator activation is required. Registration does not issue a session or sign the user in.
 - Proposed validation policy for approval: required strings are nonblank after whitespace checks; name and employee ID are trimmed before storage; registration email is trimmed first and must then satisfy R9, with its trimmed original case retained for display and lowercase form used for the canonical key; passwords are used exactly as entered and must be at least 8 characters and at most 1024 UTF-8 bytes. Email is at most 254 UTF-8 bytes, matching login. Bounded name and employee ID lengths and an overall request byte limit must be specified in the implementation design before coding.
-- Proposed collision policy for approval: canonical email is unique across account types. A duplicate email, or a duplicate TA employee ID if uniqueness is adopted, returns HTTP `409` with one generic registration failure message and creates no account. The response must not reveal the existing account type or status.
+- Proposed collision policy for approval: canonical email is unique across account types. A duplicate email, or a duplicate TA employee ID if uniqueness is adopted, returns HTTP `409` and creates no account. As amended in v0.8, the page tells the registrant that an account with this email already exists; the response must still not reveal the existing account type or status.
 
 `workflow/PLAN.md` is referenced by repository instructions but absent. The `workflow/README.md` skill-integration/path-adapter section is blank. The OpenSpec CLI reports a repository root with no active changes; this repository's canonical specification remains `workflow/specs/`.
 
@@ -68,7 +68,7 @@ For Student registration, the stored record MUST have `accountType = STUDENT` an
 
 ### R7. Outcomes and failure handling
 
-On success, the endpoint MUST return HTTP `201` with only the new account type and status, after Firestore confirms the committed write. The page MUST display a visible, screen-reader-announced success message appropriate to the type, including the TA's need for TA Coordinator activation. It MUST offer an immediate login link, show that it will return to login in five seconds, then redirect automatically. The login page MUST retain a non-sensitive success notice after that redirect; automatic or manual navigation MUST not imply the account is signed in. The redirect MUST occur only after a confirmed `201` with a valid type/status response; a malformed success response or network/server failure MUST remain on registration with an error. Validation failures MUST use HTTP `400`; collisions MUST use a generic HTTP `409` response; temporary storage or hashing failures MUST use a non-sensitive HTTP `503` retry response. No failure may create a session or partial record. Responses, logs, and test evidence MUST not expose passwords, hashes, raw email, session identifiers, or unnecessary personal data.
+On success, the endpoint MUST return HTTP `201` with only the new account type and status, after Firestore confirms the committed write. The page MUST display a visible, screen-reader-announced success message appropriate to the type, including the TA's need for TA Coordinator activation. It MUST offer an immediate login link, show that it will return to login in five seconds, then redirect automatically. The login page MUST retain a non-sensitive success notice after that redirect; automatic or manual navigation MUST not imply the account is signed in. The redirect MUST occur only after a confirmed `201` with a valid type/status response; a malformed success response or network/server failure MUST remain on registration with an error. Validation failures MUST use HTTP `400`; collisions MUST use HTTP `409`, and the page MUST state that an account with this email already exists without revealing the existing account type or status; temporary storage or hashing failures MUST use a non-sensitive HTTP `503` retry response. No failure may create a session or partial record. Responses, logs, and test evidence MUST not expose passwords, hashes, raw email, session identifiers, or unnecessary personal data.
 
 ### R8. Explicit, fail-closed Firestore target modes
 
@@ -89,7 +89,7 @@ Before submission, the registration page MUST trim surrounding whitespace from t
 3. Missing, blank, or mismatched fields produce accessible field errors and no network request. A pending submission cannot trigger a second request.
 4. A valid Student submission commits one active Student to Firebase Cloud Firestore with a generated user/student ID, timestamp, compatible password hash, and email-key mapping. Only after the commit, the response contains type/status and no session cookie; the UI announces success, offers immediate login, and automatically returns to login after five seconds. The login page retains a success notice.
 5. A valid TA submission commits one inactive TA to Firebase Cloud Firestore with the supplied validated employee ID and `isManager = false`; the UI announces success and explains TA Coordinator activation, then returns to login after five seconds. Immediate login is denied until an authorized TA Coordinator activates the account.
-6. Mixed-case and surrounding-whitespace email variants map to the same canonical key after trimming. A second registration for that key, including the other account type, yields generic `409` and no second account. The user record keeps the trimmed original-case address.
+6. Mixed-case and surrounding-whitespace email variants map to the same canonical key after trimming. A second registration for that key, including the other account type, yields `409`, an "email already registered" message that does not reveal the existing account type or status, and no second account. The user record keeps the trimmed original-case address.
 7. Two concurrent requests for the same canonical email cannot both succeed or leave an orphan record.
 8. A forged manager flag, active status, user/student ID, timestamp, or password hash cannot alter stored authorization data or create a manager account.
 9. Malformed, oversized, unexpected-field, unsupported-type, and type-inapplicable requests return `400` with no write. Rate-limited requests return generic `429` with no write.
@@ -143,3 +143,11 @@ Implementation impact, for the separate checklist and handoff: stored `accountTy
 The human directed renaming every remaining LibConnect name to CodeClinic. This version changes only the local emulator project ID in R8 and acceptance scenario 13, from `libconnect-mp4` to `demo-codeclinic`. The `demo-` prefix marks a Firebase project ID that exists only in the emulator, so the Firebase tools cannot reach a cloud project with it; this strengthens the existing fail-closed rule. The configuration variables become `CODECLINIC_FIRESTORE_MODE` and `CODECLINIC_FIRESTORE_PROJECT_ID`, as defined in `environments-and-deployment`. The mode values, validation, and every other requirement are unchanged. Historical source notes above keep the former ID.
 
 The human approved version 0.7 on 2026-11-08.
+
+### 2026-11-10 — v0.8: specific duplicate-email message
+
+The human reported that the generic registration failure message was too vague and chose to show a specific message. A duplicate canonical email still returns HTTP `409` and creates no account. The registration page and the `409` response message now say that an account with this email already exists. The response still must not reveal the existing account's type or status.
+
+Accepted risk: anyone can now check whether an email is registered. The existing shared `429` registration limit reduces this but does not prevent it. Login keeps its generic denial (`role-aware-login`). No other requirement changes.
+
+The human approved version 0.8 on 2026-11-10.

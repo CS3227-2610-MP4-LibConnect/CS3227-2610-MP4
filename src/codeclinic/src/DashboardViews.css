@@ -49,6 +49,34 @@
   line-height: 1.6;
 }
 
+.dashboard-action {
+  display: inline-flex;
+  min-height: var(--lc-size-button-height);
+  align-items: center;
+  gap: 9px;
+  margin-top: var(--lc-space-5);
+  padding: 0 var(--lc-space-6);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-blue);
+  color: var(--lc-color-surface);
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.dashboard-action:hover {
+  background: var(--lc-color-blue-hover);
+}
+
+.dashboard-action:active {
+  transform: translateY(1px);
+}
+
+.dashboard-action:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
 .student-active-tickets-heading {
   display: flex;
   align-items: center;
@@ -129,6 +157,11 @@
 
   .dashboard-panel {
     padding: 22px var(--lc-space-5);
+  }
+
+  .dashboard-action {
+    display: flex;
+    justify-content: center;
   }
 
   .dashboard-page + button {
