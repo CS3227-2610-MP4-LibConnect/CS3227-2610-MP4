@@ -22,6 +22,9 @@ function App() {
 
   if (path === '/register') return <RegistrationPage />;
   if (path === '/student/dashboard') return <DashboardRouteGuard accountType="STUDENT" />;
+  if (path === '/student/tickets') return <DashboardRouteGuard accountType="STUDENT" />;
+  const ticketDetailPath = path.match(/^\/student\/tickets\/([^/]+)$/);
+  if (ticketDetailPath && ticketDetailPath[1] !== 'new') return <DashboardRouteGuard accountType="STUDENT" ticketId={ticketDetailPath[1]} />;
   if (path === '/student/tickets/new') return <DashboardRouteGuard accountType="STUDENT" />;
   if (path === '/ta/dashboard') return <DashboardRouteGuard accountType="TA" />;
   if (path === '/student/account') return <DashboardRouteGuard accountType="STUDENT" />;

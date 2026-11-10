@@ -21,6 +21,9 @@ function renderAppAt(path: string, fetchMock: jest.Mock) {
     if (input === '/api/notifications/unread-count') {
       return Promise.resolve({ status: 200, ok: true, json: async () => ({ unreadCount: 0 }) });
     }
+    if (input === '/api/tickets/active') {
+      return Promise.resolve({ status: 200, ok: true, json: async () => ({ tickets: [] }) });
+    }
     if (input === '/api/account') {
       return Promise.resolve({ status: 200, ok: true, json: async () => ({ accountType: 'TA', isManager: false }) });
     }
