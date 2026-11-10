@@ -382,3 +382,62 @@ No Critical, High, Medium, or Low findings. The T23 evidence (implementation-T23
 ### Verdict
 
 **Pass.** T23 resolves R4-1 with a single fixed-string wording change and one new unit file, within the v0.6 limits. T22 and T23 are verified at unit level; their live effect rests on the orchestrator's reported log 37. The two residual notes are advisory quality observations that need no action for this task. Ticking T22 and T23, the commit, and any merge remain human decisions. This review does not approve a merge.
+
+## Improvement round 5 review (2026-11-10)
+
+Reviewer: independent reviewer (did not implement T24 or T25). The human approved this round on 2026-11-10. Execution log: `logs/tasks/ai-ta-assist/42-reviewer-round5.md`.
+
+### Versions and approvals checked
+
+- Spec v0.3, R1 (unchanged). Checklist `tasks.md` v0.7, Group 11 (T24, T25), and handoff v0.7 with its limits: prompt wording and tests only. The v0.7 approval evidence is the human's "improve the prompt to fix" on 2026-11-10. T25 was added after the T24 measurement and is recorded under the same instruction in the `tasks.md` change log only (see R5-1). No approval was inferred from tests or agent messages. T24 and T25 remain unchecked; this review does not tick them.
+
+### Diff examined (exception recorded)
+
+Same `workflow/README.md` exception as the round 4 and T23 reviews: a separate clean worktree, a detached `eb3b9e3` with the uncommitted round 5 work (T24 + T25) applied as a patch, and `node_modules` symlinked. Compensating controls: the diff and untracked list were taken against `eb3b9e3`; the reviewer made no production, test, or checklist edits; the suite, `tsc`, and the build were run independently; no `.env`, no network, `RUN_SOCLAAS_TESTS` unset; the live harness and the scratchpad `e2e/` folder were not run.
+
+- Production: `server/tickets/ta-ai-fix-note.js` gains three lines (25, 26, 27) in `SYSTEM_PROMPT`. Lines 13–24 and the reply line (now 28, still last) are unchanged.
+- New untracked tests: `test/ta-ai-prompts.round5.test.js` (5 tests) and `test/ta-ai-prompts.round5b.test.js` (4 tests).
+- Tracked docs: `tasks.md` and `handoff.md` version bumps, Group 11, and change-log entries.
+- Untracked evidence: `implementation-T24.md`, `implementation-T25.md`, and logs 39–41.
+- No diff under `server/ai/`, routes, UI, `buildUserContent`, `parse`, or caps. `git diff --stat eb3b9e3 -- src/codeclinic/test src/codeclinic/server/ai` is empty, so no existing test was edited.
+
+### Assessment
+
+- **Scope.** Within the v0.7 limits. T24's two lines match the checklist bullets, and T25's line matches its checklist text, placed directly before the reply line.
+- **Fixed strings.** All three are single-quoted literals in the array, with no template literal, `${`, or concatenation. The system message stays byte-identical across calls (`server/ai/prompt.js:39-44`).
+- **Line 25 versus T23 (line 23) and line 19.** There is no conflict. Line 25 restricts *names* (files, tools, libraries, settings, places) to those in the ticket, and line 23's exception only allows a *cause* the ticket itself states, whose terms are therefore in the ticket. Line 19 ("only causes that the ticket content supports") allows a cause inferred from the ticket's code. Such a cause can still be described with names from the ticket, plus concepts, which line 25 does not cover. One residual tension is noted as R5-2.
+- **Line 26 versus lines 20, 23 and 24.** These are consistent. Lines 20 and 24 ask for checks, line 23 asks the model to restate the displayed output and tell the TA to check it, and line 26 requires each check to point at something the ticket mentions, explicitly including "the reported output".
+- **Line 27 versus the reply line.** The self-check is phrased "before replying", and the JSON reply line stays last (`round5b.test.js:12-16` asserts this). The shared preamble still requires a single JSON value with no surrounding text, so the self-check does not invite visible reasoning. Log 40 reports 51/51 per run, which includes parse success.
+- **Priming risk of T25's example list** ("a server, browser console, framework, or security policy"). Log 40's outside-detail metric counts exactly these terms when they are absent from the ticket. It fell from 4/25 (v4b) to 2/25 (T24, both "server") to 0/25 (T24+T25). So no priming was observed in 25 drafts. The sample is small and is reported evidence that the reviewer did not re-run. The residual "rendered or escaped" check (1/5, unchanged from v5) matches the pre-existing line 23 example list more than the new lines.
+- **Injection defences.** These are not weakened. `SHARED_PREAMBLE` (`server/ai/prompt.js:26-33`), delimiter neutralisation, and message order are unchanged. The new lines treat the ticket only as the allowed source of names and checks, not of instructions, and "delete" acts on the model's own note. The existing review test (`ta-ai-rounds.review.test.js:23-26`) still passes: there are no delimiters and no "follow the instructions" wording. A ticket that plants tool names can at most get them repeated in a bounded, plain-text, TA-reviewed draft, which line 17 already allows.
+- **Length.** The feature prompt grew from 1,197 to 1,724 characters (+527, 16 lines), and the full system message is 2,333 characters (about 600 tokens). `maxInputChars` (16,000) caps only user content, so the growth does not reduce the ticket budget. `maxOutputTokens` (700) is unchanged. The growth costs roughly 130 more input tokens per call, on a static, cacheable prefix. It does not matter in practice, but further rounds should consolidate lines rather than keep appending.
+- **Tests.** Both files are meaningful at the wording level. They assert the exact new sentences, the self-check's uniqueness and its position as second-last, the reply line as last, and the retention of the round 1/3/4/4b clauses. They would fail if a line were removed, reworded, or moved after the reply line. The `${`/`undefined` check is weak on its own, but source inspection confirms the literals. As before, unit tests cannot show behaviour; the live effect rests on log 40.
+
+### Verification (exact results in log 42)
+
+- Full suite, from `src/codeclinic`: exit 0. Test Suites: 5 skipped, 69 passed, 69 of 74 total. Tests: 9 skipped, 1293 passed, 1302 total (T23 re-check: 1284/1293; +9 from round5 and round5b). Both new files passed.
+- `npx tsc --noEmit -p .`: exit 0, no output.
+- `npm run build`: exit 0, "Compiled successfully." (one Node `DEP0176` deprecation notice).
+- The live harness was not run. Log 40 is reported orchestrator evidence only: v5b 5 runs at 51/51; outside detail 0/25; display cause 1/5 (a check); stated cause kept 5/5; hedged 1/25; insights 7/7 5/5.
+
+### Per-task verification
+
+| Task | Verified? | Basis |
+| --- | --- | --- |
+| T24 | Yes (unit level) | `ta-ai-fix-note.js:25-26` match the checklist wording; asserted by `round5.test.js:7-17`. Live effect is reported only (log 40: 4/25 → 2/25). |
+| T25 | Yes (unit level) | `ta-ai-fix-note.js:27` sits directly before the reply line; asserted by `round5b.test.js:12-16`. Live effect is reported only (log 40: 0/25). |
+
+### Findings
+
+| ID | Severity | Location | Evidence | Action |
+| --- | --- | --- | --- | --- |
+| R5-1 | Low | `handoff.md:175`; `tasks.md:276` | The handoff v0.7 change log records only T24. T25's addition "under the same human instruction" is recorded only in the `tasks.md` change log, which is an agent's reading of "improve the prompt to fix". The orchestrator states that the human approved the round including T25. | Before ticking T25 or committing, the orchestrator adds a T25 entry to the handoff change log. If the human's approval of T25 is not already explicit, the orchestrator gets the human to confirm it. |
+| R5-2 | Info | `ta-ai-fix-note.js:25` vs `:14` | "Do not mention any other framework, tool, or setting" could suppress a legitimate fix that names a function or library absent from the ticket (line 14 asks for "the fix"). Log 40 does not measure fix completeness. Not observed. | No action now. Human judgment if TAs report thinner fixes. |
+| R5-3 | Info | log 40 | Residual items: one HTML check mentions "rendered or escaped" without asserting a cause (1/5, unchanged from v5), and one hedged secret-ticket draft (1/25, new in v5b, with line 21 unchanged). Small sample; advisory; TA-reviewed. | No action for T24/T25. |
+| R5-4 | Info | `ta-ai-fix-note.js:12-29` | The prompt grew by 44% over rounds 1–5 (see Length). It is not a defect. | Consolidate wording in any later round instead of appending. |
+
+There are no Critical, High, or Medium findings. The round 5 evidence (implementation-T24/T25, logs 39–41) holds no credentials, `.env` values, session data, or model output beyond counts and short quoted terms.
+
+### Verdict
+
+**Pass with follow-up.** T24 and T25 add three fixed-string prompt lines and two new unit files, within the v0.7 limits. They do not conflict with the existing lines or weaken the injection defences, and the growth is immaterial against the caps. Both tasks are verified at unit level; their live effect rests on the orchestrator's reported log 40. R5-1 (Low, record-keeping) should be closed before T25 is ticked. Ticking T24 and T25, the commit, and any merge remain human decisions. This review does not approve a merge.
