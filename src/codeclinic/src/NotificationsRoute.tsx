@@ -95,6 +95,6 @@ export default function NotificationsRoute() {
         setManagerAttempt((attempt) => attempt + 1);
       }}>Retry coordinator access</button>
     </section>}
-    <NotificationInbox />
+    <NotificationInbox ticketHref={accountType === 'TA' ? (id) => `/ta/tickets/${encodeURIComponent(id)}` : undefined} />
   </DashboardLogout>;
 }

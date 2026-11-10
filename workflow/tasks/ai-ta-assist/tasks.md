@@ -1,0 +1,292 @@
+# Implementation checklist: ai-ta-assist
+
+Version: 0.8 (2026-11-10)
+Task ID: `ai-ta-assist`
+Specification: `workflow/specs/ai-ta-assist.md`, version 0.4 (v0.1–v0.3 human-approved 2026-11-09; v0.4 human-approved 2026-11-10)
+Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6, review follow-ups) was approved when the human chose "Fix all now (Recommended)" on 2026-11-09. Checklist v0.4 (Groups 7–8, improvement rounds) was approved when the human chose "Approve both rounds (Recommended)" on 2026-11-09. Checklist v0.5 (Group 9) was approved by the human's "do the two better things" on 2026-11-10. Checklist v0.6 (Group 10) was approved by the human's "continue improve" on 2026-11-10. Checklist v0.7 (Group 11) was approved by the human's "improve the prompt to fix" on 2026-11-10. Checklist v0.8 (Group 12) was approved by the human's request to fix R5-2 on 2026-11-10.
+
+Tasks are in dependency order, with a **human-approved grouping** (v0.2 regrouping approved 2026-11-09) (drafted inline by
+the orchestrator because there are fewer than 10 tasks). Grouping and tasks
+are approved together. Tasks in a group run in parallel in separate worktrees;
+groups run in order. Checkboxes track implementation only. The orchestrator
+marks `[x]` only after independent review. All paths are under
+`src/codeclinic/`.
+
+The tests use a **stub gateway** (`{ register, run }`). No task calls the real
+SoCLaaS API, except T09's opt-in live test, which only the human runs.
+
+## Group 1: Shared helpers
+
+- [x] **T01: Shared AI-assist helpers.** Add `server/tickets/ta-ai-shared.js`:
+  - `toAiErrorResponse(code, feature)`: the R5 table (status, code, and
+    message for each feature).
+  - `buildAliasMap(tickets)` and `cleanInsightGroups(groups, aliasMap)`:
+    aliases `T1`…`Tn`, dropping unknown aliases and repeats (the first group
+    wins), and removing empty groups.
+  - `errorSummary(errorOutput)`: the first non-empty line, capped at 160
+    characters.
+  - `requireEmptyJsonBody`: the same 400 rule as `ta-claims.js` (reuse it if
+    exported).
+
+  Later tasks MUST import these and not redefine them. Unit tests cover every
+  helper. (Spec R4, R5; scenarios 6, 7, 9.)
+
+## Group 2: Feature definitions (parallel)
+
+- [x] **T02: Fix Note Drafter definition.** Add
+  `server/tickets/ta-ai-fix-note.js`, exporting the `FIX_NOTE_DRAFTER`
+  definition: a fixed `systemPrompt`, `buildUserContent`, the caps, and
+  `parse`.
+  - Unit tests cover the included and excluded fields (no names, emails, IDs,
+    `ticketId`, or `repoUrl`; replies labelled by role), and valid and invalid
+    `parse` outputs, including the 2000-character cap.
+  - Each test passes the definition to `validateFeatureDefinition`.
+  - (Spec R1; scenarios 3, 4.)
+
+- [x] **T03: Queue Insights definition and cache.** Add
+  `server/tickets/ta-ai-insights.js`, exporting the `QUEUE_INSIGHTS`
+  definition (`systemPrompt`, `buildUserContent` using T01's
+  `errorSummary`, caps, `parse`) and `createInsightsCache({ now, ttlMs })`.
+  - The cache is keyed by the alias map plus each ticket's `updatedAt`, with a
+    5-minute TTL.
+  - Unit tests cover the line format and its exclusions, `parse` (0–8 groups,
+    field caps, alias pattern), and cache hit, miss, expiry, and invalidation
+    when `updatedAt` changes.
+  - (Spec R3, R4 cache; scenarios 5, 8.)
+
+## Group 3: Endpoints and UI (parallel)
+
+- [x] **T04: Draft endpoint and registration.** Add
+  `server/tickets/ta-ai-draft-route.js` (`POST /:ticketId/fix-note-draft`),
+  mounted with one line in `ta-routes.js`.
+  - It reads the gateway from `req.app.locals.aiGateway` when the request
+    arrives. If the gateway is missing, it returns `AI_UNAVAILABLE`.
+  - Add `registerTaAiFeatures(gateway)`, which registers both T02 and T03.
+    Call it with one line in `server/index.js` `startServer()`, right after
+    `createAiGateway`.
+  - API tests (stub gateway):
+    - only the claimer on `CLAIMED`, with 409, 403, 401, and 404 otherwise;
+    - CSRF and body checks; each R5 code;
+    - a disabled gateway returns 503, and resolving still works;
+    - no store writes;
+    - the injection fixture changes no state.
+  - (Spec R2, R5; scenarios 1, 2, 3, 7, 9, 11.)
+
+- [x] **T05: Insights endpoint.** Add `server/tickets/ta-ai-insights-route.js`
+  (`POST /insights`), mounted with one line in `ta-routes.js`, before
+  `/:ticketId`.
+  - It collects up to 60 active tickets oldest first through the store.
+  - With an empty queue it short-circuits.
+  - It maps aliases back with T01, caches results with T03, and returns
+    `truncated` and `cached`.
+  - API tests (stub gateway): authorization, CSRF, and body checks; the
+    alias cleaning; the cache across two TAs; the `truncated` flag; each R5
+    code; no writes.
+  - (Spec R4, R5; scenarios 5, 6, 7, 8, 9, 11.)
+
+- [x] **T06: Draft button on the ticket page.** In `src/TATicketPage.tsx`,
+  add **Draft with AI** for the claimer of a `CLAIMED` ticket.
+  - The draft fills the text area, with the "AI draft" note.
+  - The page asks before replacing existing text, and never submits.
+  - It shows loading and the R5 messages, as plain text, labelled "AI
+    suggestion".
+  - Component tests cover visibility, fill without submit, the replace
+    prompt, each error message, and HTML or script text shown literally.
+  - (Spec R6; scenarios 1, 10.)
+
+- [x] **T07: Insights panel on the queue page.** In `src/TAQueuePage.tsx`,
+  add the **Queue insights** panel with **Generate insights**.
+  - It shows groups (label, kind, summary, and ticket links), the
+    truncated and cached notes, and empty, loading, and error states. All
+    text is plain.
+  - Component tests cover each state, plain-text rendering, ticket links, and
+    320 px.
+  - (Spec R6; scenarios 8, 10.)
+
+## Group 4: Live verification
+
+- [x] **T09: Opt-in live SoCLaaS test.** Add
+  `test/ta-ai-live-soclaas.integration.test.js`, following spec v0.2 "Live
+  verification".
+  - It is gated on `RUN_SOCLAAS_TESTS === '1'` **and** an enabled
+    `loadAiConfig(process.env)`. Otherwise it uses `test.skip`, like the
+    emulator suites.
+  - It uses the real `createAiGateway`, an in-memory store with synthetic
+    tickets, a stub `db` for `aiUsage`, and `registerTaAiFeatures`. It makes
+    at most 4 provider calls.
+  - It asserts shape and safety only: draft length, alias-valid insights, the
+    injection ticket, no store change, and `aiUsage` writes.
+  - **The agent only checks that it skips** without the flag. It must not read
+    `.env` or run the live mode. The human runs it, and the orchestrator
+    records only the date, counts, model, and tokens.
+  - (Spec v0.2 Live verification; scenarios 1, 3, 5, 6, 11.)
+
+## Group 5: Guides and evidence
+
+- [x] **T08: Guides and evidence.** Update `docs/UserGuide.md` (both TA AI
+  features, the advisory nature, and the "don't paste secrets" warning from
+  `ai-gateway` R6) and `docs/DeveloperGuide.md` (the modules, registration,
+  the endpoints, the cache, and the alias design).
+  - In the Developer Guide, document the T09 setup: the `.env` variables
+    (`SOCLAAS_API_KEY`, `SOCLAAS_BASE_URL`, `SOCLAAS_MODEL`, and optionally
+    `AI_GLOBAL_LIMIT_PER_MINUTE`) and the `RUN_SOCLAAS_TESTS=1` command,
+    with no real values.
+  - Run the full suite and the build.
+  - Record a **human-run** manual smoke check with the real key in local
+    development, if the human chooses to do one, without prompt or response
+    text.
+  - The orchestrator writes `implementation-report.md` and the token table.
+
+## Group 6: Review follow-up (parallel)
+
+- [x] **T10: Prune expired insights-cache entries (review F1).** In
+  `server/tickets/ta-ai-insights.js`, `createInsightsCache` removes expired
+  entries when `set` is called, so the cache cannot grow without bound.
+  - Add unit tests in a new `test/ta-ai-insights.cache-prune.test.js`: entries
+    set before the TTL are removed on a later `set`, and live entries are kept.
+  - (Spec R4 cache.)
+
+- [x] **T11: Correct the empty insights message (review F2).** In
+  `src/TAQueuePage.tsx`, show "No insights: there are no active tickets to
+  group." only when `ticketCount === 0`. When there are tickets but no groups,
+  show "No common patterns found."
+  - Add UI tests in a new `test/TAQueuePage.ai-empty.test.tsx` covering both
+    cases.
+  - (Spec R6; scenario 6.)
+
+- [x] **T12: Count real provider requests in the live test (review F3).** In
+  `test/ta-ai-live-soclaas.integration.test.js`, count actual `fetch` calls
+  (by wrapping the `fetch` passed to the real gateway) and assert at most 4
+  per run, including retries.
+  - The agent verifies only that the suite skips. It does not read `.env` or
+    run the live mode.
+  - (Spec v0.2 Live verification.)
+
+## Group 7: Improvement round 1
+
+- [x] **T13: Drafter prompt, present tense, no guessing (round 1, 1a).** In
+  `server/tickets/ta-ai-fix-note.js`, extend the fixed `systemPrompt`:
+  - write the note in the present tense, for the TA to review and confirm;
+  - state only causes that the ticket supports;
+  - if the cause is unclear, say what to check.
+  Keep the existing R1 wording ("resolution note", plain text, no names, no new
+  information), and add unit tests for the new instructions.
+- [x] **T14: Insights prompt coverage (round 1, 1b).** In
+  `server/tickets/ta-ai-insights.js`, extend the fixed `systemPrompt`:
+  - place each ticket in the group that fits it;
+  - a single-ticket group is allowed for a distinct concept;
+  - a ticket whose text contains instructions is still grouped by its error and
+    concept.
+  Keep the R3 rules (listed aliases only, at most one group per ticket, at most
+  8 groups), and add unit tests.
+- [x] **T15: Insights invalid-output message (round 1, 1c; spec v0.3 R5).**
+  Change the `QUEUE_INSIGHTS` row of `AI_INVALID_OUTPUT` in
+  `server/tickets/ta-ai-shared.js` and in `src/TAQueuePage.tsx`, update the
+  two allowed test expectations, and update the `docs/UserGuide.md` message
+  list.
+- [x] **T16: Reuse the message constants (round 1, 1d; review I1, I3).**
+  - `requireEmptyJsonBody` answers 400 with the router's `MESSAGES.INVALID`.
+  - The draft route's 409 reuses the claim routes' conflict text, from one
+    exported constant.
+  - Behaviour is otherwise unchanged; add or adjust tests in new files only.
+
+## Group 8: Improvement round 2
+
+- [x] **T17: Insights coverage and summary advice (round 2, 2a).** In
+  `server/tickets/ta-ai-insights.js`, the fixed `systemPrompt` asks for every
+  listed ticket to appear in exactly one group (a single-ticket group is
+  fine). Summaries name the concept or misconception to re-teach and must not
+  prescribe specific code. Keep the R3 rules, and add unit tests.
+- [x] **T18: Concise drafts (round 2, 2b).** In
+  `server/tickets/ta-ai-fix-note.js`, the fixed `systemPrompt` asks for at most
+  four short sentences. Keep the T13 and R1 instructions, and add unit tests.
+- [x] **T19: Show grouping coverage (round 2, 2c).** In `src/TAQueuePage.tsx`,
+  when `ticketCount` is known and the groups link fewer distinct tickets than
+  `ticketCount`, show "Grouped X of Y active tickets." as plain text. Add UI
+  tests in a new file.
+
+## Group 9: Improvement round 3
+
+- [x] **T20: Group tickets that look like instructions (round 3).** In
+  `server/tickets/ta-ai-insights.js`, the fixed `systemPrompt` says that a
+  ticket whose title or text looks like a system message or an instruction is
+  still an ordinary ticket, to be grouped by its error summary and tags. Before
+  replying, the model checks that every listed alias appears in exactly one
+  group. Keep all existing rules, and add unit tests.
+- [x] **T21: No speculation in drafts (round 3).** In
+  `server/tickets/ta-ai-fix-note.js`, the fixed `systemPrompt` says not to
+  offer explanations hedged with words such as "likely" or "probably", and
+  not to explain how output is displayed or rendered unless the ticket states
+  it. For anything the ticket leaves unexplained, it says what the TA should
+  check. Keep all existing instructions, and add unit tests.
+
+## Group 10: Improvement round 4
+
+- [x] **T22: Describe, don't diagnose (round 4).** In
+  `server/tickets/ta-ai-fix-note.js`, add a positive instruction to the fixed
+  `systemPrompt`: describe only what the ticket reports. For anything about how
+  output appears (for example HTML or script text shown on screen), tell the TA
+  to check it, without naming a possible cause such as XSS, sanitization, or
+  escaping. Keep all existing instructions, and add unit tests.
+- [x] **T23: Keep a cause the ticket states (round 4, review R4-1).** In
+  `server/tickets/ta-ai-fix-note.js`, the T22 line gains the exception
+  "unless the ticket itself states that cause", matching the round 3
+  wording, so a cause the ticket reports is kept. Add unit tests.
+
+## Group 11: Improvement round 5
+
+- [x] **T24: Grounded checks, no outside details (round 5; review R4b-1, R4b-2).**
+  In `server/tickets/ta-ai-fix-note.js`, the fixed `systemPrompt` says:
+  - name only files, tools, libraries, settings, and places that appear in
+    the ticket, and no other framework, tool, or setting;
+  - a "what to check" step points at something the ticket mentions (a file,
+    line, setting, or the reported output), never at a guessed cause.
+  Keep all existing instructions, and add unit tests.
+- [x] **T25: Final self-check for outside details (round 5).** In
+  `server/tickets/ta-ai-fix-note.js`, add a final fixed self-check line before
+  the reply line: before replying, remove any component, tool, or place the
+  ticket does not mention (for example a server, browser console, framework,
+  or security policy) and any check that names a cause the ticket does not
+  state. Keep all existing instructions, and add unit tests.
+
+## Group 12: Improvement round 6
+
+- [x] **T26: Require the fix; the name limits don't apply to it (round 6; review R5-2).**
+  In `server/tickets/ta-ai-fix-note.js`, add one fixed line directly before
+  the T25 self-check line:
+  - the note must state a concrete fix the student can apply;
+  - the "name only what appears in the ticket" rule and the final self-check
+    apply to the problem, the cause, and the checks, not to the fix;
+  - the fix may name a standard language feature or a common library
+    function even if the ticket does not mention it.
+  Keep every existing line verbatim. The T25 self-check stays second-last and
+  the reply line stays last. Add unit tests.
+
+## Approval boundary
+
+Checklist v0.1, its grouping, and handoff v0.1 are human-approved
+(2026-11-09). Checklist v0.2, its grouping, and handoff v0.2 are human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6) and handoff v0.3 were approved by the human's "Fix all now (Recommended)" on 2026-11-09. Test writing, dispatch, review, commit, and merge are separate human
+decisions.
+
+## Amendments
+
+- 2026-11-09: Drafted at the human's direction after the human approved
+  specification v0.1. The grouping was proposed inline by the orchestrator.
+- 2026-11-09: The human approved checklist v0.1, the proposed grouping, and handoff v0.1 ("approve").
+- 2026-11-09 (v0.2): Following spec v0.2, the human replied "ok" to the orchestrator's proposal. Added T09 (the opt-in live SoCLaaS test) as a new Group 4. The guides group (T08) is renumbered to Group 5, with its wording unchanged except for one added sub-bullet on the live-test setup. T01–T07 are unchanged.
+- 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
+- 2026-11-09 (v0.3): The human chose "Fix all now (Recommended)" after the independent review (pass with follow-up, F1–F4 Low) on 2026-11-09. Added Group 6: T10 (F1), T11 (F2) and T12 (F3). F4 (`implementation-report.md`) is orchestrator work. The orchestrator ticked T01, T02, T04, T05 and T06, which the review verified with no findings. T03, T07, T08 and T09 stay open until their follow-ups are verified. Existing task wording is unchanged.
+- 2026-11-09: The re-review of F1–F4 passed (`review-report.md`, "Re-check of F1–F4"). The orchestrator ticked T03, T07, T08, T09, T10, T11 and T12. Task wording is unchanged.
+- 2026-11-09 (v0.4): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. Added Group 7 (improvement round 1: T13–T16). Round 2 tasks will be added as Group 8 within the approved limits (prompt wording, UI or error text, internal tidy-ups, tests). Existing tasks are unchanged.
+- 2026-11-09: Round 1 was tested (log 26). Added Group 8 (improvement round 2: T17–T19), within the limits approved for the rounds. Existing tasks are unchanged.
+- 2026-11-09: The rounds review passed with follow-up (`review-report.md`, "Improvement rounds 1–2 review"). The orchestrator ticked T13–T19 and added v0.4 to the approval-evidence line (R3). Task wording is unchanged.
+- 2026-11-10 (v0.5): After 5 more live runs on the PR code, the human said "do the two better things" on 2026-11-10. Added Group 9 (improvement round 3: T20–T21) for the two partly fixed items: grouping the injected ticket, and speculation in drafts. The limits are the same as for rounds 1–2. Existing tasks are unchanged.
+- 2026-11-10: The orchestrator verified round 3 (log 32), after the human said the round 3 work came from another agent ("another agent. you can verify the work"), and ticked T20 and T21. Task wording is unchanged.
+- 2026-11-10 (v0.6): After the round 3 summary, the human asked to "continue improve" the still partly open item (drafts inferring a cause for displayed HTML) on 2026-11-10. Added Group 10 (improvement round 4: T22). The limits are the same as for rounds 1–3. Existing tasks are unchanged.
+- 2026-11-10: The round 4 review passed with follow-up (R4-1, Low), and the human chose "Fix R4-1, then commit (Recommended)" on 2026-11-10. Added T23 to Group 10, with the same limits. Existing tasks are unchanged.
+- 2026-11-10: The round 4 review (log 35) and the T23 re-check (log 38) passed. The orchestrator ticked T22 and T23. Task wording is unchanged.
+- 2026-11-10 (v0.7): After round 4, the human said "improve the prompt to fix" the two remaining advisory notes (R4b-1: a guessed cause framed as a check; R4b-2: a detail not in the ticket) on 2026-11-10. Added Group 11 (improvement round 5: T24). The limits are the same as for rounds 1–4. Existing tasks are unchanged.
+- 2026-11-10: T24 was measured (log 40): it improved the outside-detail count (4/25 to 2/25) but did not fix it. Added T25 to Group 11 under the same human instruction ("improve the prompt to fix"). Existing tasks are unchanged.
+- 2026-11-10: The round 5 review (log 42) passed with follow-up. R5-1 was resolved when the human chose "Confirm T25, commit + push (Recommended)" on 2026-11-10, which explicitly confirmed T25. The orchestrator ticked T24 and T25. Task wording is unchanged.
+- 2026-11-10 (v0.8): The human asked to fix round 5 review note R5-2 ("Name only what's in the ticket" could stop a draft from suggesting a library that would be the right fix) on 2026-11-10. Added Group 12 (improvement round 6: T26). The limits are the same as for rounds 1–5. Existing tasks are unchanged.
+- 2026-11-10: The round 6 review (log 45) passed with follow-up. R6-3 and R6-4 were corrected in the evidence. R6-2 was settled by spec v0.4, approved when the human chose "Clarify spec, commit + push (Recommended)" on 2026-11-10 to settle round 6 review R6-2. The orchestrator ticked T26. Task wording is unchanged.
