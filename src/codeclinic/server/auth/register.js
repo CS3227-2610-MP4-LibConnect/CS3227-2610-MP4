@@ -2,7 +2,7 @@ const { canonicalizeEmail } = require('./email');
 
 const RATE_WINDOW_MS = 15 * 60 * 1000;
 const INVALID_MESSAGE = 'Enter valid registration details.';
-const CONFLICT_MESSAGE = 'Unable to register with those details.';
+const CONFLICT_MESSAGE = 'An account with this email already exists.';
 const LIMITED_MESSAGE = 'Registration is temporarily unavailable. Please try again later.';
 const RETRY_MESSAGE = 'Registration is temporarily unavailable. Please try again.';
 const REGISTRATION_EMAIL_FORMAT = /^[^\s@.]+(\.[^\s@.]+)*@[^\s@.]+(\.[^\s@.]+)+$/;

@@ -87,7 +87,7 @@ function RegistrationPage() {
       const response = await fetch('/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       });
-      if (response.status === 409) setFormError('Registration could not be completed. Please check your details or try again.');
+      if (response.status === 409) setFormError('An account with this email already exists. Sign in instead, or use a different email.');
       else if (response.status === 429) setFormError('Too many attempts. Please try again later.');
       else if (response.status === 503) setFormError('Registration is temporarily unavailable. Please try again later.');
       else if (response.status !== 201) setFormError('Unable to register. Please check your details and try again.');
