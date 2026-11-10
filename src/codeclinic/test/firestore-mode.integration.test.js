@@ -63,7 +63,8 @@ emulatorTest('registration and login share the local Firestore emulator', () => 
         const librarianLogin = await request(app).post('/api/auth/login').send({
           accountType: 'TA', email: librarianEmail, password,
         });
-        assert.equal(librarianLogin.status, 401);
+        assert.equal(librarianLogin.status, 403);
+        assert.equal(librarianLogin.body.code, 'ACCOUNT_INACTIVE');
         assert.equal(librarianLogin.headers['set-cookie'], undefined);
         step = 'session and counter verification';
         const sessions = await db.collection('loginSessions').where('userId', '==', memberKey.data().userId).get();

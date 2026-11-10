@@ -3,7 +3,7 @@ global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 const request = require('supertest');
 const argon2 = require('argon2');
-const { createLoginApp, GENERIC_DENIAL, RETRY_MESSAGE } = require('../server/auth/login');
+const { createLoginApp, GENERIC_DENIAL, INACTIVE_MESSAGE, WRONG_TYPE_MESSAGES, RETRY_MESSAGE } = require('../server/auth/login');
 const { emailKeyFor } = require('../server/auth/email');
 
 const email = 'member@example.test';
@@ -136,15 +136,30 @@ describe('T04 authorization and server sessions', () => {
   });
 
   test.each([
-    ['member selected as librarian', 'STUDENT', 'ACTIVE', 'TA'],
-    ['librarian selected as member', 'TA', 'ACTIVE', 'STUDENT'],
-    ['inactive account', 'STUDENT', 'INACTIVE', 'STUDENT'],
-  ])('uses a uniform denial and writes no session for %s', async (_label, accountType, accountStatus, selected) => {
+    ['student selected as TA', 'STUDENT', 'ACTIVE', 'TA',
+      { code: 'WRONG_ACCOUNT_TYPE', accountType: 'STUDENT', message: WRONG_TYPE_MESSAGES.STUDENT }],
+    ['TA selected as student', 'TA', 'ACTIVE', 'STUDENT',
+      { code: 'WRONG_ACCOUNT_TYPE', accountType: 'TA', message: WRONG_TYPE_MESSAGES.TA }],
+    ['inactive student', 'STUDENT', 'INACTIVE', 'STUDENT', { code: 'ACCOUNT_INACTIVE', message: INACTIVE_MESSAGE }],
+    ['inactive TA selected as student', 'TA', 'INACTIVE', 'STUDENT', { code: 'ACCOUNT_INACTIVE', message: INACTIVE_MESSAGE }],
+  ])('after a correct password, explains %s and writes no session', async (_label, accountType, accountStatus, selected, body) => {
     const system = makeSystem({ user: { ...account, accountType, accountStatus } });
     const response = await request(system.app).post('/api/auth/login').send({ email, password, accountType: selected });
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual(body);
+    expect(JSON.stringify(response.body)).not.toContain(account.passwordHash);
+    expect(response.headers['set-cookie']).toBeUndefined();
+    expect(system.sessions.size).toBe(0);
+  });
+
+  test.each([
+    ['wrong type', 'STUDENT', 'ACTIVE', 'TA'],
+    ['inactive account', 'STUDENT', 'INACTIVE', 'STUDENT'],
+  ])('with a wrong password, %s gets the generic 401', async (_label, accountType, accountStatus, selected) => {
+    const system = makeSystem({ user: { ...account, accountType, accountStatus } });
+    const response = await request(system.app).post('/api/auth/login').send({ email, password: 'wrong password', accountType: selected });
     expect(response.status).toBe(401);
     expect(response.body).toEqual({ message: GENERIC_DENIAL });
-    expect(response.headers['set-cookie']).toBeUndefined();
     expect(system.sessions.size).toBe(0);
   });
 

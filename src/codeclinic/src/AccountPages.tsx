@@ -3,9 +3,11 @@ import './AccountPages.css';
 import AppHeader from './AppHeader';
 import { AccountFailure, AccountField, csrfFailure, readFailure, sessionFailure } from './accountFeedback';
 
-type Account = { name: string; email: string; accountType: 'STUDENT' | 'TA'; isManager?: boolean };
+export type Account = { name: string; email: string; accountType: 'STUDENT' | 'TA'; isManager?: boolean };
 type Entry = { userId: string; name: string; email: string; accountType: 'STUDENT' | 'TA'; accountStatus: 'ACTIVE' | 'INACTIVE'; registrationDateTime: string | null };
-type Props = { mode: 'account' | 'students' | 'tas' | 'password-change' };
+// `initialAccount` is the account the route guard already loaded, so the page
+// does not fetch /api/account a second time. Retries always refetch.
+type Props = { mode: 'account' | 'students' | 'tas' | 'password-change'; initialAccount?: Account };
 type Feedback = AccountFailure | null;
 class AccountActionError extends Error {
   constructor(readonly accountFailure: AccountFailure) {
@@ -28,11 +30,12 @@ const actionFallback = (action: 'profile' | 'password' | 'support'): AccountFail
       : 'Could not complete this support action. Please try again.',
 });
 
-export default function AccountPages({ mode }: Props) {
+export default function AccountPages({ mode, initialAccount }: Props) {
   const [account, setAccount] = useState<Account | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+  const [temporaryPassword, setTemporaryPassword] = useState<{ value: string; name: string } | null>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [message, setMessage] = useState('');
   const [loadError, setLoadError] = useState('');
   const [loadRetry, setLoadRetry] = useState<'account' | 'support' | 'session'>('account');
@@ -85,7 +88,8 @@ export default function AccountPages({ mode }: Props) {
           await loadEntries();
         } else {
           setLoadRetry('account');
-          await loadAccount();
+          if (initialAccount && !retry) setAccount(initialAccount);
+          else await loadAccount();
           if (mode === 'students' || mode === 'tas') {
             setLoadRetry('support');
             await loadEntries();
@@ -96,7 +100,7 @@ export default function AccountPages({ mode }: Props) {
       : error instanceof Error && error.message === 'Could not load your account.' ? error.message
         : mode === 'password-change' ? 'Could not verify your session.' : 'Could not load account details.'); }
     finally { setLoading(false); }
-  }, [loadAccount, loadEntries, mode]);
+  }, [initialAccount, loadAccount, loadEntries, mode]);
   useEffect(() => { void loadPage(); }, [loadPage]);
   useEffect(() => { if (loadError) loadAlert.current?.focus(); }, [loadError]);
   useEffect(() => {
@@ -159,7 +163,7 @@ export default function AccountPages({ mode }: Props) {
       let body: { temporaryPassword?: unknown } = {};
       try { body = await response.json(); } catch { /* use the local fallback below */ }
       if (typeof body.temporaryPassword !== 'string') { setSupportError(actionFallback('support')); return; }
-      setTemporaryPassword(body.temporaryPassword); setMessage(`Temporary password for ${entry.name}. Copy it now; it will not be shown again.`);
+      setTemporaryPassword({ value: body.temporaryPassword, name: entry.name }); setCopyStatus('idle'); setMessage(`Temporary password created for ${entry.name}.`);
     } catch (error) { setSupportError(error instanceof AccountActionError ? error.accountFailure : actionFallback('support')); }
     finally { setBusy(false); }
   };
@@ -183,6 +187,10 @@ export default function AccountPages({ mode }: Props) {
     <p>{feedback.message}</p>{feedback.signIn && <> <a href="/">Sign in</a></>}
   </div>;
 
+  // Support actions on one's own account are refused by the server (account-management R4);
+  // hide them here so the page does not offer an action that can only fail.
+  const ownEmail = typeof account?.email === 'string' ? account.email.trim().toLowerCase() : '';
+  const isOwnEntry = (entry: Entry) => Boolean(ownEmail) && entry.email.trim().toLowerCase() === ownEmail;
   return <>{account && <AppHeader accountType={account.accountType} isManager={account.isManager} activePath={window.location.pathname} restricted={mode === 'password-change'} onLogout={() => void logout()} />}<main className="account-page">
     <p className="eyebrow">CodeClinic account</p>
     <h1>{mode === 'account' ? 'Account' : mode === 'students' ? 'Students' : mode === 'tas' ? 'TAs' : 'Change your password'}</h1>
@@ -217,15 +225,32 @@ export default function AccountPages({ mode }: Props) {
       {passwordError?.field === 'newPassword' && <p id="password-newPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
       <button className="submit-button" disabled={busy}>Set new password</button>
     </form>}
+    {temporaryPassword && <section className="account-panel temp-password" aria-labelledby="temp-password-title">
+      <h2 id="temp-password-title">Temporary password for {temporaryPassword.name}</h2>
+      <p className="temp-password__warning"><strong>Copy it now. It will not be shown again.</strong> Share it with {temporaryPassword.name} outside CodeClinic. They will be asked to set a new password when they next sign in.</p>
+      <div className="temp-password__row">
+        <code className="temp-password__value">{temporaryPassword.value}</code>
+        <button type="button" className="temp-password__copy" onClick={() => {
+          const clipboard = navigator.clipboard;
+          if (!clipboard) { setCopyStatus('failed'); return; }
+          clipboard.writeText(temporaryPassword.value).then(() => setCopyStatus('copied'), () => setCopyStatus('failed'));
+        }}>{copyStatus === 'copied' ? 'Copied ✓' : 'Copy password'}</button>
+      </div>
+      <p className="temp-password__copy-status" role="status">{copyStatus === 'copied' ? 'Password copied to the clipboard.' : copyStatus === 'failed' ? 'Could not copy automatically. Select the password and copy it manually.' : ''}</p>
+      <button type="button" className="temp-password__done" onClick={() => { setTemporaryPassword(null); setCopyStatus('idle'); setMessage(''); }}>Done</button>
+    </section>}
     {(mode === 'students' || mode === 'tas') && <section className="account-panel">
       {supportError && <div className="account-form-error" role="alert" tabIndex={-1} ref={supportAlert}><p>{supportError.message}</p>{supportError.signIn && <> <a href="/">Sign in</a></>}</div>}
       {!loading && !loadError && entries.length === 0 ? <p>No accounts found.</p> : entries.length > 0 && <ul className="account-list">{entries.map((entry) => <li key={entry.userId}>
-        <div><strong>{entry.name}</strong><span>{entry.email} · {entry.accountStatus}</span></div>
-        <button type="button" disabled={busy} onClick={() => void changeStatus(entry)}>{entry.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
-        <button type="button" disabled={busy} onClick={() => void resetPassword(entry)}>Reset password</button>
+        <div><strong>{entry.name}{isOwnEntry(entry) && <span className="account-self-badge"> (you)</span>}</strong><span>{entry.email} · {entry.accountStatus}</span></div>
+        {isOwnEntry(entry)
+          ? <p className="account-self-note">Manage your own account on your <a href="/ta/account">Account page</a>.</p>
+          : <>
+            <button type="button" disabled={busy} onClick={() => void changeStatus(entry)}>{entry.accountStatus === 'ACTIVE' ? 'Deactivate' : 'Activate'}</button>
+            <button type="button" disabled={busy} onClick={() => void resetPassword(entry)}>Reset password</button>
+          </>}
       </li>)}</ul>}
       {nextCursor && <button type="button" disabled={busy} onClick={() => { setSupportError(null); void loadEntries(nextCursor).catch(() => setSupportError(actionFallback('support'))); }}>Load more</button>}
     </section>}
-    {temporaryPassword && <section className="account-panel" aria-label="Temporary password"><p>This password will not be shown again. Share it with the account owner outside CodeClinic.</p><code>{temporaryPassword}</code><button type="button" onClick={() => void navigator.clipboard?.writeText(temporaryPassword)}>Copy password</button><button type="button" onClick={() => setTemporaryPassword(null)}>Hide password</button></section>}
   </main></>;
 }

@@ -19,8 +19,10 @@ export function TADashboard({ onLogoutConfirmed, isManager = false }: { onLogout
         <h1>TA Dashboard</h1>
         <section className="dashboard-panel" aria-labelledby="ta-dashboard-intro">
           <h2 id="ta-dashboard-intro">TA workspace</h2>
-          <p>Welcome to your TA landing page.</p>
-          <p><a href="/ta/queue">Open the ticket queue</a></p>
+          <p>Welcome to your TA landing page. Claim, answer, and resolve student tickets from the queue.</p>
+          <a className="dashboard-action" href="/ta/queue">
+            Open the ticket queue <span aria-hidden="true">→</span>
+          </a>
         </section>
       </main>
     </DashboardLogout>
