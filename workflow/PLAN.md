@@ -20,11 +20,13 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 | 1 | `codeclinic-rename` | Implements the three role-rename specs, removes the retired Book catalog, renames all internal LibConnect names, moves the email helpers | — | Shared | Checklist and handoff v0.1 approved |
 | 2 | `environments-and-deployment` | Local development and one production Firebase project (`libconnect-mp4`), production secrets, GitHub Actions CI/CD | — | Shared | v0.3 approved; the repo has been deployed by a teammate (the human, 2026-11-09) |
 | 2 | `ai-gateway` | Shared SoC LLM client: rate limits, timeouts, schema validation, redaction, token caps, fallback, usage records | — | Shared | v0.1 approved; design input in `workflow/tasks/ai-gateway/design.md` |
-| 3 | `student-tickets` | Create, edit, close, view tickets; files; reply thread | `role-based-dashboards` | Student owner | Not drafted |
+| 3 | `student-tickets` | Create tickets with optional code files or repository reference; editing deferred to later work | `role-based-dashboards` | Student owner | v0.4 approved; creation implemented and independently reviewed |
 | 3 | `ta-ticket-queue` | Queue, filters, claim/unclaim, reply, resolve with fix note | `student-tickets` data model | TA owner | v0.1 approved; implemented, reviewed, and accepted 2026-11-09 |
+| 4 | `student-ticket-activity` | Dashboard active-ticket cards; owned ticket detail and reply thread; Student reply and close | `student-tickets` data model and creation | Student owner | v0.3 approved; implemented, independently reviewed, and human-verified at 320 CSS pixels |
 | 4 | `ai-error-explainer` | Student AI: error explanation, concept, hints only, ticket rewrite | `ai-gateway`, `student-tickets` | Student owner | Not drafted |
 | 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | v0.2 approved; implemented, reviewed, and accepted 2026-11-09 (live SoCLaaS test passed) |
 | 4 | `bug-faq` | Search anonymised resolved tickets; replaces retired `member-catalog-search` | `ta-ticket-queue` | Student owner | Not drafted |
+| 5 | `student-my-tickets` | Paginated owner-scoped Open/Closed ticket lists with status labels and shared dashboard cards | `student-tickets` data model, `student-ticket-activity` dashboard and routes | Student owner | v0.1 approved; implemented, independently reviewed, and committed locally 2026-11-10; Firestore index not deployed |
 | 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | v0.1 approved |
 | 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | v0.1 approved |
 | 6 | `session-requests` | *Optional:* student requests and TA approvals of live sessions | `ta-ticket-queue` | Student and TA owners | Not drafted |
