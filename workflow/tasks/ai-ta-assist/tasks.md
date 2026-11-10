@@ -1,9 +1,9 @@
 # Implementation checklist: ai-ta-assist
 
-Version: 0.6 (2026-11-10)
+Version: 0.7 (2026-11-10)
 Task ID: `ai-ta-assist`
 Specification: `workflow/specs/ai-ta-assist.md`, version 0.3 (v0.1–v0.3 human-approved 2026-11-09)
-Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6, review follow-ups) was approved when the human chose "Fix all now (Recommended)" on 2026-11-09. Checklist v0.4 (Groups 7–8, improvement rounds) was approved when the human chose "Approve both rounds (Recommended)" on 2026-11-09. Checklist v0.5 (Group 9) was approved by the human's "do the two better things" on 2026-11-10. Checklist v0.6 (Group 10) was approved by the human's "continue improve" on 2026-11-10.
+Checklist approval evidence: the human replied "approve" to checklist v0.1, its proposed grouping, and handoff v0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state. The human's "ok" on 2026-11-09 authorised the v0.2 edits (T09 and the regrouping). Checklist v0.2 is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Checklist v0.3 (Group 6, review follow-ups) was approved when the human chose "Fix all now (Recommended)" on 2026-11-09. Checklist v0.4 (Groups 7–8, improvement rounds) was approved when the human chose "Approve both rounds (Recommended)" on 2026-11-09. Checklist v0.5 (Group 9) was approved by the human's "do the two better things" on 2026-11-10. Checklist v0.6 (Group 10) was approved by the human's "continue improve" on 2026-11-10. Checklist v0.7 (Group 11) was approved by the human's "improve the prompt to fix" on 2026-11-10.
 
 Tasks are in dependency order, with a **human-approved grouping** (v0.2 regrouping approved 2026-11-09) (drafted inline by
 the orchestrator because there are fewer than 10 tasks). Grouping and tasks
@@ -233,6 +233,22 @@ SoCLaaS API, except T09's opt-in live test, which only the human runs.
   "unless the ticket itself states that cause", matching the round 3
   wording, so a cause the ticket reports is kept. Add unit tests.
 
+## Group 11: Improvement round 5
+
+- [x] **T24: Grounded checks, no outside details (round 5; review R4b-1, R4b-2).**
+  In `server/tickets/ta-ai-fix-note.js`, the fixed `systemPrompt` says:
+  - name only files, tools, libraries, settings, and places that appear in
+    the ticket, and no other framework, tool, or setting;
+  - a "what to check" step points at something the ticket mentions (a file,
+    line, setting, or the reported output), never at a guessed cause.
+  Keep all existing instructions, and add unit tests.
+- [x] **T25: Final self-check for outside details (round 5).** In
+  `server/tickets/ta-ai-fix-note.js`, add a final fixed self-check line before
+  the reply line: before replying, remove any component, tool, or place the
+  ticket does not mention (for example a server, browser console, framework,
+  or security policy) and any check that names a cause the ticket does not
+  state. Keep all existing instructions, and add unit tests.
+
 ## Approval boundary
 
 Checklist v0.1, its grouping, and handoff v0.1 are human-approved
@@ -256,3 +272,6 @@ decisions.
 - 2026-11-10 (v0.6): After the round 3 summary, the human asked to "continue improve" the still partly open item (drafts inferring a cause for displayed HTML) on 2026-11-10. Added Group 10 (improvement round 4: T22). The limits are the same as for rounds 1–3. Existing tasks are unchanged.
 - 2026-11-10: The round 4 review passed with follow-up (R4-1, Low), and the human chose "Fix R4-1, then commit (Recommended)" on 2026-11-10. Added T23 to Group 10, with the same limits. Existing tasks are unchanged.
 - 2026-11-10: The round 4 review (log 35) and the T23 re-check (log 38) passed. The orchestrator ticked T22 and T23. Task wording is unchanged.
+- 2026-11-10 (v0.7): After round 4, the human said "improve the prompt to fix" the two remaining advisory notes (R4b-1: a guessed cause framed as a check; R4b-2: a detail not in the ticket) on 2026-11-10. Added Group 11 (improvement round 5: T24). The limits are the same as for rounds 1–4. Existing tasks are unchanged.
+- 2026-11-10: T24 was measured (log 40): it improved the outside-detail count (4/25 to 2/25) but did not fix it. Added T25 to Group 11 under the same human instruction ("improve the prompt to fix"). Existing tasks are unchanged.
+- 2026-11-10: The round 5 review (log 42) passed with follow-up. R5-1 was resolved when the human chose "Confirm T25, commit + push (Recommended)" on 2026-11-10, which explicitly confirmed T25. The orchestrator ticked T24 and T25. Task wording is unchanged.

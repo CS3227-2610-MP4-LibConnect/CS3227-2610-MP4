@@ -137,3 +137,18 @@ Because this run's total is unavailable, an aggregate covering all 19 runs is un
 
 The aggregate stays unavailable because the round 3 implementer run has no total.
 
+## Improvement round 5 (T24–T25)
+
+- T24: drafts name only files, tools, libraries, settings and places that appear in the ticket, and every check points at something the ticket mentions. T25: a final self-check that deletes anything the ticket does not mention. The human explicitly confirmed T25 (review R5-1).
+- Live results (log 40):
+  - drafts with an outside detail fell from 4/25 to 2/25 after T24, and to **0/25** after T25;
+  - every run passed 51/51;
+  - the stated cause was kept in 5/5 runs, and insights coverage was 7/7 in 5/5.
+- Review (log 42): pass with follow-up. R5-1 is resolved. R5-2 (a valid fix could be suppressed if it names something outside the ticket), R5-3 (one "rendered or escaped" check and one hedge) and R5-4 (the prompt grew 44% to 1,724 characters, so consolidate lines rather than keep appending) are Info notes with no action now.
+- Final suite: 1293 passed and 9 skipped. `tsc` and the build are clean.
+
+| Role | Task/group and run | Model | Input tokens | Output tokens | Total tokens | Usage source |
+| --- | --- | --- | ---: | ---: | ---: | --- |
+| Implementer | T24 (Group 11), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 46,688 | Claude Code task notification `subagent_tokens` |
+| Implementer | T25 (Group 11), run 1 | claude-sonnet-5-5 | unavailable | unavailable | 43,208 | Claude Code task notification `subagent_tokens` |
+| Reviewer | T24–T25 round 5 review, run 1 | claude-opus-5-5 | unavailable | unavailable | 69,342 | Claude Code task notification `subagent_tokens` |
