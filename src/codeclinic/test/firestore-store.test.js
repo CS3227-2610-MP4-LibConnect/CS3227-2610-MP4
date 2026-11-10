@@ -12,19 +12,30 @@ function makeDb(initial = {}) {
   const documents = new Map(Object.entries(initial).map(([key, value]) => [key, clone(value)]));
   let transactionTail = Promise.resolve();
   let retryMutation = null;
+  let transactions = 0;
   const refs = new Map();
   function refFor(collection, id) {
     const key = `${collection}/${id}`;
-    if (!refs.has(key)) refs.set(key, { key });
+    if (!refs.has(key)) {
+      refs.set(key, {
+        key,
+        async get() {
+          const value = documents.get(key);
+          return { exists: value !== undefined, data: () => clone(value) };
+        },
+      });
+    }
     return refs.get(key);
   }
   return {
     documents,
+    get transactionCount() { return transactions; },
     setRetryMutation(mutation) { retryMutation = mutation; },
     collection(name) {
       return { doc(id) { return refFor(name, id); } };
     },
     async runTransaction(callback) {
+      transactions += 1;
       const previous = transactionTail;
       let release;
       transactionTail = new Promise((resolve) => { release = resolve; });
@@ -78,12 +89,14 @@ describe('Firestore auth-store transaction safeguards', () => {
     db.setRetryMutation(() => {});
     const store = createFirestoreAuthStore(db);
     let readings = 0;
+    // Reading 1 is the fast-path check (2 minutes idle, so a write is due);
+    // reading 2 is the first transaction attempt and reading 3 the retry.
     const result = await store.touchSession(id, () => {
       readings += 1;
-      return issuedAt + (readings === 1 ? 1 : 30 * 60 * 1000);
+      return issuedAt + (readings <= 2 ? 2 * 60 * 1000 : 30 * 60 * 1000);
     });
     expect(result).toBe(false);
-    expect(readings).toBe(2);
+    expect(readings).toBe(3);
     expect(db.documents.has(`loginSessions/${id}`)).toBe(false);
   });
 
@@ -122,5 +135,61 @@ describe('Firestore auth-store transaction safeguards', () => {
       expect(db.documents.get(`loginSessions/${id}`).csrfTokenHash).toBe(newHash);
       expect(await store.deleteSessionIfCsrfMatches(id, newHash)).toBe(true);
     }
+  });
+});
+
+describe('session touch throttling', () => {
+  const id = 'd'.repeat(64);
+  const issuedAt = 1_800_000_000_000;
+  function sessionDb(lastSeenAt, expiresAt = lastSeenAt + 30 * 60 * 1000) {
+    return makeDb({ [`loginSessions/${id}`]: {
+      userId: 'synthetic-user', accountTypeAtIssue: 'TA', issuedAt: new Date(issuedAt),
+      lastSeenAt: new Date(lastSeenAt), expiresAt: new Date(expiresAt), csrfTokenHash: hash('token'),
+    } });
+  }
+
+  test('a request within a minute of the last touch is accepted without a write', async () => {
+    const db = sessionDb(issuedAt);
+    const store = createFirestoreAuthStore(db);
+    expect(await store.touchSession(id, () => issuedAt + 59_999)).toBe(true);
+    expect(db.transactionCount).toBe(0);
+    expect(db.documents.get(`loginSessions/${id}`).lastSeenAt.getTime()).toBe(issuedAt);
+  });
+
+  test('concurrent requests on one session do not contend on the session document', async () => {
+    const db = sessionDb(issuedAt);
+    const store = createFirestoreAuthStore(db);
+    const results = await Promise.all([1, 2, 3, 4].map((n) => store.touchSession(id, () => issuedAt + n)));
+    expect(results).toEqual([true, true, true, true]);
+    expect(db.transactionCount).toBe(0);
+  });
+
+  test('a request a minute or more after the last touch refreshes last-seen and expiry', async () => {
+    const db = sessionDb(issuedAt);
+    const store = createFirestoreAuthStore(db);
+    const now = issuedAt + 60_000;
+    expect(await store.touchSession(id, () => now)).toBe(true);
+    expect(db.transactionCount).toBe(1);
+    const stored = db.documents.get(`loginSessions/${id}`);
+    expect(stored.lastSeenAt.getTime()).toBe(now);
+    expect(stored.expiresAt.getTime()).toBe(now + 30 * 60 * 1000);
+  });
+
+  test.each([
+    ['idle limit reached', issuedAt, issuedAt + 30 * 60 * 1000, issuedAt + 30 * 60 * 1000],
+    ['stored expiry passed', issuedAt, issuedAt + 10_000, issuedAt + 10_000],
+    ['absolute limit reached', issuedAt + 8 * 60 * 60 * 1000 - 1_000, issuedAt + 8 * 60 * 60 * 1000, issuedAt + 8 * 60 * 60 * 1000 + 60_000],
+  ])('an expired session is still rejected and deleted (%s)', async (_label, lastSeenAt, now, expiresAt) => {
+    const db = sessionDb(lastSeenAt, expiresAt);
+    const store = createFirestoreAuthStore(db);
+    expect(await store.touchSession(id, () => now)).toBe(false);
+    expect(db.documents.has(`loginSessions/${id}`)).toBe(false);
+  });
+
+  test('a missing session is rejected without a transaction', async () => {
+    const db = makeDb();
+    const store = createFirestoreAuthStore(db);
+    expect(await store.touchSession(id, () => issuedAt)).toBe(false);
+    expect(db.transactionCount).toBe(0);
   });
 });

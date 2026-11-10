@@ -3,6 +3,11 @@ const { createFirestoreRateCounter } = require('../shared/firestore-rate-counter
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000;
 const ABSOLUTE_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+// Skip rewriting last-seen when it is this recent. Concurrent requests from one
+// page would otherwise contend on the same session document for seconds. The
+// stored time can lag real activity by at most this much, so an idle session
+// may end up to this much early, never late.
+const TOUCH_INTERVAL_MS = 60 * 1000;
 
 function millis(value) {
   if (typeof value === 'number') return value;
@@ -53,6 +58,24 @@ function createFirestoreAuthStore(db) {
 
     async touchSession(idHash, operationClock = Date.now) {
       const ref = sessionRef(idHash);
+      const readClock = () => (typeof operationClock === 'function' ? operationClock() : operationClock);
+
+      // Fast path: a plain read is enough when the session is valid and was
+      // touched recently. Anything else falls through to the transaction,
+      // which re-reads current state, refreshes, or deletes the session.
+      const snapshot = await ref.get();
+      if (!snapshot.exists) return false;
+      const stored = snapshot.data();
+      const storedIssuedAt = millis(stored.issuedAt);
+      const storedLastSeenAt = millis(stored.lastSeenAt);
+      const storedExpiry = millis(stored.expiresAt);
+      const readAt = readClock();
+      if (!Number.isFinite(readAt) || !Number.isFinite(storedIssuedAt) ||
+          !Number.isFinite(storedLastSeenAt) || !Number.isFinite(storedExpiry) ||
+          readAt < storedLastSeenAt) return false;
+      if (readAt - storedLastSeenAt < TOUCH_INTERVAL_MS &&
+          readAt - storedIssuedAt < ABSOLUTE_TIMEOUT_MS && readAt < storedExpiry) return true;
+
       return db.runTransaction(async (transaction) => {
         const snapshot = await transaction.get(ref);
         if (!snapshot.exists) return false;
@@ -62,7 +85,7 @@ function createFirestoreAuthStore(db) {
         const storedExpiresAt = millis(data.expiresAt);
         // Read the clock inside the callback so every Firestore retry gets a
         // fresh operation time, after the transaction has read current state.
-        const current = typeof operationClock === 'function' ? operationClock() : operationClock;
+        const current = readClock();
         if (!Number.isFinite(current) || !Number.isFinite(issuedAt) ||
             !Number.isFinite(previousLastSeenAt) || !Number.isFinite(storedExpiresAt) ||
             current < previousLastSeenAt) return false;
