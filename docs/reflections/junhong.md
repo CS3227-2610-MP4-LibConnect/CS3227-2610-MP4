@@ -58,3 +58,29 @@ remain in `AGENTS.md`; the profiles retain the actions and outputs specific to
 each role. This should shorten the instructions each agent reads and reduce
 the chance that duplicated rules drift apart. All five TOML profiles parsed
 after the edit. The expected token savings have not yet been measured.
+
+## Narrowing context during active agent work
+
+While planning `student-ticket-activity`, I noticed that input context was
+growing even though the implementation had not started. The conversation had
+accumulated approval decisions, specification and handoff excerpts, source and
+test output, skill instructions, and a detailed Firestore search result.
+Repeatedly carrying this material forward increased token use without always
+helping the next decision. I could not measure the exact contribution of each
+source because the runtime did not expose a per-source token breakdown.
+
+I updated the `Efficient evidence collection` section of `AGENTS.md` to make
+the existing guidance more concrete. Agents now begin with targeted file and
+line searches and bounded output, then open only changed files and the parts
+of approved artifacts needed for the current decision. They avoid rereading
+or pasting unchanged material already in context. Handoffs and reports point
+to task artifacts and full logs instead of copying large excerpts. Agents
+expand inspection or testing when a failure, unresolved risk, or required gate
+calls for it, and stop optional repeat checks once those needs are resolved.
+
+These changes should reduce repeated input tokens and make handoffs easier to
+review. They should also help agents identify the first distinct failure
+sooner while leaving complete test output in task-local logs. Required tests,
+independent review, all failing-suite reports, and approval gates remain in
+place. The effect is an expectation, not a measured saving yet; later task
+reports can compare actual token usage and verification results.

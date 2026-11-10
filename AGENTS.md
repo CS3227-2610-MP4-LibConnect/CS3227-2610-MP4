@@ -121,18 +121,39 @@ as described in `workflow/README.md`.
 
 ### Efficient evidence collection
 
-- Search for relevant files and lines before opening whole files. Read changed
-  files and the applicable sections of the approved spec and handoff; avoid
-  rereading unchanged material already available in the current context.
+- Use targeted file and line searches first, with bounded output. Open only
+  changed files and the sections of approved artifacts needed for the current
+  decision; avoid rereading or pasting unchanged material already in context.
 - Capture verbose test output in a task-local log. Inspect the suite summary and
   first distinct failure before expanding to the relevant stack trace or test
   case. Keep the complete output available as evidence, and report every failing
   suite and unresolved risk even when failures share a cause.
-- Bound command output and agent handoffs to the files, findings, and questions
-  needed for the next step. Give independent reviewers enough context to verify
-  the change without duplicating large file dumps or repeated test output.
+- Keep command results and agent handoffs focused on the files, findings,
+  decisions, and questions needed for the next step. Link to task artifacts and
+  full logs instead of copying their contents; give independent reviewers
+  enough exact context to verify the change.
+- Stop optional repeat or broader testing once required checks and concrete
+  risks are resolved. Expand inspection or testing only for a remaining risk,
+  a failed check, or a required gate.
 - Never reduce required verification or discard failure evidence solely to save
   input tokens.
+
+### Browser image verification
+
+- When a task requires visual or image-based verification in a browser, inform
+  the human that they need to perform that test. Give the exact page or route,
+  viewport size, interaction steps, and visual conditions to check, including
+  overflow and visible focus where relevant.
+- Ask the human to report the result and provide screenshots when they are
+  needed to assess the layout. Request only the relevant view and avoid
+  unnecessary personal data in screenshots.
+- Record the human's observations and any supplied images in the task evidence.
+  Do not claim the visual check passed until that evidence supports it. Keep
+  the criterion open if the human has not completed the test or the evidence is
+  inconclusive.
+- Continue independent nonvisual verification while waiting. Do not repeatedly
+  probe browser availability or create a new verification batch solely because
+  the agent's browser host is unavailable.
 
 ## Repository Structure
 
