@@ -54,6 +54,10 @@ function LoginPage() {
         setFormError('Sign in is temporarily unavailable. Please try again later.');
         return;
       }
+      if (response.status === 429) {
+        setFormError('Too many sign-in attempts. Please wait a few minutes and try again.');
+        return;
+      }
       if (response.status !== 200) {
         setFormError('Unable to complete sign in. Please try again.');
         return;

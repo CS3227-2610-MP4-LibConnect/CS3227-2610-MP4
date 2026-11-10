@@ -224,7 +224,7 @@ describe('T05 React to Express login integration', () => {
       render(<LoginPage />);
       fill(memberEmail, memberPassword);
       submit();
-      expect(await screen.findByText(/complete sign in/i)).toBeInTheDocument();
+      expect(await screen.findByText(/too many sign-in attempts/i)).toBeInTheDocument();
       expect(bridge.calls).toHaveLength(1);
       const response = await request(system.app).post('/api/auth/login')
         .send({ email: memberEmail, password: memberPassword, accountType: 'STUDENT' });
