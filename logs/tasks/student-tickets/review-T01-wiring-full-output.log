@@ -1,0 +1,948 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --runInBand --watchAll=false --verbose
+
+(node:19092) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/RegistrationPage.test.tsx
+  registration page
+    √ shows common fields, explicit type choice, and a route to login (357 ms)
+    √ TA choice reveals employee ID and activation notice; switching back omits stale ID (261 ms)
+    √ sends TA employee ID and never sends confirmation or system-controlled fields (173 ms)
+    √ blank and mismatched fields have accessible errors and cause no request (134 ms)
+    √ whitespace-only TA employee ID and password are rejected without a request (148 ms)
+    √ STUDENT accepts minimal, dotted-local, and subdomain emails after trimming (151 ms)
+    √ TA accepts minimal, dotted-local, and subdomain emails after trimming (226 ms)
+    √ STUDENT rejects invalid email format with a linked accessible error and no request (403 ms)
+    √ TA rejects invalid email format with a linked accessible error and no request (493 ms)
+    √ rejects over-limit UTF-8 bytes in name (76 ms)
+    √ rejects over-limit UTF-8 bytes in email (68 ms)
+    √ rejects over-limit UTF-8 bytes in password (110 ms)
+    √ rejects over-limit UTF-8 bytes in employee ID (112 ms)
+    √ one request stays pending despite repeated submit; recoverable failure preserves non-password values (133 ms)
+    √ bad response does not announce success or return to login (102 ms)
+    √ unexpected success field does not announce success or return to login (91 ms)
+    √ network failure does not announce success or return to login (87 ms)
+    √ valid STUDENT success is announced, counts down, and retains a login notice (113 ms)
+    √ valid TA success is announced, counts down, and retains a login notice (159 ms)
+    √ redirects to login after five seconds, and not before (77 ms)
+
+  console.error
+    An update to NotificationBell inside a test was not wrapped in act(...).
+    
+    When testing, code that causes React state updates should be wrapped into act(...):
+    
+    act(() => {
+      /* fire events that update state */
+    });
+    /* assert on the output */
+    
+    This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+  console.error
+    An update to NotificationBell inside a test was not wrapped in act(...).
+    
+    When testing, code that causes React state updates should be wrapped into act(...):
+    
+    act(() => {
+      /* fire events that update state */
+    });
+    /* assert on the output */
+    
+    This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+PASS test/StudentTickets.test.tsx (5.039 s)
+  student ticket entry points
+    √ dashboard offers Ask for Help and links to the protected create page (159 ms)
+    √ the authenticated header offers ticket creation only to Students (38 ms)
+  protected ticket creation page and form
+    √ direct entry waits for server session validation before showing the form (58 ms)
+    √ visitor is returned to sign-in and TA receives denial without a form (61 ms)
+    √ required fields are labeled; whitespace submit is blocked with associated errors (354 ms)
+    √ language is a fixed-choice selector with the Other note and revised length limits (285 ms)
+    √ valid submission sends trimmed required fields with CSRF and pending state blocks duplicates (395 ms)
+    √ uses Unicode code-point limits for title and rejects the next character (334 ms)
+    √ rejects query markers and unsafe repository paths before requesting CSRF (407 ms)
+    √ blocks a serialized request larger than 128 KiB before CSRF or create requests (826 ms)
+    √ stays on the form after network error and shows no success (373 ms)
+    √ stays on the form after service error and shows no success (324 ms)
+    √ stays on the form after malformed success and shows no success (361 ms)
+
+PASS test/registration.endpoint.test.js
+  registration endpoint boundary
+    √ accepts valid type with server-controlled status and minimal response (121 ms)
+    √ accepts valid type with server-controlled status and minimal response (17 ms)
+    √ five direct-source attempts exhaust a shared isolated counter (47 ms)
+    √ redacts ALREADY_EXISTS persistence failure (12 ms)
+    √ redacts storage failure persistence failure (11 ms)
+
+PASS test/registration.api.test.js
+  POST /api/auth/register
+    √ rejects direct STUDENT invalid email ab.c with no user or key write (34 ms)
+    √ rejects direct STUDENT invalid email @b.c with no user or key write (12 ms)
+    √ rejects direct STUDENT invalid email a@ with no user or key write (20 ms)
+    √ rejects direct STUDENT invalid email a@b with no user or key write (12 ms)
+    √ rejects direct STUDENT invalid email a@@b.c with no user or key write (13 ms)
+    √ rejects direct STUDENT invalid email a@b@c.d with no user or key write (11 ms)
+    √ rejects direct STUDENT invalid email .a@b.c with no user or key write (13 ms)
+    √ rejects direct STUDENT invalid email a.@b.c with no user or key write (11 ms)
+    √ rejects direct STUDENT invalid email a..b@c.d with no user or key write (13 ms)
+    √ rejects direct STUDENT invalid email a@.b.c with no user or key write (10 ms)
+    √ rejects direct STUDENT invalid email a@b.c. with no user or key write (12 ms)
+    √ rejects direct STUDENT invalid email a@b..c with no user or key write (11 ms)
+    √ rejects direct STUDENT invalid email a b@c.d with no user or key write (11 ms)
+    √ rejects direct STUDENT invalid email a@b c.d with no user or key write (10 ms)
+    √ rejects direct STUDENT invalid email a@b. c with no user or key write (12 ms)
+    √ rejects direct TA invalid email ab.c with no user or key write (11 ms)
+    √ rejects direct TA invalid email @b.c with no user or key write (11 ms)
+    √ rejects direct TA invalid email a@ with no user or key write (12 ms)
+    √ rejects direct TA invalid email a@b with no user or key write (12 ms)
+    √ rejects direct TA invalid email a@@b.c with no user or key write (11 ms)
+    √ rejects direct TA invalid email a@b@c.d with no user or key write (10 ms)
+    √ rejects direct TA invalid email .a@b.c with no user or key write (11 ms)
+    √ rejects direct TA invalid email a.@b.c with no user or key write (12 ms)
+    √ rejects direct TA invalid email a..b@c.d with no user or key write (10 ms)
+    √ rejects direct TA invalid email a@.b.c with no user or key write (11 ms)
+    √ rejects direct TA invalid email a@b.c. with no user or key write (10 ms)
+    √ rejects direct TA invalid email a@b..c with no user or key write (11 ms)
+    √ rejects direct TA invalid email a b@c.d with no user or key write (13 ms)
+    √ rejects direct TA invalid email a@b c.d with no user or key write (10 ms)
+    √ rejects direct TA invalid email a@b. c with no user or key write (11 ms)
+    √ stores trimmed original-case STUDENT email and lowercase canonical key (64 ms)
+    √ stores trimmed original-case TA email and lowercase canonical key (62 ms)
+    √ accepts valid STUDENT email a@b.c (63 ms)
+    √ accepts valid STUDENT email a.b@sub.example.com (66 ms)
+    √ accepts valid TA email a@b.c (61 ms)
+    √ accepts valid TA email a.b@sub.example.com (72 ms)
+    √ commits a Member account with server-controlled identity and minimal success response (120 ms)
+    √ commits a Librarian account with server-controlled identity and minimal success response (120 ms)
+    √ canonical duplicate across account types is a generic conflict with no second account (120 ms)
+    √ concurrent canonical duplicates have one winner and no orphan (85 ms)
+    √ different accounts receive independently salted password hashes (224 ms)
+    √ does not send success before both records commit (165 ms)
+    √ rejects missing name before persistence (11 ms)
+    √ rejects blank name before persistence (10 ms)
+    √ rejects name over limit before persistence (12 ms)
+    √ rejects wrong-type email before persistence (10 ms)
+    √ rejects email over limit before persistence (14 ms)
+    √ rejects short password before persistence (11 ms)
+    √ rejects password over limit before persistence (13 ms)
+    √ rejects unsupported type before persistence (13 ms)
+    √ rejects missing employee ID before persistence (13 ms)
+    √ rejects blank employee ID before persistence (14 ms)
+    √ rejects employee ID over limit before persistence (13 ms)
+    √ rejects member employee ID before persistence (13 ms)
+    √ rejects forged manager flag before persistence (13 ms)
+    √ rejects forged active status before persistence (11 ms)
+    √ rejects forged user ID before persistence (12 ms)
+    √ rejects forged member ID before persistence (12 ms)
+    √ rejects forged timestamp before persistence (12 ms)
+    √ rejects forged hash before persistence (11 ms)
+    √ rejects confirmation field before persistence (11 ms)
+    √ rejects unexpected property before persistence (10 ms)
+    √ rejects malformed and over-8 KiB JSON with no write (28 ms)
+    √ five direct-source attempts per 15 minutes are shared and enforced before a write (303 ms)
+    √ a failed commit produces a non-sensitive retry response and no partial record (64 ms)
+    √ new active Member signs in; new inactive Librarian is denied (237 ms)
+
+PASS test/login.session.test.js
+  T04 authorization and server sessions
+    √ returns only the verified member name alongside the session role (84 ms)
+    √ establishes durable success only for an active stored STUDENT account (61 ms)
+    √ establishes durable success only for an active stored TA account (63 ms)
+    √ uses a uniform denial and writes no session for member selected as librarian (59 ms)
+    √ uses a uniform denial and writes no session for librarian selected as member (62 ms)
+    √ uses a uniform denial and writes no session for inactive account (61 ms)
+    √ does not create a session when session persistence fails (60 ms)
+    √ rechecks active status and stored role on protected routes (137 ms)
+    √ enforces idle and absolute expiry at the server (139 ms)
+    √ requires CSRF on logout, then invalidates the durable session (81 ms)
+    √ applies five-failure canonical email limit without locking the account (294 ms)
+    √ applies thirty-failure direct-source limit with generic 429 (1736 ms)
+    √ uses no forwarded headers as source identity and does not return private account data (61 ms)
+
+PASS test/LoginPage.integration.test.tsx
+  T05 React to Express login integration
+    √ uses server success, protected cookie session, CSRF logout, and then denies the invalidated session (392 ms)
+    √ renders the same real-server denial for unknown account (228 ms)
+    √ renders the same real-server denial for wrong password (248 ms)
+    √ renders the same real-server denial for wrong selected type (301 ms)
+    √ renders the real server 429 after five failed attempts for one canonical email (484 ms)
+    √ renders a generic 503 on repository failure and emits no authentication log data (185 ms)
+
+PASS test/AccountPages.test.tsx
+  √ Account page loads and submits profile fields with CSRF (95 ms)
+  √ Students page confirms deactivation and shows a reset password only once (168 ms)
+  √ TAs page is available to coordinator mode and forced password page presents the required change form (61 ms)
+  √ account and support pages use the shared header with verified role and manager navigation (96 ms)
+  √ forced-password page uses the restricted shared header after session verification (52 ms)
+  √ TA list uses the TA endpoint, and cancelling reset never calls the reset action (50 ms)
+  √ support page reports load failures instead of showing an empty account list (33 ms)
+  √ support load retry retries only the failed account list request (75 ms)
+  √ forced password change reports rejected credentials without leaving the forced page (50 ms)
+  √ wrong profile password is associated with that field and correction clears only its stale error (119 ms)
+  √ expired profile session offers sign-in and never presents it as a password mismatch (109 ms)
+  √ service and malformed failures use safe profile feedback without a load retry (81 ms)
+  √ CSRF and network failures stay scoped to the password form with safe copy (151 ms)
+  √ support action failures remain in the support page and do not expose server bodies (67 ms)
+  √ password attempt limit is not attached to a field or described as a mismatch (71 ms)
+
+PASS test/LoginPage.test.tsx
+  role-aware login
+    √ shows labelled credentials, both account types, and a submit action (63 ms)
+    √ exposes an accessible radio group with a visible selected account type (186 ms)
+    √ rejects blank fields without sending a request: ["email", "password"] (87 ms)
+    √ rejects blank fields without sending a request: ["email"] (77 ms)
+    √ rejects blank fields without sending a request: ["password"] (91 ms)
+    √ sends one POST with the selected STUDENT type and exact password (124 ms)
+    √ sends one POST with the selected TA type and exact password (124 ms)
+    √ shows the uniform denial on HTTP 401 without confirming sign-in (105 ms)
+    √ shows a retry message on HTTP 503 without confirming sign-in (112 ms)
+    √ navigates to the STUDENT dashboard after successful login (138 ms)
+    √ navigates to the TA dashboard after successful login (126 ms)
+    √ does not confirm sign-in for HTTP 200 with invalid JSON (109 ms)
+    √ does not confirm sign-in for HTTP 200 with a missing account type (125 ms)
+    √ does not confirm sign-in for HTTP 200 with an unsupported account type (76 ms)
+
+PASS test/DashboardRoutes.integration.test.tsx
+  dashboard route session guard and logout
+    √ revalidates the server session before rendering /student/dashboard (47 ms)
+    √ revalidates the server session before rendering /ta/dashboard (28 ms)
+    √ greets the verified student by name without interpreting it as markup (23 ms)
+    √ rechecks the session after a student-to-TA route transition and hides content while checking (61 ms)
+    √ ignores an older student response after the TA route check succeeds (59 ms)
+    √ ignores an older 401 after the current route check succeeds (58 ms)
+    √ invalidates a pending check when leaving and revisiting the same dashboard route (79 ms)
+    √ does not serve the former route /member/dashboard as a dashboard (24 ms)
+    √ does not serve the former route /librarian/dashboard as a dashboard (29 ms)
+    √ redirects an unauthenticated direct visit from /student/dashboard without rendering its dashboard (20 ms)
+    √ redirects an unauthenticated direct visit from /ta/dashboard without rendering its dashboard (26 ms)
+    √ denies /ta/dashboard when the server verifies STUDENT and links to that verified role route (36 ms)
+    √ denies /student/dashboard when the server verifies TA and links to that verified role route (33 ms)
+    √ does not let a client-selected or query-string role authorize a dashboard (35 ms)
+    √ fails closed with retry on service failure (18 ms)
+    √ fails closed with retry on malformed session (31 ms)
+    √ fails closed with retry when session validation rejects over the network (25 ms)
+    √ posts CSRF logout and navigates only after 204 confirmation (52 ms)
+    √ shows an accessible logout control on /student/dashboard (50 ms)
+    √ shows an accessible logout control on /ta/dashboard (32 ms)
+    √ treats confirmed 401 during logout as logged out (27 ms)
+    √ keeps protected content hidden with a retryable error after CSRF rejection (49 ms)
+    √ keeps protected content hidden with a retryable error after service failure (46 ms)
+    √ keeps dashboard hidden and permits retry after missing CSRF token (46 ms)
+    √ keeps dashboard hidden and permits retry after CSRF service failure (46 ms)
+    √ keeps dashboard hidden when logout fails over the network (44 ms)
+    √ keeps dashboard hidden when CSRF retrieval fails over the network (43 ms)
+    √ a later dashboard visit is denied after confirmed logout (61 ms)
+  student dashboard navigation
+    √ provides dashboard navigation and keeps logout available (43 ms)
+
+PASS test/student-tickets.api.test.js
+  POST /api/tickets authentication and write boundary
+    √ requires an authenticated active Student and CSRF token (57 ms)
+    √ rechecks active account and role from stored account data (19 ms)
+    √ rejects forged server fields without creating a ticket (12 ms)
+    √ stores the complete C1 shape with Timestamp and specified empty values (12 ms)
+    √ stores trimmed lowercase concept tags and rejects duplicates after normalization (17 ms)
+    √ rejects missing title without writing (9 ms)
+    √ rejects whitespace expected behaviour without writing (10 ms)
+    √ rejects whitespace actual behaviour without writing (8 ms)
+    √ rejects whitespace attempted work without writing (11 ms)
+    √ rejects whitespace title without writing (10 ms)
+    √ rejects wrong type without writing (8 ms)
+    √ rejects unknown property without writing (9 ms)
+    √ rejects client role without writing (7 ms)
+    √ rejects client account type without writing (10 ms)
+    √ rejects custom language without writing (8 ms)
+    √ rejects title over 255 characters without writing (9 ms)
+    √ rejects expected behaviour over 5000 characters without writing (9 ms)
+    √ rejects actual behaviour over 5000 characters without writing (8 ms)
+    √ rejects attempted work over 5000 characters without writing (10 ms)
+    √ rejects error output over 5000 characters without writing (9 ms)
+    √ rejects tag over 30 normalized characters without writing (9 ms)
+    √ rejects too many tags without writing (9 ms)
+    √ rejects blank normalized tag without writing (10 ms)
+    √ rejects too many files without writing (12 ms)
+    √ rejects path filename without writing (9 ms)
+    √ rejects filename over 120 Unicode characters without writing (10 ms)
+    √ rejects file content over 24 KiB in UTF-8 bytes without writing (11 ms)
+    √ rejects repository with query without writing (9 ms)
+    √ rejects repository with empty query marker without writing (9 ms)
+    √ rejects repository with empty fragment marker without writing (8 ms)
+    √ rejects repository with empty credentials marker without writing (9 ms)
+    √ rejects repository URL over 255 characters without writing (8 ms)
+    √ rejects repository URL over 255 Unicode characters without writing (11 ms)
+    √ rejects repository path traversal without writing (9 ms)
+    √ rejects repository paths over aggregate 5000 characters without writing (9 ms)
+    √ rejects repository paths over aggregate 5000 Unicode characters without writing (10 ms)
+    √ rejects two source methods without writing (9 ms)
+    √ rejects paths without repository without writing (11 ms)
+    √ accepts revised maximum text lengths (12 ms)
+    √ accepts supplementary Unicode at filename, repository URL, and path character limits (20 ms)
+    √ rejects malformed JSON and request bodies over 128 KiB (21 ms)
+    √ accepts UTF-8 code files up to the approved 24 KiB per-file limit (10 ms)
+    √ accepts reference-only GitHub context and literal HTML-like text (9 ms)
+    √ returns safe retry response on storage failure without a write (9 ms)
+
+PASS test/login.credentials.test.js
+  T03 POST /api/auth/login
+    √ canonicalizes email and accepts exact password only after T04 session creation (80 ms)
+    √ proves valid credentials internally without treating T03 as login success (53 ms)
+    √ unknown email runs a valid dummy Argon2id verification (121 ms)
+    √ keeps inactive account as password evidence only and never establishes a login (117 ms)
+    √ keeps selected type mismatch as password evidence only and never establishes a login (112 ms)
+    √ returns 400 for missing email before repository access (8 ms)
+    √ returns 400 for non-string email before repository access (7 ms)
+    √ returns 400 for missing password before repository access (6 ms)
+    √ returns 400 for wrong account type before repository access (7 ms)
+    √ returns 400 for whitespace email before repository access (6 ms)
+    √ returns 400 for whitespace password before repository access (8 ms)
+    √ returns 400 for email over limit before repository access (6 ms)
+    √ returns 400 for password over limit before repository access (6 ms)
+    √ rejects malformed JSON and oversized bodies with a bounded response (16 ms)
+    √ denies incorrect passwords with a generic response (58 ms)
+    √ fails closed for missing mapping (57 ms)
+    √ fails closed for duplicate mappings (55 ms)
+    √ fails closed for malformed mapping (58 ms)
+    √ fails closed for mapping to absent user (58 ms)
+    √ fails closed for email mismatch (59 ms)
+    √ fails closed for original email mismatch (58 ms)
+    √ fails closed for password hash malformed (58 ms)
+    √ fails closed for invalid user ID (58 ms)
+    √ fails closed for missing user record (58 ms)
+    √ fails closed as malformed for a stored record with the former MEMBER account type (118 ms)
+    √ fails closed as malformed for a stored record with the former LIBRARIAN account type (112 ms)
+    √ fails closed as malformed for a stored record with the former memberId field instead of studentId (111 ms)
+    √ returns 400 for the former MEMBER request value before repository access (6 ms)
+    √ returns 400 for the former LIBRARIAN request value before repository access (5 ms)
+    √ returns a generic service error when the injected data adapter fails (7 ms)
+
+PASS test/account-r7-server.test.js
+  √ mounted R7 guard blocks account, support, and notifications but permits the limited password-change endpoints (83 ms)
+  √ forced-change sessions cannot bypass R7 with get /API/account (10 ms)
+  √ forced-change sessions cannot bypass R7 with get /Api/account (9 ms)
+  √ forced-change sessions cannot bypass R7 with patch /API/account/profile (8 ms)
+  √ forced-change sessions cannot bypass R7 with get /aPi/support/accounts?type=STUDENT (8 ms)
+  √ forced-change sessions cannot bypass R7 with post /API/support/accounts/u1/status (9 ms)
+  √ forced-change sessions cannot bypass R7 with get /API/notifications/unread-count (8 ms)
+  √ forced-change sessions cannot bypass R7 with post /API/notifications/read-all (8 ms)
+  √ case-insensitive password-change endpoint remains allowed (11 ms)
+
+PASS test/NotificationsRoute.test.tsx
+  notifications route session and persistent header
+    √ renders verified STUDENT navigation above the inbox (78 ms)
+    √ renders verified TA navigation above the inbox (62 ms)
+    √ does not request account or inbox data before session verification (44 ms)
+    √ fails closed on an unknown role without requesting inbox data (32 ms)
+    √ TA manager lookup failure preserves ordinary links and hides coordinator link (44 ms)
+    √ shows coordinator navigation only after a matching TA account confirms manager status (61 ms)
+    √ manager retry keeps verified header and inbox mounted while lookup is pending (155 ms)
+    √ retains the header during inbox loading and a failed mark-read action (113 ms)
+    √ hides inbox content while logout is pending and keeps it hidden after unconfirmed logout (90 ms)
+    √ keeps the header visible when the inbox request fails (55 ms)
+    √ unauthenticated session cannot trigger account, unread-count, or inbox requests (38 ms)
+    √ forced-password session cannot trigger account, unread-count, or inbox requests (14 ms)
+
+PASS test/account-server-wiring.test.js
+  √ mounted account router preserves downstream unauthenticated and missing-route responses (22 ms)
+
+PASS test/account-guards.test.js
+  pure R4 helpers
+    √ canListAccountType (13 ms)
+    √ canActOnTarget (2 ms)
+  construction
+    √ uses the session cookie name issued by login
+    √ requires the auth and account stores (47 ms)
+  requireActiveActor
+    √ sets the actor from the stored record (10 ms)
+    √ exposes mustChangePassword without enforcing it (8 ms)
+    √ returns 401 for no cookie and clears the cookie (7 ms)
+    √ returns 401 for malformed cookie and clears the cookie (7 ms)
+    √ returns 401 for unknown session and clears the cookie (5 ms)
+    √ uses the account session code only on self-service account routes (11 ms)
+    √ rejects and deletes the session of an inactive user (7 ms)
+    √ rejects a session whose issued type no longer matches the stored type (7 ms)
+    √ returns 401 when the session has expired (5 ms)
+    √ returns 503 on storage failure (11 ms)
+    √ ignores client-supplied role, manager, and ID fields (23 ms)
+  requireCsrf
+    √ does not require a token for safe methods (6 ms)
+    √ returns 403 for a missing token on a state-changing request (7 ms)
+    √ returns 403 for a malformed token on a state-changing request (6 ms)
+    √ returns 403 for a wrong token on a state-changing request (6 ms)
+    √ accepts the current token (6 ms)
+    √ rejects a token rotated away after authentication (5 ms)
+    √ returns 401 when no actor was authenticated (6 ms)
+  requireSupportListAccess
+    √ ta listing STUDENT returns 200 (7 ms)
+    √ ta listing TA returns 403 (7 ms)
+    √ coord listing TA returns 200 (6 ms)
+    √ coord listing STUDENT returns 200 (4 ms)
+    √ student listing STUDENT returns 403 (7 ms)
+    √ ta listing ADMIN returns 400 (5 ms)
+    √ ta listing undefined returns 400 (6 ms)
+    √ a forged manager query field has no effect (6 ms)
+    √ returns 401 without an actor (6 ms)
+  requireSupportTarget
+    √ ta acting on student returns 200 (7 ms)
+    √ ta acting on ta2 returns 403 (7 ms)
+    √ ta acting on ta returns 403 (5 ms)
+    √ ta acting on coord returns 403 (7 ms)
+    √ student acting on student2 returns 403 (7 ms)
+    √ student acting on student returns 403 (6 ms)
+    √ student acting on missing returns 403 (6 ms)
+    √ coord acting on ta returns 200 (6 ms)
+    √ coord acting on student returns 200 (8 ms)
+    √ coord acting on coord returns 403 (5 ms)
+    √ ta acting on missing returns 404 (7 ms)
+    √ coord acting on bad.id returns 400 (5 ms)
+    √ a forged target type in the body has no effect (6 ms)
+    √ requires CSRF before loading the target (8 ms)
+    √ returns 401 without an actor (5 ms)
+    √ returns 503 when the target cannot be loaded (5 ms)
+
+PASS test/account-routes.test.js
+  √ self account returns only profile fields plus own manager state (11 ms)
+  √ self-service missing sessions have an explicit safe code while support responses stay compatible (14 ms)
+  √ profile rejects forged fields, requires password for email change, and updates permitted fields (38 ms)
+  √ profile validation identifies only reliable name/email fields and preserves UTF-8 byte limits (39 ms)
+  √ unavailable email returns a safe email-specific conflict without echoing input (60 ms)
+  √ a completed incorrect password comparison returns the mismatch code without a write (61 ms)
+  √ password attempt exhaustion is not reported as a completed mismatch (10 ms)
+  √ invalid new passwords describe existing character and UTF-8 byte limits; malformed shapes stay general (22 ms)
+  √ malformed JSON and oversized profile bodies retain a general safe validation response (19 ms)
+  √ case-insensitive and trailing-slash account aliases retain field feedback (7 ms)
+  √ password change counts bad current password and keeps the active session after success (112 ms)
+  √ support list and target routes rely on stored actor and reject missing CSRF (12 ms)
+  √ temporary password uses exactly sixteen characters from the approved unambiguous alphabet (1 ms)
+  √ forced-password middleware allows the R7 routes and blocks every other API path (14 ms)
+
+PASS test/server.test.js
+  √ serves the built frontend and the login API from one origin (201 ms)
+
+PASS test/notifications.api.test.js
+  √ createServerApp mounts the inbox API behind authentication (9 ms)
+  authentication and role recheck
+    √ get /api/notifications without a session returns 401 (22 ms)
+    √ get /api/notifications/unread-count without a session returns 401 (7 ms)
+    √ post /api/notifications/read-all without a session returns 401 (8 ms)
+    √ post /api/notifications/x-n0/read without a session returns 401 (7 ms)
+    √ get /api/notifications with an inactive account returns 401 and ends the session (6 ms)
+    √ get /api/notifications/unread-count with an inactive account returns 401 and ends the session (7 ms)
+    √ post /api/notifications/read-all with an inactive account returns 401 and ends the session (7 ms)
+    √ post /api/notifications/x-n0/read with an inactive account returns 401 and ends the session (8 ms)
+    √ a role change since sign-in returns 401 (6 ms)
+    √ a session store failure returns 503 (6 ms)
+  GET /api/notifications
+    √ returns only own notifications, newest first, 20 per page across pages (21 ms)
+    √ an exact page has no next cursor and an empty inbox returns an empty list (10 ms)
+    √ ignores client-supplied owner fields (7 ms)
+    √ a malformed cursor returns 400 (5 ms)
+    √ an unknown cursor returns 400 (5 ms)
+    √ another user's notification as cursor returns 400 (6 ms)
+    √ a repeated cursor parameter returns 400 (5 ms)
+    √ a storage failure returns 503 (6 ms)
+  GET /api/notifications/unread-count
+    √ counts own unread notifications only (6 ms)
+    √ caps the count at 99 (6 ms)
+    √ a storage failure returns 503 (7 ms)
+  POST /api/notifications/:id/read
+    √ marks an own notification read (12 ms)
+    √ another user's notification returns the same 404 as a missing one and changes nothing (17 ms)
+    √ no token returns 403 and changes nothing (7 ms)
+    √ a wrong token returns 403 and changes nothing (5 ms)
+    √ another user's token returns 403 and changes nothing (6 ms)
+    √ a storage failure returns 503 (6 ms)
+  POST /api/notifications/read-all
+    √ marks all own notifications read, sets the unread count to 0, and leaves others unchanged (13 ms)
+    √ a missing CSRF token returns 403 and changes nothing (6 ms)
+    √ a storage failure returns 503 (6 ms)
+
+PASS test/Notifications.test.tsx
+  notification navigation and inbox
+    √ bell displays a capped unread count and links to the inbox (38 ms)
+    √ inbox shows loading and retryable error states (77 ms)
+    √ inbox renders untrusted message literally and marks all read with CSRF (63 ms)
+    √ an item without a ticket route can be marked read through its accessible action (89 ms)
+    √ a failed per-item read shows retry and succeeds on retry (126 ms)
+    √ load more requests the next page using the cursor (62 ms)
+    √ bell refreshes after a notification is marked read (74 ms)
+    √ empty state is shown for a successful empty response (32 ms)
+    √ notification styles use shared theme tokens and reflow at 320 CSS pixels (3 ms)
+
+PASS test/AppHeader.test.tsx
+  shared authenticated header contract
+    √ shows only verified STUDENT navigation (manager=false) (85 ms)
+    √ shows only verified TA navigation (manager=false) (73 ms)
+    √ shows only verified TA navigation (manager=true) (80 ms)
+    √ restricted mode keeps dashboard brand and logout without navigation or unread request (17 ms)
+
+PASS test/student-tickets.storage.test.js
+  √ creates one C1 ticket document at the generated ticket path (3 ms)
+
+PASS test/RegistrationNavigation.test.tsx
+  √ Register is a keyboard-accessible link to the registration path (52 ms)
+  √ registration page has an accessible route back to login (29 ms)
+  √ direct navigation to /register selects the registration page at the React root (59 ms)
+
+PASS test/SharedTheme.test.tsx
+  shared dashboard theme
+    √ both role views retain semantic headings, main content, and the shared logout control (80 ms)
+    √ the application entry imports the common theme once and login and dashboards consume its tokens (9 ms)
+    √ the route guard imports each role view from its dedicated shared-style module (3 ms)
+    √ shared styles provide keyboard focus and adapt dashboard layout at 320 CSS pixels (4 ms)
+
+PASS test/account-store.test.js
+  account store construction
+    √ requires a Firestore-like database and session deletion (65 ms)
+  getAccount
+    √ returns the stored record and null for missing, malformed, or invalid IDs (3 ms)
+  listAccountsByType
+    √ returns only the allowed fields for one type (3 ms)
+    √ paginates at most 50 per page with a cursor (4 ms)
+    √ rejects invalid type, page size, and cursor (2 ms)
+  updateProfile
+    √ changes the name only (2 ms)
+    √ moves the email key atomically on an email change (1 ms)
+    √ a case-only email change keeps the key (1 ms)
+    √ a collision with another account returns ALREADY_EXISTS and changes nothing (1 ms)
+    √ a registration racing for the new key fails with ALREADY_EXISTS and leaves no orphan key (1 ms)
+    √ does not delete an old key owned by someone else (1 ms)
+    √ ignores fields other than name and email
+    √ rejects invalid input and missing accounts (1 ms)
+  setAccountStatus
+    √ deactivation deletes every session of the target in the same transaction (2 ms)
+    √ activation changes only the status and repeats are no-ops
+    √ rejects invalid status and missing accounts
+  setPasswordHash
+    √ keeps the caller session and deletes the others (self-service change) (1 ms)
+    √ deletes every session for a reset and sets mustChangePassword
+    √ rejects non-Argon2id hashes, missing flags, bad session hashes, and missing accounts (1 ms)
+  deleteSessionsForUser
+    √ deletes all sessions of one user through the auth store session collection (1 ms)
+    √ auth store operation validates the user ID (1 ms)
+
+PASS test/ai-redact.test.js
+  ai redact: constants
+    √ exports the marker and error code (1 ms)
+  ai redact: private key blocks
+    √ redacts a multi-line block from BEGIN line through END line (1 ms)
+    √ redacts labelled blocks such as RSA, EC, and OPENSSH (1 ms)
+    √ redacts two separate blocks independently and keeps text between them
+    √ redacts an unterminated block to the end of the content
+    √ does not redact public keys or certificates (1 ms)
+  ai redact: AWS access key IDs
+    √ redacts AKIA followed by 16 uppercase letters or digits
+    √ near misses are kept (1 ms)
+  ai redact: GitHub tokens
+    √ redacts ghp_ tokens
+    √ redacts gho_ tokens
+    √ redacts ghu_ tokens
+    √ redacts ghs_ tokens
+    √ redacts ghr_ tokens
+    √ redacts github_pat_ tokens (1 ms)
+    √ near misses are kept (1 ms)
+  ai redact: Google API keys
+    √ redacts AIza followed by 35 key characters (1 ms)
+    √ near misses are kept
+  ai redact: Bearer tokens
+    √ replaces only the token after Bearer
+    √ prose and short words after bearer are kept (1 ms)
+  ai redact: secret assignments
+    √ password = hunter2pass
+    √ DB_PASSWORD=s3cr3tValue (1 ms)
+    √ client_secret: abc123
+    √ accessToken := xyz789
+    √ 'api_key' => 'abcdef' (1 ms)
+    √ "apiKey": "abcdef123"
+    √ APIKEY=`abc def`
+    √ const myToken = "a b c"; (1 ms)
+    √ f(secret=abc, other=1)
+    √ a value already replaced by another pattern yields a single marker (1 ms)
+    √ redacts assignments on each line of multi-line content
+    √ the value does not extend past the end of the line
+    √ near misses are kept (1 ms)
+  ai redact: email addresses
+    √ redacts email addresses
+    √ near misses are kept (1 ms)
+  ai redact: general behavior
+    √ content without secrets is returned unchanged
+    √ mixed content redacts each secret and keeps surrounding text (1 ms)
+    √ is idempotent
+    √ rejects non-string input (31 ms)
+    √ large inputs are processed in bounded time (25 ms)
+  ai redact: input cap
+    √ content at the cap is accepted unchanged (1 ms)
+    √ content one over the cap is rejected without truncation
+    √ length is measured in UTF-16 code units
+    √ rejects invalid caps and non-string content (7 ms)
+    √ redactAndCap applies the cap to the redacted content
+    √ redactAndCap rejects content that grows past the cap after redaction
+    √ redactAndCap returns plain content within the cap unchanged (1 ms)
+  ai redact: typed assignments (review-G1 M1)
+    √ Python annotated
+    √ Python Optional
+    √ Python union (1 ms)
+    √ Python unquoted
+    √ TypeScript const
+    √ TypeScript let union (1 ms)
+    √ TypeScript generic
+    √ TypeScript array type
+    √ Kotlin val
+    √ Kotlin nullable
+    √ Scala qualified type
+    √ no spaces (1 ms)
+    √ a value already redacted by an earlier pattern yields one marker
+    √ untyped colon forms keep their existing behaviour (1 ms)
+    √ near miss is not redacted: "username: str = \"alice\""
+    √ near miss is not redacted: "const count: number = 42;"
+    √ near miss is not redacted: "val host: String = \"server01\""
+    √ near miss is not redacted: "let user: string | undefined = `bob`;"
+    √ near miss is not redacted: "if (password == \"x\") {" (1 ms)
+    √ near miss is not redacted: "token_count === 3"
+    √ a comparison or arrow after a type annotation is not treated as the value
+    √ adversarial annotation-like input is processed in bounded time (85 ms)
+
+PASS test/email.test.js
+  email helpers
+    √ canonicalizeEmail trims surrounding whitespace and lowercases the whole address (1 ms)
+    √ canonicalizeEmail keeps inner characters other than case (1 ms)
+    √ emailKeyFor returns the lowercase hex sha256 of the UTF-8 canonical email (1 ms)
+    √ emailKeyFor of differently formatted inputs matches once canonicalized
+    √ login.js re-exports the same helper functions (1 ms)
+
+PASS test/ai-gateway.test.js
+  √ pipeline redacts, fixes the model, validates output and records only safe metadata (7 ms)
+  √ same feature preserves a stable system prompt and contains delimiter injection (2 ms)
+  √ disabled startup logs one safe reason and calls audit without contacting provider (2 ms)
+  √ invalid actor fails closed (1 ms)
+  √ invalid actor fails closed (1 ms)
+  √ invalid actor fails closed (1 ms)
+  √ unknown feature never reserves capacity or records a fabricated feature (1 ms)
+  √ counter refusal stops pipeline (1 ms)
+  √ counter refusal stops pipeline
+  √ oversize input is rejected after redaction without truncation
+  √ empty or non-string content fails safely (1 ms)
+  √ empty or non-string content fails safely (1 ms)
+  √ empty or non-string content fails safely
+  √ transport TIMEOUT is a safe fallback
+  √ transport CIRCUIT_OPEN is a safe fallback (1 ms)
+  √ transport UPSTREAM_CLIENT_ERROR is a safe fallback
+  √ malformed or schema-invalid output rejected (1 ms)
+  √ malformed or schema-invalid output rejected
+  √ malformed or schema-invalid output rejected (1 ms)
+  √ collaborator and audit failures never expose error content or reject (1 ms)
+
+PASS test/firestore-target.test.js
+  explicit Firestore target selection
+    √ local mode pins loopback emulator and project even if developer ADC is present (3 ms)
+    √ rejects missing mode before constructing an Admin client (33 ms)
+    √ rejects unknown mode before constructing an Admin client (2 ms)
+    √ rejects missing local project before constructing an Admin client (1 ms)
+    √ rejects wrong local project before constructing an Admin client (2 ms)
+    √ rejects missing emulator before constructing an Admin client (1 ms)
+    √ rejects non-loopback emulator before constructing an Admin client (1 ms)
+    √ rejects wrong emulator port before constructing an Admin client (1 ms)
+    √ rejects URL instead of host before constructing an Admin client (2 ms)
+    √ rejects mismatched cloud project before constructing an Admin client (1 ms)
+    √ rejects missing production project before constructing an Admin client (1 ms)
+    √ rejects mismatched production project before constructing an Admin client (1 ms)
+    √ rejects missing production runtime before constructing an Admin client (1 ms)
+    √ rejects production emulator variable before constructing an Admin client (1 ms)
+    √ rejects production developer credentials file before constructing an Admin client (1 ms)
+    √ ignores the former variable names for local mode (1 ms)
+    √ ignores the former variable names for production mode (1 ms)
+    √ rejects the former local emulator project ID (10 ms)
+    √ unreachable local emulator fails without trying credentials or Firestore (1 ms)
+    √ production mode uses only explicit project and deployment runtime credentials (1 ms)
+    √ production credential initialization failure cannot switch to emulator (2 ms)
+    √ production connector rejects an ambient emulator host before credentials or SDK construction (1 ms)
+    √ production rejects a synthetic well-known gcloud ADC file before credential or SDK construction (5 ms)
+    √ production rejects mismatched metadata project before credential or SDK construction (1 ms)
+    √ production rejects unavailable metadata project before credential or SDK construction (2 ms)
+
+PASS test/ai-transport.test.js
+  AI transport request
+    √ posts the configured model, max_tokens, and reasoning_effort with a Bearer header (4 ms)
+    √ ignores a caller-supplied model and extra message fields (1 ms)
+    √ returns usage null and response null for a non-JSON success body (1 ms)
+    √ rejects unusable config or request without calling the provider (2 ms)
+  AI transport retries
+    √ retries HTTP 429 once after a 1-2 s jittered delay, then fails (1 ms)
+    √ retries HTTP 500 once after a 1-2 s jittered delay, then fails (1 ms)
+    √ retries HTTP 503 once after a 1-2 s jittered delay, then fails (1 ms)
+    √ a retry that succeeds returns ok with two attempts (1 ms)
+    √ retries a network error once (1 ms)
+    √ times out each attempt at 20 s, aborts it, and retries once (1 ms)
+    √ the jittered delay stays within 1-2 seconds (1 ms)
+    √ does not retry HTTP 400 or read its body (1 ms)
+    √ does not retry HTTP 401 or read its body (1 ms)
+    √ does not retry HTTP 403 or read its body
+    √ does not retry HTTP 404 or read its body (1 ms)
+    √ does not retry HTTP 422 or read its body
+    √ a Retry-After above 5 seconds means no retry (1 ms)
+    √ a Retry-After of at most 5 seconds is honoured as the minimum delay (1 ms)
+    √ parses Retry-After seconds and HTTP dates (1 ms)
+  AI transport circuit breaker
+    √ opens after 5 consecutive failed calls for 60 s, then resumes (1 ms)
+    √ a success resets the consecutive-failure count (2 ms)
+    √ a failed trial call after the open period reopens the breaker (1 ms)
+    √ a retried call counts as one failure
+    √ config and request errors do not count toward the breaker
+  AI transport non-disclosure
+    √ results never contain the key, the header, or provider bodies, and nothing is logged (2 ms)
+
+PASS test/bootstrap-coordinator.test.js
+  √ bootstrap requires explicit project and accepts optional additional flag (29 ms)
+  √ bootstrap promotes only a TA and activates it without returning the email (3 ms)
+  √ bootstrap refuses an existing coordinator unless explicitly allowed (2 ms)
+  √ bootstrap refuses a missing or non-TA account without changing it (1 ms)
+
+PASS test/ai-config.test.js
+  loadAiConfig valid configuration
+    √ returns a frozen enabled config with the default global limit (2 ms)
+    √ accepts the production base URL
+    √ accepts global limits at both bounds and trims surrounding whitespace (1 ms)
+    √ treats an empty optional global limit as the default (1 ms)
+    √ does not expose the key through serialization, spread, or keys (2 ms)
+    √ ignores unrelated variables and does not mutate the env (1 ms)
+  loadAiConfig missing configuration
+    √ SOCLAAS_API_KEY missing disables the gateway (3 ms)
+    √ SOCLAAS_BASE_URL missing disables the gateway (3 ms)
+    √ SOCLAAS_MODEL missing disables the gateway (2 ms)
+    √ an empty, missing, or non-object env disables the gateway without throwing (1 ms)
+    √ reports every problem in one reason that names variables only (1 ms)
+  loadAiConfig malformed configuration
+    √ SOCLAAS_API_KEY that contains a space disables the gateway without echoing the key (1 ms)
+    √ SOCLAAS_API_KEY that contains a newline disables the gateway without echoing the key (1 ms)
+    √ SOCLAAS_API_KEY that is not a string disables the gateway without echoing the key (1 ms)
+    √ SOCLAAS_BASE_URL http://soclaas-api.example.test/v1 disables the gateway (1 ms)
+    √ SOCLAAS_BASE_URL https://soclaas-api.example.test disables the gateway (1 ms)
+    √ SOCLAAS_BASE_URL https://soclaas-api.example.test/v1/ disables the gateway (1 ms)
+    √ SOCLAAS_BASE_URL https://soclaas-api.example.test/v2 disables the gateway
+    √ SOCLAAS_BASE_URL https://soclaas-api.example.test/v1?x=1 disables the gateway
+    √ SOCLAAS_BASE_URL https://soclaas-api.example.test/v1#frag disables the gateway (1 ms)
+    √ SOCLAAS_BASE_URL https://user:pass@soclaas-api.example.test/v1 disables the gateway (1 ms)
+    √ SOCLAAS_BASE_URL not a url disables the gateway (1 ms)
+    √ SOCLAAS_MODEL "model with spaces" disables the gateway (1 ms)
+    √ SOCLAAS_MODEL "model\nnext" disables the gateway (1 ms)
+    √ SOCLAAS_MODEL "-leading-dash" disables the gateway (2 ms)
+    √ SOCLAAS_MODEL "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" disables the gateway (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "abc" is malformed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "40.5" is malformed (2 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "-5" is malformed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "1e1" is malformed
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "0x10" is malformed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE "4 0" is malformed (1 ms)
+  loadAiConfig out-of-range global limit
+    √ AI_GLOBAL_LIMIT_PER_MINUTE 0 fails closed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE 46 fails closed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE 90 fails closed (1 ms)
+    √ AI_GLOBAL_LIMIT_PER_MINUTE 1000 fails closed (1 ms)
+
+PASS test/ai-rate-limit.test.js
+  √ exports the spec constants (2 ms)
+  √ rejects out-of-range global limits (31 ms)
+  √ allows 5 calls per user per minute, then rate-limits (5 ms)
+  √ isolates users from each other (1 ms)
+  √ per-minute window resets with a fake clock (1 ms)
+  √ enforces 50 per user per day and resets after 24 hours (17 ms)
+  √ enforces the global per-minute limit across users (1 ms)
+  √ a user blocked by their own limit does not consume global capacity
+  √ fails closed when the store errors
+  √ releases earlier slots when a later reservation errors (1 ms)
+  √ still fails closed when release also errors
+  √ fails closed on missing user id or broken clock (1 ms)
+  √ stores hashed keys only, never the raw user id (1 ms)
+
+PASS test/ai-prompt.test.js
+  AI prompt construction
+    √ builds exactly two messages: system first, user last (2 ms)
+    √ system message is the shared preamble followed by the feature prompt (1 ms)
+    √ shared preamble states the R7 rules (1 ms)
+    √ system message is byte-identical across inputs and time (2 ms)
+    √ system message contains no per-request values (1 ms)
+    √ injected instructions stay inside the delimiters (1 ms)
+    √ neutralises forged end delimiter (1 ms)
+    √ neutralises lower-case delimiter
+    √ neutralises spaced delimiter (1 ms)
+    √ neutralises longer runs (1 ms)
+    √ neutralises bare markers
+    √ forged delimiter is replaced with look-alike characters
+    √ leaves shorter angle-bracket runs untouched
+    √ does not truncate long content (1 ms)
+    √ preserves empty content and surrounding whitespace
+    √ rejects non-string content: undefined (29 ms)
+    √ rejects non-string content: null (1 ms)
+    √ rejects non-string content: 42 (1 ms)
+    √ rejects non-string content: {} (1 ms)
+    √ rejects non-string content: ["a"] (1 ms)
+    √ rejects non-string content: [Function anonymous] (1 ms)
+    √ rejects invalid systemPrompt: undefined (1 ms)
+    √ rejects invalid systemPrompt: null (1 ms)
+    √ rejects invalid systemPrompt: "" (1 ms)
+    √ rejects invalid systemPrompt: "   " (2 ms)
+    √ rejects invalid systemPrompt: 42 (1 ms)
+    √ rejects invalid systemPrompt: [Function anonymous] (1 ms)
+    √ type errors do not echo the rejected value (2 ms)
+
+PASS test/notifications.notify.test.js
+  √ a valid input writes one unread notification with the R1 shape (2 ms)
+  √ accepts type TICKET_CLAIMED (1 ms)
+  √ accepts type TICKET_REPLY (1 ms)
+  √ accepts type TICKET_RESOLVED (1 ms)
+  √ accepts type SESSION_UPDATE
+  √ rejects an unknown type without a write (1 ms)
+  √ rejects a lowercase type without a write
+  √ rejects a missing ticketId without a write
+  √ rejects an empty ticketId without a write (1 ms)
+  √ rejects a whitespace ticketId without a write (1 ms)
+  √ rejects a non-string ticketId without a write
+  √ rejects a missing recipient without a write
+  √ rejects a non-string message without a write (1 ms)
+  √ rejects a non-object input without a write (1 ms)
+  √ trims and caps the message at 300 characters without splitting a code point (1 ms)
+  √ stores HTML-like message text unchanged as plain data
+  √ retries a failed write once with the same notification ID (1 ms)
+  √ a write that fails twice resolves without throwing and logs one non-sensitive line (1 ms)
+  √ a ticket action that awaits notify still succeeds when the write fails
+  √ a throwing logger does not reach the caller
+  √ the shared notify export uses the configured store and is safe before configuration (1 ms)
+
+PASS test/ai-transport-hardening.test.js
+  √ rejects a declared oversized response before reading and never retries (2 ms)
+  √ stops a streamed body that exceeds the byte cap without trusting content-length (5 ms)
+  √ forbids redirecting the authorization header (1 ms)
+
+PASS test/firestore-rate-counter.test.js
+  createFirestoreRateCounter
+    √ rejects invalid configuration (26 ms)
+    √ reserves up to the limit, then refuses, and resets after the window (3 ms)
+    √ keeps kinds and identifiers isolated and hashes document keys (1 ms)
+    √ stores the configured count field and window metadata (1 ms)
+    √ release decrements, deletes at zero, and ignores ended windows (1 ms)
+    √ propagates store failures
+  auth store delegation parity
+    √ keeps loginFailureCounters key, fields, and behaviour (1 ms)
+    √ reads legacy failureCount documents written before the refactor (1 ms)
+
+PASS test/ai-features.test.js
+  AI feature registry
+    √ allows exactly the three approved feature names (2 ms)
+    √ registers a valid definition and returns a frozen copy with only R3 fields (2 ms)
+    √ registers every allowed feature independently
+    √ rejects unknown and unregistered features on lookup without throwing (2 ms)
+    √ rejects registration of an unknown feature name (25 ms)
+    √ rejects duplicate registration (1 ms)
+    √ registries are isolated from each other
+    √ rejects invalid definition: non-object definition (2 ms)
+    √ rejects invalid definition: array definition (1 ms)
+    √ rejects invalid definition: missing systemPrompt (1 ms)
+    √ rejects invalid definition: empty systemPrompt (1 ms)
+    √ rejects invalid definition: non-string systemPrompt (1 ms)
+    √ rejects invalid definition: missing buildUserContent (1 ms)
+    √ rejects invalid definition: zero maxInputChars
+    √ rejects invalid definition: fractional maxInputChars (1 ms)
+    √ rejects invalid definition: string maxInputChars (1 ms)
+    √ rejects invalid definition: negative maxOutputTokens
+    √ rejects invalid definition: infinite maxOutputTokens (1 ms)
+    √ rejects invalid definition: missing parse (1 ms)
+    √ rejects invalid definition: client-chosen model field
+    √ rejects invalid definition: unexpected field (1 ms)
+    √ validation reasons do not echo field values (1 ms)
+    √ a registered parse follows the documented { ok, data } | { ok: false } contract (1 ms)
+
+PASS test/ai-browser-boundary.test.js
+  √ browser source cannot import the AI server or reference provider configuration (23 ms)
+
+PASS test/ai-usage-store.test.js
+  AI usage store
+    √ writes one aiUsage document with the R11 fields and provider token counts (2 ms)
+    √ stores null token counts when usage is absent or partial (1 ms)
+    √ accepts every R11 outcome (2 ms)
+    √ swallows a write failure without rejecting and logs no content (1 ms)
+    √ swallows a synchronous store or clock failure
+    √ never writes content, key, or provider fields even if passed in (3 ms)
+    √ rejects malformed metadata without writing or throwing (1 ms)
+    √ rounds latency and requires a Firestore-compatible db (21 ms)
+
+PASS test/ai-parse.test.js
+  AI output parsing
+    √ accepts valid JSON content and returns the feature data (2 ms)
+    √ accepts surrounding whitespace (1 ms)
+    √ accepts one surrounding code fence: "```json\n{\"explanation\":\"fenced\"}\n```"
+    √ accepts one surrounding code fence: "```\n{\"explanation\":\"fenced\"}\n```"
+    √ accepts one surrounding code fence: "\n```JSON\r\n{\"explanation\":\"fenced\"}\r\n```\n" (1 ms)
+    √ accepts one surrounding code fence: "```json\n{\"explanation\":\"fenced\"}```"
+    √ rejects fenced JSON with extra text or a second fence: "Here you go:\n```json\n{\"explanation\":\"x\"}\n```" (1 ms)
+    √ rejects fenced JSON with extra text or a second fence: "```json\n{\"explanation\":\"x\"}\n```\nHope this helps!"
+    √ rejects fenced JSON with extra text or a second fence: "```json\n```json\n{\"explanation\":\"x\"}\n```\n```" (1 ms)
+    √ rejects fenced JSON with extra text or a second fence: "```json\n{\"explanation\":\"x\"}\n```\n```json\n{\"explanation\":\"y\"}\n```"
+    √ rejects null response
+    √ rejects no choices (1 ms)
+    √ rejects empty choices
+    √ rejects choices not an array
+    √ rejects no message
+    √ rejects missing content
+    √ rejects null content (1 ms)
+    √ rejects non-string content (number)
+    √ rejects non-string content (object) (1 ms)
+    √ rejects non-string content (array)
+    √ rejects non-JSON content: ""
+    √ rejects non-JSON content: "not json"
+    √ rejects non-JSON content: "{\"explanation\": \"x\""
+    √ rejects non-JSON content: "{'explanation':'x'}"
+    √ rejects non-JSON content: "Sure! {\"explanation\":\"x\"}" (1 ms)
+    √ rejects schema-invalid JSON: "{\"explanation\":42}"
+    √ rejects schema-invalid JSON: "{\"other\":\"x\"}" (1 ms)
+    √ rejects schema-invalid JSON: "[]"
+    √ rejects schema-invalid JSON: "\"just a string\"" (1 ms)
+    √ rejects schema-invalid JSON: "null"
+    √ treats a throwing or non-conforming feature parse as invalid output (1 ms)
+    √ uses only the first choice (1 ms)
+    √ a throwing getter on the response is invalid output, not an exception
+    √ stripCodeFence removes only one whole-content fence (1 ms)
+
+PASS test/firestore-store.test.js
+  Firestore auth-store transaction safeguards
+    √ rechecks idle expiry with a fresh clock value on transaction retry (3 ms)
+    √ does not move last-seen time backward when the operation clock rolls back (1 ms)
+    √ linearizes concurrent CSRF rotation and logout against the current stored hash (2 ms)
+
+Test Suites: 3 skipped, 41 passed, 41 of 44 total
+Tests:       3 skipped, 737 passed, 740 total
+Snapshots:   0 total
+Time:        66.33 s, estimated 69 s
+Ran all test suites.

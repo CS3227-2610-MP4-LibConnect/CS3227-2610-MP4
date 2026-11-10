@@ -77,6 +77,69 @@
   outline-offset: 3px;
 }
 
+.student-active-tickets-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lc-space-control-gap);
+  margin-bottom: var(--lc-space-control-gap);
+}
+
+.student-active-tickets-heading h2 {
+  margin: 0;
+}
+
+.student-load-all {
+  color: var(--lc-color-blue-link);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.student-active-ticket-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: var(--lc-space-control-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.student-active-ticket-card {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  height: 100%;
+  padding: var(--lc-space-5);
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-surface);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.student-active-ticket-card:hover {
+  border-color: var(--lc-color-blue-link);
+  box-shadow: var(--lc-shadow-surface);
+}
+
+.student-active-ticket-card:focus-visible,
+.student-load-all:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
+.student-active-ticket-title {
+  color: var(--lc-color-navy);
+  font-weight: 650;
+}
+
+.student-active-ticket-meta,
+.student-active-ticket-tags {
+  color: var(--lc-color-muted);
+  font-size: 0.92rem;
+}
+
 .dashboard-page + button {
   display: block;
   margin: 0 auto var(--lc-space-12);

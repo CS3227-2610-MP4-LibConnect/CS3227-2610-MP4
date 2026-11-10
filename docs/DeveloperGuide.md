@@ -15,6 +15,8 @@ and the former application path `src/libconnect-mp4`.
 - [Running the development server](#running-the-development-server)
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
+- [Student ticket creation](#student-ticket-creation)
+- [Student ticket activity](#student-ticket-activity)
 - [TA ticket queue](#ta-ticket-queue)
 - [TA AI assist](#ta-ai-assist)
 - [Running the production server](#running-the-production-server)
@@ -128,6 +130,37 @@ On success, Express creates a Firestore `loginSessions` record and sends an Http
 
 Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; any future protected API must enforce its own server-side authorization on every request.
 
+## Student ticket creation
+
+`TicketCreatePage` is protected by the session route guard at
+`/student/tickets/new`; the dashboard's **Ask for Help** section and Student
+header link navigate to that route. The form validates
+required text, the seven fixed language choices, up to five trimmed lowercase
+unique tags, optional source context, and the approved text and byte limits.
+Source context is either up to three inline code files or a public GitHub URL
+with relative file paths. The browser requests a CSRF token and submits the
+allowlisted fields to `POST /api/tickets`; it never reads or writes the ticket
+collection directly.
+
+The ticket router independently checks the cookie-backed session, reloads the
+active Student account, checks CSRF, parses at most 128 KiB, and validates the
+request. `createFirestoreTicketStore` generates the Firestore document ID and
+writes one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains
+the server-derived owner, Firestore `Timestamp` values, null initial claim and
+resolution fields, and empty arrays/null values for absent optional fields.
+Repository URLs are stored as references and are not fetched. Creation does
+not create a persisted notification. A successful `201` lets the client return
+to the Student dashboard with transient confirmation; failures remain on the
+form. Active dashboard cards, ticket details, Student replies, and Student
+close are described in [Student ticket activity](#student-ticket-activity).
+Editing and TA transitions are outside this implementation.
+
+Focused UI, API, and storage checks are in `test/StudentTickets.test.tsx`,
+`test/student-tickets.api.test.js`, and `test/student-tickets.storage.test.js`.
+The storage test verifies the exact C1 document shape and Firestore timestamp
+types; it uses a controlled Firestore interface. The earlier creation emulator
+assertion is recorded in `workflow/tasks/student-tickets/implementation-T04.md`.
+
 ```mermaid
 sequenceDiagram
     participant B as Browser
@@ -148,6 +181,51 @@ sequenceDiagram
 Logout first calls `GET /api/auth/csrf` to rotate and obtain a token, then sends that token in `X-CSRF-Token` with `POST /api/auth/logout`. Express compares the token hash, deletes the session, and clears the cookie on `204`. The UI returns to login after `204` or a confirmed unauthenticated `401`; on an unconfirmed error it hides dashboard content and offers a retry.
 
 The local Firestore collections used by these flows are `users`, `emailKeys`, `loginSessions`, and `loginFailureCounters`. Only server code creates or changes their authentication records.
+
+## Student ticket activity
+
+`DashboardRouteGuard` protects `/student/tickets` and
+`/student/tickets/:ticketId` on direct entry and refresh. Express serves the
+SPA shell for the detail path; the browser guard checks the cookie-backed
+session before the ticket page renders. The full My Tickets list is deferred.
+
+`GET /api/tickets/active` derives the owner from the verified current Student
+account, queries only `OPEN` and `CLAIMED` records, orders by descending
+`updatedAt` and ascending `ticketId`, and limits results to five. The composite
+Firestore index is defined in `firestore.indexes.json` and wired from
+`firebase.json`. Deploying that index is a separate operation.
+
+`GET /api/tickets/:ticketId` checks ownership before returning the safe ticket
+projection or reply data. Replies are ordered by `createdAt` and `replyId` and
+returned in blocks of 50. A bounded opaque cursor identifies the next page;
+each request checks the session and ticket ownership again. Author names come
+from trusted account records, with `[deleted account]` for a missing owner
+author. `TicketDetailPage` preserves earlier replies when another block fails,
+renders text literally, and distinguishes Student and TA messages with role
+labels and layout.
+
+Reply and close requests require a session-bound CSRF token. Reply writes trim
+surrounding whitespace and update ticket `updatedAt` in the same transaction.
+Close transitions only active owned tickets to `CLOSED`, clears claim and
+resolution fields, and re-reads state transactionally. The client reports
+success only after server confirmation and reloads state after a conflict.
+
+Run the synthetic Firestore Emulator integration from `src/codeclinic` with the
+emulator at `127.0.0.1:8080` and these variables set in the test shell:
+
+```powershell
+$env:RUN_FIRESTORE_EMULATOR_TESTS = '1'
+$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
+$env:CODECLINIC_FIRESTORE_MODE = 'local-emulator'
+$env:CODECLINIC_FIRESTORE_PROJECT_ID = 'demo-codeclinic'
+npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js
+```
+
+The integration creates synthetic local users, sessions, tickets, and replies,
+then deletes those records. It covers ownership isolation, the indexed five
+ticket query, a 50+1 reply boundary with equal timestamps, a reply and dashboard
+refresh, close field semantics, and concurrent close attempts. It does not
+access a live project or deploy index configuration.
 
 ## Account management
 
@@ -459,13 +537,12 @@ Every non-trivial feature follows spec-driven development: **specify → plan/ta
 | Agent | Role | Configured model and effort |
 | --- | --- | --- |
 | `analyst` | Writes the specification, task checklist, and handoff | `gpt-6-luna`, medium |
-| `orchestrator` | Coordinates test writing, task grouping, implementers, and review; owns checklist updates | `gpt-6-sol`, high |
+| `orchestrator` | Coordinates test writing, ordered batches, implementers, and review; owns checklist updates | `gpt-6-sol`, high |
 | `test_writer` | Writes tests from the approved specification before implementation | `gpt-6-luna`, medium |
-| `task_grouper` | Groups checklist tasks by dependency for safe parallel work | `gpt-6-luna`, medium |
-| `implementer` | Implements one assigned task and records evidence | `gpt-6-luna`, medium |
-| `reviewer` | Independently reviews the exact implementation from a separate worktree | `gpt-6-luna`, high |
+| `implementer` | Implements one approved batch of up to two tasks in order and records evidence for each | `gpt-6-luna`, medium |
+| `reviewer` | Independently reviews each batch item and their combined change from a separate worktree | `gpt-6-luna`, high |
 
-The orchestrator dispatches one checklist item at a time with artifact paths rather than pasted documents. Each agent verifies approval state before acting, and no agent may approve its own work. The OpenSpec toolkit skills (`.agents/skills/openspec-*`) are installed. A path adapter maps them to `workflow/specs/` so the project keeps a single specification tree. `workflow/README.md` defines the lifecycle, handoff rules, permission matrix, and evidence requirements.
+The orchestrator proposes consecutive batches of up to two checklist items in dependency order and obtains human approval before dispatch. One implementer completes and verifies each item before starting the next; a different reviewer checks each item and their combined behavior before the next batch. Batch manifests under `workflow/tasks/<task-id>/` are checked by `src/workflow/validate-assignment.mjs`. Agents receive artifact paths rather than pasted documents, verify approval state before acting, and cannot approve their own work. The OpenSpec toolkit skills (`.agents/skills/openspec-*`) are installed. A path adapter maps them to `workflow/specs/` so the project keeps a single specification tree. `workflow/README.md` defines the lifecycle, handoff rules, permission matrix, and evidence requirements.
 
 ## Context engineering and resource-aware use
 
@@ -492,6 +569,7 @@ In the app, no LLM calls exist yet. The planned prompt, caching, and token-budge
 | `workflow/tasks/<task-id>/` | Per-task evidence: spec reference, `tasks.md` checklist, `handoff.md`, implementation and review reports, test coverage reports, security review, and visual evidence |
 | `workflow/tasks/ai-gateway/design.md` | SoC LLM adapter design reused from MP3: provider contract, five-layer reliability pipeline, error handling, and the 90 requests/minute provider limit |
 | `workflow/tasks/<task-id>/assignment-batch-*.json` | Orchestrator dispatch records for a task's batches |
+| `src/workflow/validate-assignment.mjs` | Checks batch manifest structure and evidence paths; does not grant approval or verify test truth |
 | `workflow/tasks/<task-id>/execution_logs/` | Legacy location for factual logs from earlier tasks |
 | `logs/tasks/<task-id>/` | Factual execution logs: commands, results, and agent run notes |
 | `logs/chat/<name>/` | Chat summaries produced with the `summarise-chat` skill and checked by the developer |

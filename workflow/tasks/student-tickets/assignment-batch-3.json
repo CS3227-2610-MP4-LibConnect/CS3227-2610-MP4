@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 3,
+  "items": ["T04"],
+  "splitReason": "Final singleton item in the approved batch plan; integration verification and guides follow T01–T03.",
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/batch-3-dispatch-proposal.md",
+  "implementer": {
+    "agentId": "implementer-tickets-3",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "docs/UserGuide.md",
+      "docs/DeveloperGuide.md",
+      "src/codeclinic/test/StudentTickets.test.tsx",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "src/codeclinic/test/student-tickets.storage.test.js",
+      "src/codeclinic/test/emulator-C1-assertion.js",
+      "src/codeclinic/test/browser-inspection.js",
+      "src/codeclinic/test/browser-inspection-server.js",
+      "workflow/tasks/student-tickets/implementation-T04.md",
+      "workflow/tasks/student-tickets/security-T04.md",
+      "logs/tasks/student-tickets/implementation-T04.md",
+      "logs/tasks/student-tickets/"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-3",
+    "worktree": "shared-workspace",
+    "separationException": "The implementation remains uncommitted in the shared workspace; reviewer must inspect the exact task files and combined diff independently, documenting compensating checks.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T04": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T04.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T04.md",
+      "checks": [
+        { "command": "npm test -- --runInBand --watchAll=false --silent StudentTickets student-tickets.api student-tickets.storage", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false", "result": "pass" },
+        { "command": "npm run build", "result": "pass" },
+        { "command": "firebase emulators:exec --only firestore --project demo-codeclinic-t04 --config ../../logs/tasks/student-tickets/firebase-T04.json --non-interactive \"node ./test/emulator-C1-assertion.js\"", "result": "pass" },
+        { "command": "node ./test/browser-inspection.js", "result": "pass" },
+        { "command": "git diff --check", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T04.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T04.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

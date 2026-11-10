@@ -1,0 +1,849 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/student-tickets.storage.test.js test/student-tickets.api.test.js test/StudentTicketActivity.test.tsx
+
+(node:31784) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/StudentTicketActivity.test.tsx (7.909 s)
+  ● Student ticket activity pages › dashboard shows the latest five active summaries and provides My Tickets navigation
+
+    Unable to find role="region" and name `/active tickets/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div
+        id="root"
+      />
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                aria-label="Notifications, 0 unread"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      34 |     window.history.replaceState({}, '', '/student/dashboard');
+      35 |     render(appTree as React.ReactElement);
+    > 36 |     expect(await screen.findByRole('region', { name: /active tickets/i })).toBeInTheDocument();
+         |                         ^
+      37 |     expect(await screen.findByRole('link', { name: /ticket 0/i })).toHaveAttribute('href', '/student/tickets/ticket-0');
+      38 |     expect(screen.getByRole('link', { name: /load all/i })).toHaveAttribute('href', '/student/tickets');
+      39 |     expect(screen.queryByRole('link', { name: /ticket 5/i })).not.toBeInTheDocument();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:36:25)
+
+  ● Student ticket activity pages › dashboard distinguishes failed active-ticket loads from an empty state and can retry
+
+    Unable to find role="button" and name `/retry/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                aria-label="Notifications, 0 unread"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      54 |     window.history.replaceState({}, '', '/student/dashboard');
+      55 |     render(appTree as React.ReactElement);
+    > 56 |     const retry = await screen.findByRole('button', { name: /retry/i });
+         |                                ^
+      57 |     expect(screen.queryByText(/no active tickets/i)).not.toBeInTheDocument();
+      58 |     fireEvent.click(retry);
+      59 |     expect(await screen.findByText(/no active tickets/i)).toBeInTheDocument();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:56:32)
+
+  ● Student ticket activity pages › deep-linked ticket detail waits for Student verification and renders reply text literally
+
+    Unable to find role="heading" and name "<script>literal</script>"
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="login-page"
+        >
+          <section
+            aria-labelledby="login-title"
+            class="login-card"
+          >
+            <div
+              aria-hidden="true"
+              class="brand-mark"
+            >
+              C
+            </div>
+            <p
+              class="eyebrow"
+            >
+              CODECLINIC
+            </p>
+            <h1
+              id="login-title"
+            >
+              Welcome back
+            </h1>
+            <p
+              class="login-intro"
+            >
+              Sign in to continue to CodeClinic.
+            </p>
+            <form
+              class="login-form"
+              novalidate=""
+            >
+              <fieldset
+                class="account-type-fieldset"
+              >
+                <legend>
+                  Sign in as
+                </legend>
+                <div
+                  class="account-type-options"
+                >
+                  <label
+                    class="account-type-option is-selected"
+                  >
+                    <input
+                      checked=""
+                      name="accountType"
+                      type="radio"
+                      value="STUDENT"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      S
+                    </span>
+                    <span>
+                      Student
+                    </span>
+                  </label>
+                  <label
+                    class="account-type-option"
+                  >
+                    <input
+                      name="accountType"
+                      type="radio"
+                      value="TA"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      T
+                    </span>
+                    <span>
+                      TA
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="email"
+                >
+                  Email address
+                </label>
+                <input
+                  aria-describedby="email-error"
+                  aria-invalid="false"
+                  autocomplete="username"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  type="email"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="email-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  aria-describedby="password-error"
+                  aria-invalid="false"
+                  autocomplete="current-password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="password-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                aria-live="polite"
+                class="form-error"
+                role="alert"
+              />
+              <button
+                class="submit-button"
+                type="submit"
+              >
+                Sign in
+                 
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </button>
+            </form>
+            <p
+              class="login-footer"
+            >
+              New to CodeClinic? 
+              <a
+                href="/register"
+              >
+                Register
+              </a>
+            </p>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      72 |     window.history.replaceState({}, '', '/student/tickets/ticket-1');
+      73 |     render(appTree as React.ReactElement);
+    > 74 |     expect(await screen.findByRole('heading', { name: '<script>literal</script>' })).toBeInTheDocument();
+         |                         ^
+      75 |     expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeInTheDocument();
+      76 |     const renderedApp = document.body.lastElementChild as HTMLElement;
+      77 |     expect(renderedApp.querySelector('script')).toBeNull();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:74:25)
+
+  ● Student ticket activity pages › loads the next reply block and keeps a missing owner author labeled as a Student
+
+    Unable to find an element with the text: last in block. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="login-page"
+        >
+          <section
+            aria-labelledby="login-title"
+            class="login-card"
+          >
+            <div
+              aria-hidden="true"
+              class="brand-mark"
+            >
+              C
+            </div>
+            <p
+              class="eyebrow"
+            >
+              CODECLINIC
+            </p>
+            <h1
+              id="login-title"
+            >
+              Welcome back
+            </h1>
+            <p
+              class="login-intro"
+            >
+              Sign in to continue to CodeClinic.
+            </p>
+            <form
+              class="login-form"
+              novalidate=""
+            >
+              <fieldset
+                class="account-type-fieldset"
+              >
+                <legend>
+                  Sign in as
+                </legend>
+                <div
+                  class="account-type-options"
+                >
+                  <label
+                    class="account-type-option is-selected"
+                  >
+                    <input
+                      checked=""
+                      name="accountType"
+                      type="radio"
+                      value="STUDENT"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      S
+                    </span>
+                    <span>
+                      Student
+                    </span>
+                  </label>
+                  <label
+                    class="account-type-option"
+                  >
+                    <input
+                      name="accountType"
+                      type="radio"
+                      value="TA"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      T
+                    </span>
+                    <span>
+                      TA
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="email"
+                >
+                  Email address
+                </label>
+                <input
+                  aria-describedby="email-error"
+                  aria-invalid="false"
+                  autocomplete="username"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  type="email"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="email-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  aria-describedby="password-error"
+                  aria-invalid="false"
+                  autocomplete="current-password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="password-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                aria-live="polite"
+                class="form-error"
+                role="alert"
+              />
+              <button
+                class="submit-button"
+                type="submit"
+              >
+                Sign in
+                 
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </button>
+            </form>
+            <p
+              class="login-footer"
+            >
+              New to CodeClinic? 
+              <a
+                href="/register"
+              >
+                Register
+              </a>
+            </p>
+          </section>
+        </main>
+      </div>
+    </body>
+
+       98 |     window.history.replaceState({}, '', '/student/tickets/ticket-1');
+       99 |     render(appTree as React.ReactElement);
+    > 100 |     expect(await screen.findByText('last in block')).toBeInTheDocument();
+          |                         ^
+      101 |     expect(screen.getByText('[deleted account]')).toBeInTheDocument();
+      102 |     fireEvent.click(await screen.findByRole('button', { name: /load more replies/i }));
+      103 |     expect(await screen.findByText('next block')).toBeInTheDocument();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByText (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:100:25)
+
+  ● Student ticket activity pages › reply submit is single-flight and retains text after a failed response
+
+    Unable to find role="textbox" and name `/reply/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="login-page"
+        >
+          <section
+            aria-labelledby="login-title"
+            class="login-card"
+          >
+            <div
+              aria-hidden="true"
+              class="brand-mark"
+            >
+              C
+            </div>
+            <p
+              class="eyebrow"
+            >
+              CODECLINIC
+            </p>
+            <h1
+              id="login-title"
+            >
+              Welcome back
+            </h1>
+            <p
+              class="login-intro"
+            >
+              Sign in to continue to CodeClinic.
+            </p>
+            <form
+              class="login-form"
+              novalidate=""
+            >
+              <fieldset
+                class="account-type-fieldset"
+              >
+                <legend>
+                  Sign in as
+                </legend>
+                <div
+                  class="account-type-options"
+                >
+                  <label
+                    class="account-type-option is-selected"
+                  >
+                    <input
+                      checked=""
+                      name="accountType"
+                      type="radio"
+                      value="STUDENT"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      S
+                    </span>
+                    <span>
+                      Student
+                    </span>
+                  </label>
+                  <label
+                    class="account-type-option"
+                  >
+                    <input
+                      name="accountType"
+                      type="radio"
+                      value="TA"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      T
+                    </span>
+                    <span>
+                      TA
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="email"
+                >
+                  Email address
+                </label>
+                <input
+                  aria-describedby="email-error"
+                  aria-invalid="false"
+                  autocomplete="username"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  type="email"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="email-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  aria-describedby="password-error"
+                  aria-invalid="false"
+                  autocomplete="current-password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="password-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                aria-live="polite"
+                class="form-error"
+                role="alert"
+              />
+              <button
+                class="submit-button"
+                type="submit"
+              >
+                Sign in
+                 
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </button>
+            </form>
+            <p
+              class="login-footer"
+            >
+              New to CodeClinic? 
+              <a
+                href="/register"
+              >
+                Register
+              </a>
+            </p>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      120 |     window.history.replaceState({}, '', '/student/tickets/ticket-1');
+      121 |     render(appTree as React.ReactElement);
+    > 122 |     const input = await screen.findByRole('textbox', { name: /reply/i });
+          |                                ^
+      123 |     fireEvent.change(input, { target: { value: 'I tried this.' } });
+      124 |     const submit = screen.getByRole('button', { name: /send reply/i });
+      125 |     fireEvent.click(submit);
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:122:32)
+
+FAIL test/student-tickets.api.test.js (6.247 s)
+  ● GET /api/tickets/:ticketId bounded detail input › rejects an encoded slash in the ticket ID as a safe 400
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      315 |     const student = system.actor('student');
+      316 |     const response = await request(system.app).get('/api/tickets/a%2Fb').set('Cookie', student.cookie);
+    > 317 |     expect(response.status).toBe(400);
+          |                             ^
+      318 |     expect(response.headers['cache-control']).toBe('no-store');
+      319 |     expect(JSON.stringify(response.body)).not.toMatch(/stack|firestore|student/i);
+      320 |     system.cleanup();
+
+      at Object.<anonymous> (test/student-tickets.api.test.js:317:29)
+
+  ● GET /api/tickets/:ticketId bounded detail input › rejects malformed cursors as a safe 400
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      325 |     const student = system.actor('student');
+      326 |     const response = await request(system.app).get('/api/tickets/valid-ticket?cursor=not-a-valid-cursor').set('Cookie', student.cookie);
+    > 327 |     expect(response.status).toBe(400);
+          |                             ^
+      328 |     expect(response.headers['cache-control']).toBe('no-store');
+      329 |     system.cleanup();
+      330 |   });
+
+      at Object.<anonymous> (test/student-tickets.api.test.js:327:29)
+
+FAIL test/student-tickets.storage.test.js
+  ● reads the first bounded reply block in stable timestamp and ID order
+
+    expect(received).toContainEqual(expected) // deep equality
+
+    Expected value: ["replyLimit", 50]
+    Received array: [["collection", "tickets"], ["doc", "ticket-1"], ["ticketGet"], ["subcollection", "replies"], ["replyOrderBy", "createdAt", "asc"], ["replyOrderBy", "replyId", "asc"], ["repliesGet"]]
+
+      103 |   expect(operations).toContainEqual(['replyOrderBy', 'createdAt', 'asc']);
+      104 |   expect(operations).toContainEqual(['replyOrderBy', 'replyId', 'asc']);
+    > 105 |   expect(operations).toContainEqual(['replyLimit', 50]);
+          |                      ^
+      106 |   expect(operations.indexOf('repliesGet')).toBeGreaterThanOrEqual(0);
+      107 |   expect(operations.findIndex((op) => op[0] === 'replyLimit')).toBeLessThan(operations.findIndex((op) => op[0] === 'repliesGet'));
+      108 | });
+
+      at Object.<anonymous> (test/student-tickets.storage.test.js:105:22)
+
+  ● continues a reply block from the stable createdAt and replyId boundary
+
+    expect(received).toContainEqual(expected) // deep equality
+
+    Expected value: ["startAfter", "same", "reply-50"]
+    Received array: [["orderBy", "createdAt", "asc"], ["orderBy", "replyId", "asc"], ["get"]]
+
+      122 |   const store = createFirestoreTicketStore({ collection: () => ({ doc: () => ticketRef }) });
+      123 |   await store.getOwned('student-1', 'ticket-1', { cursor: { createdAt: 'same', replyId: 'reply-50' } });
+    > 124 |   expect(operations).toContainEqual(['startAfter', 'same', 'reply-50']);
+          |                      ^
+      125 |   expect(operations).toContainEqual(['limit', 50]);
+      126 |   expect(operations.findIndex((op) => op[0] === 'limit')).toBeLessThan(operations.findIndex((op) => op[0] === 'get'));
+      127 | });
+
+      at Object.<anonymous> (test/student-tickets.storage.test.js:124:22)
+
+Test Suites: 3 failed, 3 total
+Tests:       9 failed, 47 passed, 56 total
+Snapshots:   0 total
+Time:        18.391 s, estimated 24 s
+Ran all test suites within paths "test/student-tickets.storage.test.js", "test/student-tickets.api.test.js", "test/StudentTicketActivity.test.tsx".

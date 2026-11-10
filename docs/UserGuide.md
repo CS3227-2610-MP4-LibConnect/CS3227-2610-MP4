@@ -5,8 +5,10 @@ problems as tickets, and TAs claim, answer, and resolve them. AI coaches student
 with hints and helps TAs, without doing the work for them.
 
 The current build provides registration, sign-in, account updates, account
-support, and a notifications inbox. Tickets and role-specific AI features are not available yet;
-[Planned features](#planned-features) lists them.
+support, a notifications inbox, Student ticket creation and activity, and a
+My Tickets placeholder. Ticket editing, a full My Tickets list, TA ticket
+workflows, and role-specific AI features are not available yet; [Planned
+features](#planned-features) lists them.
 
 ## Accessing the app
 
@@ -62,6 +64,39 @@ The Student dashboard is a landing page headed **Student Dashboard**. It shows
 **Welcome back** followed by your registered name. Select **CodeClinic** at the
 top left to return to the dashboard, or **Log out** at the top right to sign
 out. The navigation also includes **Account** and **Notifications**.
+
+The **Active tickets** section shows up to five of your most recently updated
+open or claimed tickets. Select a ticket card to see its details and
+conversation. A loading message appears while tickets are fetched; if there
+are none, the section says so. If loading fails, use **Retry**. **Load all**
+opens the protected My Tickets page, which explains that the full list is
+coming later and links back to the dashboard.
+
+## Creating a ticket
+
+On the Student dashboard, use **Ask for Help** or select **Create Ticket** in
+the header. Enter a title, language, expected behaviour, actual behaviour, and
+what you have tried. **Other** is available in the language list; put the
+specific language name in the title or another detail. Error output, up to five
+concept tags, and source context are optional. For source context, attach up to
+three small code files or provide a public GitHub repository URL and relevant
+file paths. Choose one source method. The form checks the size and format limits
+before sending.
+
+Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
+you to the Student dashboard and shows a confirmation. If a check or request
+fails, the form stays open with your entries so you can correct them or retry.
+
+On a ticket detail page, review its status, language, tags, description, source
+context, and timestamps. The conversation shows each reply's author, role, and
+date and time. Select **Load more replies** to continue through a long thread.
+If a block fails, your loaded replies remain on screen and **Retry** requests
+that block again. Replies are available while the ticket is open or claimed;
+enter plain text and select **Send reply**. A failed reply remains in the form
+for another attempt. You can select **Close Ticket** to close an open or
+claimed ticket without a resolution. The page confirms a close only after the
+server accepts it. Closed or resolved tickets cannot receive replies; a closed
+ticket's close control is disabled.
 
 ## TA dashboard
 
@@ -180,7 +215,7 @@ These CodeClinic features are planned and **not available in the current build**
 
 | Role | Planned feature |
 | --- | --- |
-| Student | Create, edit, close, and view tickets with code files and error output |
+| Student | View, edit, and close tickets |
 | Student | Reply in a ticket's thread |
 | Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |

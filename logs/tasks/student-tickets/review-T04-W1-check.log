@@ -1,0 +1,1 @@
+PASS: in-root accepted; sibling-prefix and parent escapes rejected

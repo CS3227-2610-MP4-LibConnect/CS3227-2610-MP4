@@ -1,4 +1,5 @@
 const fs = require('fs');
+const crypto = require('crypto');
 const os = require('os');
 const path = require('path');
 const { TextEncoder, TextDecoder } = require('util');
@@ -17,6 +18,12 @@ test('serves the built frontend and the login API from one origin', async () => 
     const db = {
       async runTransaction() { throw new Error('Account writes are not exercised by this server smoke test.'); },
       collection(name) {
+        if (name === 'users') {
+          return { doc: (id) => ({ get: async () => ({
+            exists: id === 'forced-user',
+            data: () => ({ userId: 'forced-user', accountType: 'STUDENT', accountStatus: 'ACTIVE', mustChangePassword: true }),
+          }) }) };
+        }
         expect(name).toBe('emailKeys');
         return { doc: () => ({ get: async () => ({ exists: false }) }) };
       },
@@ -45,8 +52,9 @@ test('serves the built frontend and the login API from one origin', async () => 
         return true;
       },
     };
+    const registeredAccounts = [];
     const registrationPersistence = {
-      async createAccount() { throw new Error('Registration is not exercised by this server smoke test.'); },
+      async createAccount(account) { registeredAccounts.push(account); },
     };
     const app = createServerApp(db, buildDirectory, authStore, registrationPersistence);
 
@@ -59,7 +67,7 @@ test('serves the built frontend and the login API from one origin', async () => 
     expect(registrationPage.text).toContain('<title>CodeClinic</title>');
 
     const dashboardResults = [];
-    for (const dashboardPath of ['/student/dashboard', '/ta/dashboard']) {
+    for (const dashboardPath of ['/student/dashboard', '/ta/dashboard', '/student/tickets/new']) {
       const directNavigation = await request(app).get(dashboardPath);
       const refresh = await request(app).get(dashboardPath);
       dashboardResults.push(
@@ -72,6 +80,8 @@ test('serves the built frontend and the login API from one origin', async () => 
       { path: '/student/dashboard', kind: 'refresh', status: 200, shell: true },
       { path: '/ta/dashboard', kind: 'direct', status: 200, shell: true },
       { path: '/ta/dashboard', kind: 'refresh', status: 200, shell: true },
+      { path: '/student/tickets/new', kind: 'direct', status: 200, shell: true },
+      { path: '/student/tickets/new', kind: 'refresh', status: 200, shell: true },
     ]);
 
     for (const formerPath of ['/member/dashboard', '/librarian/dashboard']) {
@@ -91,6 +101,34 @@ test('serves the built frontend and the login API from one origin', async () => 
     expect(login.status).toBe(401);
     expect(login.body).toEqual({ message: 'Incorrect email or password.' });
     expect(login.headers['set-cookie']).toBeUndefined();
+
+    const registration = await request(app).post('/api/auth/register').send({
+      accountType: 'STUDENT', name: 'Test Student', email: 'student@example.test', password: 'synthetic-password',
+    });
+    expect(registration.status).toBe(201);
+    expect(registration.body).toEqual({ accountType: 'STUDENT', accountStatus: 'ACTIVE' });
+    expect(registeredAccounts).toHaveLength(1);
+
+    const forcedSessionId = 'f'.repeat(43);
+    const forcedSessionHash = crypto.createHash('sha256').update(forcedSessionId).digest('hex');
+    sessions.set(forcedSessionHash, { userId: 'forced-user', accountTypeAtIssue: 'STUDENT' });
+    const forcedCookie = `__Host-codeclinic_session=${forcedSessionId}`;
+    const validWhileForced = await request(app).post('/api/auth/register').set('Cookie', forcedCookie).send({
+      accountType: 'STUDENT', name: 'Blocked Student', email: 'blocked@example.test', password: 'synthetic-password',
+    });
+    expect(validWhileForced.status).toBe(403);
+    const malformedWhileForced = await request(app).post('/api/auth/register')
+      .set('Cookie', forcedCookie).set('Content-Type', 'application/json').send('{');
+    expect(malformedWhileForced.status).toBe(400);
+    expect(malformedWhileForced.body).toEqual({ message: 'Enter valid registration details.' });
+    expect(registeredAccounts).toHaveLength(1);
+    sessions.delete(forcedSessionHash);
+
+    const oversizedTicketBody = JSON.stringify({ title: 'x'.repeat(128 * 1024) });
+    const oversizedTicket = await request(app).post('/api/tickets')
+      .set('Content-Type', 'application/json').send(oversizedTicketBody);
+    expect(oversizedTicket.status).toBe(413);
+    expect(oversizedTicket.body).toEqual({ message: 'Request body is too large.' });
   } finally {
     fs.rmSync(buildDirectory, { recursive: true, force: true });
   }

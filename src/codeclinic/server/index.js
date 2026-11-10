@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const express = require('express');
-const { createFirestoreLoginRepository, createLoginApp } = require('./auth/login');
+const { MAX_BODY_BYTES: AUTH_BODY_BYTES, createFirestoreLoginRepository, createLoginApp, createForcedPasswordChangeGuard } = require('./auth/login');
 const { createFirestoreAuthStore } = require('./auth/firestore-store');
 const { createRegistrationHandler } = require('./auth/register');
 const { createFirestoreRegistrationPersistence } = require('./auth/firestore-registration');
@@ -13,6 +13,7 @@ const { registerTaAiFeatures } = require('./tickets/ta-ai-draft-route');
 const { createFirestoreAccountStore } = require('./account/store');
 const { createAccountRouter } = require('./account/routes');
 const { createFirestoreTicketStore } = require('./tickets/store');
+const { createTicketsRouter } = require('./tickets/route');
 const { createTaTicketsRouter } = require('./tickets/ta-routes');
 const { notify } = require('./notifications/notify');
 
@@ -29,8 +30,29 @@ function createLazyTicketStore(db) {
 }
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
-  const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
-  app.post('/api/auth/register', createRegistrationHandler(registrationPersistence, authStore));
+  const repository = createFirestoreLoginRepository(db);
+  const loginApp = createLoginApp(repository, authStore);
+  const app = express();
+  app.disable('x-powered-by');
+  // This endpoint has an approved 128 KiB request limit; mount it before the
+  // login app's shared 8 KiB parser so auth and account limits stay unchanged.
+  app.use('/api/tickets', createTicketsRouter({
+    repository,
+    authStore,
+    store: createFirestoreTicketStore(db),
+  }));
+  // Keep registration outside the nested login app: its catch-all error
+  // boundary must not turn registration failures into login-service 503s.
+  app.post('/api/auth/register', express.json({ limit: AUTH_BODY_BYTES, strict: true }),
+    createForcedPasswordChangeGuard(repository, authStore),
+    createRegistrationHandler(registrationPersistence, authStore),
+    (error, _request, response, _next) => {
+      if (error && (error.type === 'entity.too.large' || error.type === 'entity.parse.failed' || error.status === 400)) {
+        return response.status(400).json({ message: 'Enter valid registration details.' });
+      }
+      return response.status(503).json({ message: 'Registration is temporarily unavailable. Please try again.' });
+    });
+  app.use(loginApp);
   app.use('/api', createAccountRouter({
     accountStore: createFirestoreAccountStore(db, authStore),
     authStore,
@@ -53,7 +75,7 @@ function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'
     app.get('/register', (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
-    app.get(['/student/dashboard', '/ta/dashboard'], (_request, response) => {
+    app.get(['/student/dashboard', '/ta/dashboard', '/student/tickets', '/student/tickets/new', /^\/student\/tickets\/[^/]+$/], (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
     app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas', '/ta/queue', '/ta/tickets/:ticketId',
