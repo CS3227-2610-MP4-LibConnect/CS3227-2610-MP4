@@ -356,3 +356,15 @@ test.each([
   expect(await screen.findByRole('alert')).toHaveTextContent(expected);
   expect(screen.queryByText('Injected server text')).not.toBeInTheDocument();
 });
+
+test('support page uses the account the route guard loaded instead of fetching it again', async () => {
+  const fetchMock = jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [entry], nextCursor: null }), { status: 200 });
+    return new Response('{}', { status: 500 });
+  });
+  render(<AccountPages mode="tas" initialAccount={{ name: 'Ada', email: 'ada@example.edu', accountType: 'TA', isManager: true }} />);
+  expect(await screen.findByText('Student Example')).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'TAs' })).toHaveAttribute('href', '/ta/tas');
+  expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url === '/api/account')).toHaveLength(0);
+});

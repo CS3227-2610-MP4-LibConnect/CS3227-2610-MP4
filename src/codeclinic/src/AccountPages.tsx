@@ -3,9 +3,11 @@ import './AccountPages.css';
 import AppHeader from './AppHeader';
 import { AccountFailure, AccountField, csrfFailure, readFailure, sessionFailure } from './accountFeedback';
 
-type Account = { name: string; email: string; accountType: 'STUDENT' | 'TA'; isManager?: boolean };
+export type Account = { name: string; email: string; accountType: 'STUDENT' | 'TA'; isManager?: boolean };
 type Entry = { userId: string; name: string; email: string; accountType: 'STUDENT' | 'TA'; accountStatus: 'ACTIVE' | 'INACTIVE'; registrationDateTime: string | null };
-type Props = { mode: 'account' | 'students' | 'tas' | 'password-change' };
+// `initialAccount` is the account the route guard already loaded, so the page
+// does not fetch /api/account a second time. Retries always refetch.
+type Props = { mode: 'account' | 'students' | 'tas' | 'password-change'; initialAccount?: Account };
 type Feedback = AccountFailure | null;
 class AccountActionError extends Error {
   constructor(readonly accountFailure: AccountFailure) {
@@ -28,7 +30,7 @@ const actionFallback = (action: 'profile' | 'password' | 'support'): AccountFail
       : 'Could not complete this support action. Please try again.',
 });
 
-export default function AccountPages({ mode }: Props) {
+export default function AccountPages({ mode, initialAccount }: Props) {
   const [account, setAccount] = useState<Account | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -86,7 +88,8 @@ export default function AccountPages({ mode }: Props) {
           await loadEntries();
         } else {
           setLoadRetry('account');
-          await loadAccount();
+          if (initialAccount && !retry) setAccount(initialAccount);
+          else await loadAccount();
           if (mode === 'students' || mode === 'tas') {
             setLoadRetry('support');
             await loadEntries();
@@ -97,7 +100,7 @@ export default function AccountPages({ mode }: Props) {
       : error instanceof Error && error.message === 'Could not load your account.' ? error.message
         : mode === 'password-change' ? 'Could not verify your session.' : 'Could not load account details.'); }
     finally { setLoading(false); }
-  }, [loadAccount, loadEntries, mode]);
+  }, [initialAccount, loadAccount, loadEntries, mode]);
   useEffect(() => { void loadPage(); }, [loadPage]);
   useEffect(() => { if (loadError) loadAlert.current?.focus(); }, [loadError]);
   useEffect(() => {

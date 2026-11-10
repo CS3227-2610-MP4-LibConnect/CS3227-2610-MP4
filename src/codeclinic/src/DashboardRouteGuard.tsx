@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TADashboard } from './TADashboard';
 import { StudentDashboard } from './StudentDashboard';
-import AccountPages from './AccountPages';
+import AccountPages, { Account } from './AccountPages';
 
 type AccountType = 'STUDENT' | 'TA';
 type GuardState = 'checking' | 'ready' | 'denied' | 'retry';
@@ -11,6 +11,7 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
   const [verifiedAccountType, setVerifiedAccountType] = useState<AccountType | null>(null);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
   const [isManager, setIsManager] = useState(false);
+  const [verifiedAccount, setVerifiedAccount] = useState<Account | null>(null);
   const lastAutoCheckFor = useRef<AccountType | null>(null);
   const requestGeneration = useRef(0);
   const lifecycleVersion = useRef(0);
@@ -23,6 +24,7 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
     setState('checking');
     setVerifiedAccountType(null);
     setVerifiedName(null);
+    setVerifiedAccount(null);
     try {
       const response = await fetch('/api/auth/session', { method: 'GET', credentials: 'same-origin' });
       if (!isCurrentRequest()) return;
@@ -48,6 +50,7 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
       const returnedName = (body as { name?: unknown } | null)?.name;
       const mustChangePassword = (body as { mustChangePassword?: unknown } | null)?.mustChangePassword === true;
       let manager = false;
+      let ownAccountRecord: Account | null = null;
       if (returnedType !== 'STUDENT' && returnedType !== 'TA') {
         setState('retry');
         return;
@@ -60,13 +63,17 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
           const accountResponse = await fetch('/api/account', { credentials: 'same-origin' });
           if (!isCurrentRequest()) return;
           if (!accountResponse.ok) { setState('retry'); return; }
-          const ownAccount = await accountResponse.json() as { isManager?: unknown };
+          const ownAccount = await accountResponse.json() as { name?: unknown; email?: unknown; accountType?: unknown; isManager?: unknown };
           manager = ownAccount.isManager === true;
+          if (typeof ownAccount.name === 'string' && typeof ownAccount.email === 'string' && ownAccount.accountType === 'TA') {
+            ownAccountRecord = { name: ownAccount.name, email: ownAccount.email, accountType: 'TA', isManager: manager };
+          }
         }
         setVerifiedAccountType(returnedType);
         setVerifiedName(returnedType === 'STUDENT' && typeof returnedName === 'string' &&
           returnedName.trim().length > 0 && returnedName.length <= 200 ? returnedName.trim() : null);
         setIsManager(manager);
+        setVerifiedAccount(ownAccountRecord);
         setState('ready');
       } else {
         setVerifiedAccountType(returnedType);
@@ -125,12 +132,14 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
   const clearVerifiedAccount = () => {
     setVerifiedAccountType(null);
     setVerifiedName(null);
+    setVerifiedAccount(null);
     setState('checking');
   };
   if (window.location.pathname === '/account/password-change') return <AccountPages mode="password-change" />;
-  if (window.location.pathname === `/${accountType.toLowerCase()}/account`) return <AccountPages mode="account" />;
-  if (accountType === 'TA' && window.location.pathname === '/ta/students') return <AccountPages mode="students" />;
-  if (accountType === 'TA' && window.location.pathname === '/ta/tas' && isManager) return <AccountPages mode="tas" />;
+  const initialAccount = verifiedAccount ?? undefined;
+  if (window.location.pathname === `/${accountType.toLowerCase()}/account`) return <AccountPages mode="account" initialAccount={initialAccount} />;
+  if (accountType === 'TA' && window.location.pathname === '/ta/students') return <AccountPages mode="students" initialAccount={initialAccount} />;
+  if (accountType === 'TA' && window.location.pathname === '/ta/tas' && isManager) return <AccountPages mode="tas" initialAccount={initialAccount} />;
   return accountType === 'STUDENT'
     ? <StudentDashboard onLogoutConfirmed={clearVerifiedAccount} name={verifiedName} />
     : <TADashboard onLogoutConfirmed={clearVerifiedAccount} isManager={isManager} />;
