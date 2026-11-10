@@ -17,6 +17,7 @@ and the former application path `src/libconnect-mp4`.
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
 - [Student ticket creation](#student-ticket-creation)
 - [Student ticket activity](#student-ticket-activity)
+- [Student My Tickets](#student-my-tickets)
 - [TA ticket queue](#ta-ticket-queue)
 - [TA AI assist](#ta-ai-assist)
 - [Running the production server](#running-the-production-server)
@@ -196,16 +197,6 @@ account, queries only `OPEN` and `CLAIMED` records, orders by descending
 Firestore index is defined in `firestore.indexes.json` and wired from
 `firebase.json`. Deploying that index is a separate operation.
 
-`GET /api/tickets?view=open|closed&cursor=...` serves the protected My Tickets
-page. The server rechecks the active Student account and derives the owner from
-the session. Open groups `OPEN` and `CLAIMED`; Closed groups `CLOSED` and
-`RESOLVED`. Each bounded page returns up to 20 safe summaries, ordered by
-descending `updatedAt` then ascending `ticketId`; its opaque cursor is bound to
-the selected view. The list query requires the composite index on `studentId`,
-`status`, `updatedAt`, and `ticketId` in `firestore.indexes.json`. Production
-index deployment is separate from application code and must precede production
-use of this query.
-
 `GET /api/tickets/:ticketId` checks ownership before returning the safe ticket
 projection or reply data. Replies are ordered by `createdAt` and `replyId` and
 returned in blocks of 50. A bounded opaque cursor identifies the next page;
@@ -220,6 +211,35 @@ surrounding whitespace and update ticket `updatedAt` in the same transaction.
 Close transitions only active owned tickets to `CLOSED`, clears claim and
 resolution fields, and re-reads state transactionally. The client reports
 success only after server confirmation and reloads state after a conflict.
+
+## Student My Tickets
+
+The protected `/student/tickets` page replaces the former placeholder. The
+Student header places **My Tickets** immediately after **Create Ticket**; the
+dashboard keeps the **View all tickets** link. `MyTicketsPage` defaults to the
+Open view (`OPEN` and `CLAIMED`) and switches to Closed (`CLOSED` and
+`RESOLVED`) with buttons that expose their selected state through
+`aria-pressed`. Both views use `StudentTicketCard`, the same card component as
+the dashboard. Closed-view cards use its muted style while keeping readable
+status labels and visible keyboard focus. Each card opens the existing owned
+ticket detail route.
+
+`GET /api/tickets?view=open|closed&cursor=...` rechecks the active Student
+account and derives the owner from the session on every request. It returns
+only ticket ID, title, language, concept tags, status, and update time. Each
+bounded page returns up to 20 summaries, ordered by descending `updatedAt`
+then ascending `ticketId`; an opaque cursor is bound to the selected view.
+Switching views discards the previous results and cursor. Initial and
+additional-page errors offer Retry, while a failed additional page keeps
+already loaded cards visible. The list query requires the composite index on
+`studentId`, `status`, `updatedAt`, and `ticketId` in
+`firestore.indexes.json`. Production index deployment is separate from
+application code and must precede production use of this query.
+
+Focused My Tickets checks are in `test/StudentMyTickets.test.tsx`,
+`test/StudentTicketCard.test.tsx`, and
+`test/student-my-tickets.contract.test.js`. The synthetic emulator integration
+below covers both views, all four statuses, pagination, and owner isolation.
 
 Run the synthetic Firestore Emulator integration from `src/codeclinic` with the
 emulator at `127.0.0.1:8080` and these variables set in the test shell:

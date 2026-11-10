@@ -1,12 +1,12 @@
 # User Guide
 
 CodeClinic is a help desk for programming courses. Students submit coding
-problems as tickets, and TAs claim, answer, and resolve them. AI coaches students
-with hints and helps TAs, without doing the work for them.
+problems as tickets, and TAs claim, answer, and resolve them. Student AI coaching
+is planned; current AI assistance helps TAs without doing the work for them.
 
 The current build provides registration, sign-in, account updates, account
 support, a notifications inbox, Student ticket creation and activity, the full
-My Tickets list, TA ticket workflows, and role-specific AI features. Ticket
+My Tickets list, TA ticket workflows, and TA AI features. Ticket
 editing is not available yet; [Planned features](#planned-features) lists it.
 
 ## Accessing the app
@@ -62,8 +62,8 @@ or eight hours after signing in.
 The Student dashboard is a landing page headed **Student Dashboard**. It shows
 **Welcome back** followed by your registered name. Select **CodeClinic** at the
 top left to return to the dashboard, or **Log out** at the top right to sign
-out. The navigation also includes **My Tickets**, **Account**, and
-**Notifications**.
+out. The navigation includes **Create Ticket**, **My Tickets** immediately to
+its right, **Account**, and **Notifications**.
 
 The **Active tickets** section shows up to five of your most recently updated
 open or claimed tickets. Select a ticket card to see its details and
@@ -74,12 +74,17 @@ list.
 
 ## My Tickets
 
-My Tickets opens with **Open** selected and shows your `OPEN` and `CLAIMED`
-tickets. Select **Closed** to see `CLOSED` and `RESOLVED` tickets. Each card
-shows the readable status (**Open**, **Claimed**, **Closed**, or **Resolved**)
-and opens the ticket details. Select **Load more** to continue through a long
-list. If a request fails, use **Retry**; tickets already loaded remain visible
-when loading a later page fails.
+My Tickets opens at `/student/tickets` with **Open** selected and shows your
+`OPEN` and `CLAIMED` tickets. Select **Closed** to see both `CLOSED` and
+`RESOLVED` tickets, or select **Open** to return. Each card uses the dashboard
+layout: title, language and readable status (**Open**, **Claimed**, **Closed**,
+or **Resolved**), then concept tags or **No concept tags**. Closed-view cards
+are slightly greyed out. Select a card to open its details.
+
+The page loads 20 tickets at a time. Select **Load more** to continue through
+the selected view. If there are no tickets in that view, the page says so. If
+a request fails, use **Retry**; tickets already loaded remain visible when
+loading a later page fails.
 
 ## Creating a ticket
 
@@ -95,6 +100,8 @@ before sending.
 Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
 you to the Student dashboard and shows a confirmation. If a check or request
 fails, the form stays open with your entries so you can correct them or retry.
+
+## Viewing, replying to, and closing a ticket
 
 On a ticket detail page, review its status, language, tags, description, source
 context, and timestamps. The conversation shows each reply's author, role, and
@@ -137,8 +144,7 @@ If another action changed the ticket first, you see "This ticket changed. The
 latest version is shown." Review it and try again. The student is notified when
 you claim, reply to, or resolve their ticket.
 
-Tickets are created by students, which is not available yet, so the queue is
-empty until that feature is released.
+Student-created tickets appear in the queue after they are submitted.
 
 ### AI help for TAs
 
@@ -224,8 +230,7 @@ These CodeClinic features are planned and **not available in the current build**
 
 | Role | Planned feature |
 | --- | --- |
-| Student | View, edit, and close tickets |
-| Student | Reply in a ticket's thread |
+| Student | Edit a ticket after creation |
 | Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |
 | TA | AI Fix Note Drafter and AI Queue Insights |
