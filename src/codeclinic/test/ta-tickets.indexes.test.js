@@ -3,9 +3,12 @@ const path = require('path');
 const { createFirestoreTicketStore } = require('../server/tickets/store');
 
 const indexFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'firestore.indexes.json'), 'utf8'));
+// The TA queue's indexes are the `tickets` indexes that start with `status`;
+// the student activity indexes start with `studentId` or are on `replies`.
+const taQueueIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' && i.fields[0].fieldPath === 'status');
 
-/** Fake Firestore that records the where/orderBy calls listTickets builds. */
-function recordQuery(filters) {
+/** Fake Firestore that records the where/orderBy calls a store method builds. */
+function recordStoreQuery(run) {
   const wheres = [];
   const orders = [];
   const query = {
@@ -14,12 +17,17 @@ function recordQuery(filters) {
     startAfter() { return query; },
     limit() { return query; },
     async get() { return { docs: [] }; },
+    doc() { return { collection: () => query, get: async () => ({ exists: false }) }; },
   };
   const db = { collection: () => query, runTransaction: async () => ({}) };
   const store = createFirestoreTicketStore(db, {
     firestore: { FieldValue: {}, Timestamp: { fromMillis: (ms) => ms } },
   });
-  return store.listTickets(filters).then(() => ({ wheres, orders }));
+  return Promise.resolve(run(store)).then(() => ({ wheres, orders }));
+}
+
+function recordQuery(filters) {
+  return recordStoreQuery((store) => store.listTickets(filters));
 }
 
 /** The composite-index fields a recorded query needs: equality, then array-contains, then order. */
@@ -35,13 +43,53 @@ const statuses = [undefined, 'ACTIVE', 'OPEN', 'CLAIMED', 'RESOLVED'];
 const languages = [undefined, 'python'];
 const concepts = [undefined, 'loops'];
 
-describe('ta-ticket-queue Firestore indexes', () => {
-  test('file has only COLLECTION-scoped composite indexes on tickets and no overrides', () => {
+describe('Firestore index file', () => {
+  test('has only COLLECTION-scoped composite indexes and no overrides', () => {
     expect(indexFile.fieldOverrides).toEqual([]);
-    expect(indexFile.indexes).toHaveLength(4);
     for (const index of indexFile.indexes) {
-      expect(index.collectionGroup).toBe('tickets');
+      expect(['tickets', 'replies']).toContain(index.collectionGroup);
       expect(index.queryScope).toBe('COLLECTION');
+    }
+  });
+
+  test('no index lists a field twice (catches indexes fused by a bad merge)', () => {
+    for (const index of indexFile.indexes) {
+      const names = index.fields.map((field) => field.fieldPath);
+      expect(new Set(names).size).toBe(names.length);
+    }
+  });
+
+  test('contains exactly the student activity and TA queue indexes', () => {
+    expect(indexFile.indexes).toHaveLength(2 + taQueueIndexes.length);
+    expect(taQueueIndexes).toHaveLength(4);
+  });
+});
+
+describe('student activity Firestore indexes', () => {
+  test("a student's active-ticket list has exactly one matching index", async () => {
+    const needed = requiredFields(await recordStoreQuery((store) => store.listActive('student-1')));
+    expect(needed).toEqual([
+      { fieldPath: 'studentId', order: 'ASCENDING' },
+      { fieldPath: 'status', order: 'ASCENDING' },
+      { fieldPath: 'updatedAt', order: 'DESCENDING' },
+      { fieldPath: 'ticketId', order: 'ASCENDING' },
+    ]);
+    const matches = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' && JSON.stringify(i.fields) === JSON.stringify(needed));
+    expect(matches).toHaveLength(1);
+  });
+
+  test('ticket replies are ordered by an index on createdAt then replyId', () => {
+    const matches = indexFile.indexes.filter((i) => i.collectionGroup === 'replies' && JSON.stringify(i.fields) === JSON.stringify([
+      { fieldPath: 'createdAt', order: 'ASCENDING' },
+      { fieldPath: 'replyId', order: 'ASCENDING' },
+    ]));
+    expect(matches).toHaveLength(1);
+  });
+});
+
+describe('ta-ticket-queue Firestore indexes', () => {
+  test('every TA queue index ends with createdAt ascending', () => {
+    for (const index of taQueueIndexes) {
       expect(index.fields[index.fields.length - 1]).toEqual({ fieldPath: 'createdAt', order: 'ASCENDING' });
     }
   });
@@ -54,20 +102,20 @@ describe('ta-ticket-queue Firestore indexes', () => {
           expect(recorded.orders[recorded.orders.length - 1]).toEqual({ field: '__name__', dir: 'asc' });
           const needed = requiredFields(recorded);
           expect(needed[needed.length - 1]).toEqual({ fieldPath: 'createdAt', order: 'ASCENDING' });
-          const matches = indexFile.indexes.filter((i) => JSON.stringify(i.fields) === JSON.stringify(needed));
+          const matches = taQueueIndexes.filter((i) => JSON.stringify(i.fields) === JSON.stringify(needed));
           expect(matches).toHaveLength(1);
         });
       }
     }
   }
 
-  test('every index is used by some query shape (no extra fields or indexes)', async () => {
+  test('every TA queue index is used by some query shape (no extra fields or indexes)', async () => {
     const used = new Set();
     for (const language of languages) {
       for (const concept of concepts) {
         used.add(JSON.stringify(requiredFields(await recordQuery({ status: 'OPEN', language, concept }))));
       }
     }
-    expect(new Set(indexFile.indexes.map((i) => JSON.stringify(i.fields)))).toEqual(used);
+    expect(new Set(taQueueIndexes.map((i) => JSON.stringify(i.fields)))).toEqual(used);
   });
 });
