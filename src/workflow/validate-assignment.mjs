@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// Validate the structure of a workflow batch assignment before dispatch and
+// after review. This does not verify approval, run checks, or judge evidence.
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,10 +9,13 @@ const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url))
 const verdicts = new Set(['pass', 'pass-with-follow-up', 'changes-required']);
 const checkResults = new Set(['pass', 'fail', 'skipped']);
 
+// Add a field-specific error without stopping the remaining validation.
 function nonempty(value, label, errors) {
   if (typeof value !== 'string' || !value.trim()) errors.push(`${label} must be a nonempty string`);
 }
 
+// Keep manifest paths inside the repository. Existing artifacts and evidence
+// must be present; planned output files may be checked with mustExist=false.
 function relativeFile(value, label, errors, mustExist = true) {
   if (typeof value !== 'string' || !value.trim() || path.isAbsolute(value)) {
     errors.push(`${label} must be a nonempty repository-relative path`);
@@ -25,6 +30,7 @@ function relativeFile(value, label, errors, mustExist = true) {
   return { normalized: path.relative(repositoryRoot, resolved).replaceAll('\\', '/'), resolved };
 }
 
+// Extract ordered T-item IDs and completion markers from the approved checklist.
 function checklistItems(content) {
   const items = [];
   for (const line of content.split(/\r?\n/)) {
@@ -34,6 +40,9 @@ function checklistItems(content) {
   return items;
 }
 
+// Return all manifest errors so the orchestrator can correct them together.
+// The complete phase additionally requires per-item implementation and review
+// evidence; neither phase grants a workflow approval.
 export function validate(manifest, phase = 'plan', { allowFixturePaths = false } = {}) {
   const errors = [];
   if (phase !== 'plan' && phase !== 'complete') errors.push('phase must be plan or complete');
@@ -42,6 +51,7 @@ export function validate(manifest, phase = 'plan', { allowFixturePaths = false }
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(manifest.taskId ?? '')) errors.push('taskId must be lowercase kebab-case');
   if (!Number.isInteger(manifest.batch) || manifest.batch < 1) errors.push('batch must be a positive integer');
 
+  // A batch must reference this task's canonical approved artifacts.
   const canonicalPaths = {
     spec: `workflow/specs/${manifest.taskId}.md`,
     checklist: `workflow/tasks/${manifest.taskId}/tasks.md`,
@@ -64,6 +74,7 @@ export function validate(manifest, phase = 'plan', { allowFixturePaths = false }
   }
   relativeFile(manifest.approvalEvidence, 'approvalEvidence', errors);
 
+  // Dispatch only the next one or two unfinished items in checklist order.
   const checklist = relativeFile(artifacts.checklist?.path, 'checklist', [], true);
   const checklistEntries = checklist && existsSync(checklist.resolved)
     ? checklistItems(readFileSync(checklist.resolved, 'utf8')) : [];
@@ -84,6 +95,7 @@ export function validate(manifest, phase = 'plan', { allowFixturePaths = false }
     }
   }
 
+  // Record separate implementation and review assignments and their file scope.
   const implementer = manifest.implementer ?? {};
   const reviewer = manifest.reviewer ?? {};
   nonempty(implementer.agentId, 'implementer.agentId', errors);
@@ -110,6 +122,8 @@ export function validate(manifest, phase = 'plan', { allowFixturePaths = false }
     relativeFile(file, `reviewer.reviewOnlyFiles[${index}]`, errors, false);
   }
 
+  // At review completion, require evidence paths, recorded check outcomes, and
+  // a verdict for every item. A failed or skipped check is still a valid record.
   if (phase === 'complete' && Array.isArray(manifest.items)) {
     for (const item of manifest.items) {
       const evidence = manifest.itemEvidence?.[item] ?? {};
@@ -128,6 +142,7 @@ export function validate(manifest, phase = 'plan', { allowFixturePaths = false }
   return errors;
 }
 
+// CLI entry point: keep validate() importable by unit tests without running it.
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [, , manifestPath, phase = 'plan'] = process.argv;
   if (!manifestPath) {
