@@ -68,6 +68,73 @@ out. The navigation also includes **Account** and **Notifications**.
 The TA dashboard is headed **TA Dashboard**. Its navigation includes **Account**,
 **Students**, and **Notifications**. A TA Coordinator also sees **TAs**.
 
+## Ticket queue (TAs)
+
+Select **Queue** in the TA navigation, or **Open the ticket queue** on the TA
+dashboard. The **Ticket queue** page lists tickets oldest first. Use the
+**Status** filter (default **Active (open and claimed)**; also **Open**,
+**Claimed**, **Resolved**, **Closed**), the **Language** filter, and the
+**Concept tag** box (an exact concept tag, such as `recursion`). A ticket that is
+claimed shows **Claimed by you** or **Claimed**. Select **Load more** to see the
+next 20 tickets, or **Retry** if the list fails to load.
+
+Select a ticket to open it. The page shows the student's name, the code,
+error output, and what the student tried, followed by the **Replies** thread.
+
+- **Claim** an open ticket to take it. Only one TA can claim a ticket, and only
+  that TA can **Unclaim** it.
+- Type a message in **Reply** and select **Send reply**. Any TA can reply while
+  the ticket is open or claimed (up to 4000 characters).
+- To finish, the TA who claimed the ticket writes a **Fix note** (up to 2000
+  characters), selects **Resolve…**, then **Confirm resolve**. A resolved ticket
+  accepts no more replies, and the note cannot be changed.
+
+If another action changed the ticket first, you see "This ticket changed. The
+latest version is shown." Review it and try again. The student is notified when
+you claim, reply to, or resolve their ticket.
+
+Tickets are created by students, which is not available yet, so the queue is
+empty until that feature is released.
+
+### AI help for TAs
+
+Two optional AI features help TAs. AI output is advisory: it is a suggestion
+labelled **AI suggestion**, it is shown as plain text, and it never changes a
+ticket, sends a message, or resolves anything by itself. Check it before you use
+it.
+
+**Draft with AI (ticket page).** If you have claimed a ticket, the **Fix note**
+area has a **Draft with AI** button. It fills the Fix note with a suggested
+note and shows "AI draft. Review and edit before resolving." Edit it as needed.
+It never submits: the ticket is resolved only when you select **Resolve…** and
+**Confirm resolve**. If the Fix note already has text, you are asked before it
+is replaced. Only the TA who claimed the ticket sees the button.
+
+**Queue insights (queue page).** The **Queue insights** panel groups active
+tickets by shared concept or likely misconception, with a one-line summary of
+what to re-teach and links to the tickets. Select **Generate insights** to run
+it; it is never generated automatically. It covers the oldest 60 active tickets
+("Based on the oldest 60 active tickets" is shown when there are more). A result
+can be reused for 5 minutes by any TA if the queue has not changed, and is then
+marked "Cached result".
+
+If an AI feature fails, the rest of CodeClinic still works. The messages mean:
+
+- "AI help is unavailable right now. You can still write the note yourself." or
+  "Queue insights are unavailable right now.": the AI service is off or not
+  reachable. Write the note yourself or try later.
+- "AI limit reached. Please try again in a minute.": you or the system used up
+  the AI request limit. Wait and retry.
+- "This ticket is too long for an AI draft." or "The queue is too large to
+  summarise.": the content is too long for the AI. Write the note yourself.
+- "The AI reply could not be used. Please try again or write the note yourself."
+  (fix note draft) or "The AI reply could not be used. Please try again."
+  (queue insights): the AI answered in an unusable form. Try again.
+
+Do not paste passwords, API keys, tokens, or other personal data into tickets
+or replies. Ticket text may be sent to the AI service, and automatic removal of
+secrets can miss some.
+
 ## Updating your account
 
 Select **Account** in the dashboard navigation. Under **Profile**, update your
@@ -117,7 +184,6 @@ These CodeClinic features are planned and **not available in the current build**
 | Student | Reply in a ticket's thread |
 | Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |
-| TA | Ticket queue with filters; claim, reply, and resolve with a fix note |
 | TA | AI Fix Note Drafter and AI Queue Insights |
 | Optional | Live session requests and approvals |
 

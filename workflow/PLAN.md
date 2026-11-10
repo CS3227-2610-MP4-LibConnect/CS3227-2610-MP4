@@ -18,12 +18,12 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 | 1 | `role-aware-login` | Student/TA login (role rename) | — | Shared | v0.3 approved |
 | 1 | `role-based-dashboards` | Student/TA dashboards (role rename) | `role-aware-login` | Shared | v0.5 approved |
 | 1 | `codeclinic-rename` | Implements the three role-rename specs, removes the retired Book catalog, renames all internal LibConnect names, moves the email helpers | — | Shared | Checklist and handoff v0.1 approved |
-| 2 | `environments-and-deployment` | Local development and one production Firebase project (`libconnect-mp4`), production secrets, GitHub Actions CI/CD | — | Shared | v0.3 approved |
+| 2 | `environments-and-deployment` | Local development and one production Firebase project (`libconnect-mp4`), production secrets, GitHub Actions CI/CD | — | Shared | v0.3 approved; the repo has been deployed by a teammate (the human, 2026-11-09) |
 | 2 | `ai-gateway` | Shared SoC LLM client: rate limits, timeouts, schema validation, redaction, token caps, fallback, usage records | — | Shared | v0.1 approved; design input in `workflow/tasks/ai-gateway/design.md` |
 | 3 | `student-tickets` | Create, edit, close, view tickets; files; reply thread | `role-based-dashboards` | Student owner | Not drafted |
-| 3 | `ta-ticket-queue` | Queue, filters, claim/unclaim, reply, resolve with fix note | `student-tickets` data model | TA owner | Not drafted |
+| 3 | `ta-ticket-queue` | Queue, filters, claim/unclaim, reply, resolve with fix note | `student-tickets` data model | TA owner | v0.1 approved; implemented, reviewed, and accepted 2026-11-09 |
 | 4 | `ai-error-explainer` | Student AI: error explanation, concept, hints only, ticket rewrite | `ai-gateway`, `student-tickets` | Student owner | Not drafted |
-| 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | Not drafted |
+| 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | v0.2 approved; implemented, reviewed, and accepted 2026-11-09 (live SoCLaaS test passed) |
 | 4 | `bug-faq` | Search anonymised resolved tickets; replaces retired `member-catalog-search` | `ta-ticket-queue` | Student owner | Not drafted |
 | 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | v0.1 approved |
 | 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | v0.1 approved |
@@ -119,3 +119,4 @@ their own module.
 - 2026-11-08: The human chose to implement the CodeClinic code renames (user-visible text, configuration variables, cookie and storage key names, package name, emulator project ID) together with the role-rename implementation of `account-registration`, `role-aware-login`, and `role-based-dashboards`, and to start `ai-gateway` Group 1 only after that rename work.
 - 2026-11-08: Updated the environments notes for the approved local-development and single-production-project setup.
 - 2026-11-08: To finish faster, the human approved three schedule changes. First, `account-management` AM-G1 and `notifications` N-G1 start before `codeclinic-rename` is fully merged. Second, one independent review covers each wave instead of each group. Third, after Wave 1, one implementer per feature runs that feature's remaining groups back to back, with a single independent review at the end. Critical or High findings still go to the human.
+- 2026-11-09: Status update at the human's direction. `ta-ticket-queue` and `ai-ta-assist` are implemented, reviewed and accepted. The human said a teammate has deployed the repo, so `environments-and-deployment` is marked accordingly. The order, dependencies and ownership are unchanged.

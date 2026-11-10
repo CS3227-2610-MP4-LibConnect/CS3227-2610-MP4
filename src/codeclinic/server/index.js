@@ -9,8 +9,24 @@ const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-
 const { configureNotify } = require('./notifications/notify');
 const { createNotificationsRouter, createFirestoreNotificationStore } = require('./notifications/route');
 const { createAiGateway } = require('./ai/gateway');
+const { registerTaAiFeatures } = require('./tickets/ta-ai-draft-route');
 const { createFirestoreAccountStore } = require('./account/store');
 const { createAccountRouter } = require('./account/routes');
+const { createFirestoreTicketStore } = require('./tickets/store');
+const { createTaTicketsRouter } = require('./tickets/ta-routes');
+const { notify } = require('./notifications/notify');
+
+// The Firestore ticket store loads `firebase-admin/firestore` when built, so build it on first
+// use; this keeps `createServerApp` constructible with the fake databases used by unit tests.
+function createLazyTicketStore(db) {
+  let store = null;
+  const resolve = () => {
+    if (!store) store = createFirestoreTicketStore(db);
+    return store;
+  };
+  return Object.fromEntries(['listTickets', 'getTicket', 'claimTicket', 'unclaimTicket', 'resolveTicket', 'addReply']
+    .map((name) => [name, (...args) => resolve()[name](...args)]));
+}
 
 function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'), authStore = createFirestoreAuthStore(db), registrationPersistence = createFirestoreRegistrationPersistence(db)) {
   const app = createLoginApp(createFirestoreLoginRepository(db), authStore);
@@ -26,6 +42,12 @@ function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'
     authStore,
     store: createFirestoreNotificationStore(db),
   }));
+  app.use('/api/ta/tickets', createTaTicketsRouter({
+    authStore,
+    accountStore: createFirestoreAccountStore(db, authStore),
+    ticketStore: createLazyTicketStore(db),
+    notify,
+  }));
   if (fs.existsSync(path.join(buildDirectory, 'index.html'))) {
     app.use(express.static(buildDirectory));
     app.get('/register', (_request, response) => {
@@ -34,7 +56,7 @@ function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'
     app.get(['/student/dashboard', '/ta/dashboard'], (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
-    app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas',
+    app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas', '/ta/queue', '/ta/tickets/:ticketId',
       '/account/password-change', '/notifications'], (_request, response) => {
       response.sendFile(path.join(buildDirectory, 'index.html'));
     });
@@ -58,6 +80,7 @@ async function startServer() {
   const db = await connectFirestoreTarget(target);
   const app = createServerApp(db, buildDirectory);
   app.locals.aiGateway = createAiGateway({ env: process.env, db });
+  registerTaAiFeatures(app.locals.aiGateway);
   return app.listen(port, () => {
     console.info(`CodeClinic server listening on port ${port}.`);
   });

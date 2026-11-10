@@ -15,6 +15,8 @@ and the former application path `src/libconnect-mp4`.
 - [Running the development server](#running-the-development-server)
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
+- [TA ticket queue](#ta-ticket-queue)
+- [TA AI assist](#ta-ai-assist)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
 - [Security design](#security-design)
@@ -26,7 +28,7 @@ and the former application path `src/libconnect-mp4`.
 
 ## Current application layout
 
-`src/codeclinic` contains the React and TypeScript frontend (`src/`), the Express API (`server/`), and the tests (`test/`). Under `server/`, `auth/` holds registration, login, sessions, and the Firestore-backed authentication store; `shared/` holds the Firestore rate counter; and `ai/` holds the AI gateway's configuration, feature registry, prompt construction, secret redaction, rate limits, and usage store. The AI modules are not yet mounted on any route, so no AI feature is exposed. Express serves the built frontend on the same origin as `/api/auth/*`. During development, the React server provides hot reload and proxies API calls to Express. Authentication runs through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
+`src/codeclinic` contains the React and TypeScript frontend (`src/`), the Express API (`server/`), and the tests (`test/`). Under `server/`, `auth/` holds registration, login, sessions, and the Firestore-backed authentication store; `shared/` holds the Firestore rate counter; and `ai/` holds the AI gateway's configuration, feature registry, prompt construction, secret redaction, rate limits, and usage store. The TA AI features in `tickets/` use the gateway (see [TA AI assist](#ta-ai-assist)). Express serves the built frontend on the same origin as `/api/auth/*`. During development, the React server provides hot reload and proxies API calls to Express. Authentication runs through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
 
 ```mermaid
 flowchart LR
@@ -210,14 +212,69 @@ and `createdAt` descending. That production prerequisite remains with the
 Firebase/deployment owner; the local emulator does not enforce index creation.
 The current task does not configure or deploy cloud indexes.
 
+## TA ticket queue
+
+Spec: `workflow/specs/ta-ticket-queue.md`. The shared ticket data contract
+(collections, field rules, and the state machine) is
+[section C of the spec](../workflow/specs/ta-ticket-queue.md#c-shared-ticket-data-contract-needs-student-owner-sign-off);
+`student-tickets` uses the same contract.
+
+Modules in `server/tickets/`:
+
+| Module | Responsibility |
+| --- | --- |
+| `constants.js` | Statuses, languages, size limits, concept-tag validation |
+| `transitions.js` | Pure state-machine guard (`evaluateTransition`) |
+| `store.js` | In-memory and Firestore ticket stores (list, get, claim, unclaim, resolve, reply) |
+| `ta-routes.js` | Router: auth, queue list, ticket detail; mounts the two below |
+| `ta-claims.js` | Claim, unclaim, and resolve routes and their notifications |
+| `ta-replies.js` | Reply route and notification |
+| `ta-views.js` | Maps stored tickets and replies to client views, without internal IDs |
+
+The UI is `src/TAQueuePage.tsx` (`/ta/queue`) and `src/TATicketPage.tsx`
+(`/ta/tickets/:ticketId`).
+
+All endpoints require an active TA session; every `POST` also requires CSRF.
+Unknown body keys return `400`.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/ta/tickets?status=&language=&concept=&cursor=` | Queue page of 20, oldest first |
+| `GET /api/ta/tickets/:ticketId` | Ticket detail with up to 200 replies |
+| `POST /api/ta/tickets/:ticketId/claim` | `OPEN` to `CLAIMED` |
+| `POST /api/ta/tickets/:ticketId/unclaim` | `CLAIMED` to `OPEN`, claiming TA only |
+| `POST /api/ta/tickets/:ticketId/replies` | Add a reply (`message`) |
+| `POST /api/ta/tickets/:ticketId/resolve` | `CLAIMED` to `RESOLVED` (`fixNote`), claiming TA only |
+
+Every transition runs in a Firestore transaction that re-reads `status` and
+`claimedByTaId`, so two concurrent claims leave one winner and the other gets
+`409`. Views omit `studentId`, `claimedByTaId`, and email addresses.
+
+After a successful commit, claim, TA reply, and resolve call `notify` for the
+ticket's student (`TICKET_CLAIMED`, `TICKET_REPLY`, `TICKET_RESOLVED`).
+Unclaiming sends nothing. A notification failure never rolls back the action.
+
+`server/index.js` builds the ticket store lazily (`createLazyTicketStore`).
+The Firestore store loads `firebase-admin/firestore` when it is created, so
+building it on first use keeps `createServerApp` constructible with the fake
+databases used by unit tests.
+
+Run the emulator-backed integration test from `src/codeclinic` (needs the
+Firebase CLI and Java); it is skipped unless `RUN_FIRESTORE_EMULATOR_TESTS=1`:
+
+```bash
+CI=true RUN_FIRESTORE_EMULATOR_TESTS=1 FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 CODECLINIC_FIRESTORE_MODE=local-emulator CODECLINIC_FIRESTORE_PROJECT_ID=demo-codeclinic \
+firebase emulators:exec --only firestore --project demo-codeclinic "npm test -- --watch=false --runInBand --runTestsByPath test/ta-ticket-queue-emulator.integration.test.js"
+```
+
 ## Shared AI gateway
 
 `server/ai/gateway.js` composes the approved units and exposes
 `createAiGateway(deps)` with `register(definition)` and
 `run({ feature, actor, input })`. The startup instance is available at
 `app.locals.aiGateway`. Calling features must first authenticate and authorize
-the actor and data in trusted server code. No real feature is registered and
-no AI HTTP endpoint is exposed by this shared-work implementation.
+the actor and data in trusted server code. The gateway itself exposes no HTTP endpoint;
+the TA AI features register on it (see [TA AI assist](#ta-ai-assist)).
 
 Configuration is read once from the server environment. Missing or malformed
 `SOCLAAS_API_KEY`, `SOCLAAS_BASE_URL`, or `SOCLAAS_MODEL` disables the gateway
@@ -236,6 +293,98 @@ Redaction can miss secrets: users must never paste credentials. Model output
 is advisory and cannot authorize writes or invoke tools. Real model selection
 and `max_tokens` support still require a human smoke check; no live provider
 call was made during automated verification.
+
+## TA AI assist
+
+Spec: `workflow/specs/ai-ta-assist.md`. Two TA features run on the shared AI
+gateway: a fix-note drafter and queue insights. Model output is advisory and
+shown as plain text; it never changes ticket state.
+
+Modules in `server/tickets/`:
+
+| Module | Responsibility |
+| --- | --- |
+| `ta-ai-shared.js` | R5 error mapping (`toAiErrorResponse`), `buildAliasMap`, `cleanInsightGroups`, `errorSummary`, the empty-JSON-body check |
+| `ta-ai-fix-note.js` | `FIX_NOTE_DRAFTER` definition: prompt, `buildUserContent`, `parse` (`{ draft }`, 1-2000 characters) |
+| `ta-ai-insights.js` | `QUEUE_INSIGHTS` definition (`parse`: 0-8 groups) and the in-memory cache |
+| `ta-ai-draft-route.js` | The draft route and `registerTaAiFeatures(gateway)` |
+| `ta-ai-insights-route.js` | The insights route |
+
+`startServer()` in `server/index.js` creates the gateway
+(`app.locals.aiGateway`) and calls `registerTaAiFeatures` on it. `ta-routes.js`
+mounts both routes after the TA guard. The routes read `req.app.locals.aiGateway`
+per request, so a missing or disabled gateway gives `AI_UNAVAILABLE`.
+
+Both endpoints require an active TA session and CSRF, take an empty JSON body
+(anything else is `400`), and write nothing.
+
+| Method and path | Rules | Success response |
+| --- | --- | --- |
+| `POST /api/ta/tickets/:ticketId/fix-note-draft` | `404` if missing; `409` unless the ticket is `CLAIMED` by the requesting TA (same rule as resolve) | `200 { draft }` |
+| `POST /api/ta/tickets/insights` | Oldest 60 active tickets; none gives `200` without a gateway call | `200 { groups: [{ label, kind, summary, tickets: [{ ticketId, title }] }], ticketCount, truncated, cached }` |
+
+Gateway errors map to `{ code, message }` with no provider detail:
+`AI_UNAVAILABLE` 503, `AI_RATE_LIMITED` 429, `AI_INPUT_TOO_LARGE` 422,
+`AI_INVALID_OUTPUT` 502. The message texts are in `ta-ai-shared.js`.
+
+**Aliases.** For insights the server numbers the tickets `T1`...`Tn` (oldest
+first) and sends only `alias | language | conceptTags | title | error summary`
+lines (the error summary is the first non-empty error line, up to 160
+characters). The model answers with aliases. The server maps them back to
+tickets from a per-request map and drops unknown aliases, repeats (the first
+group wins), and empty groups. Real ticket IDs are never sent, and model text
+cannot introduce or select a ticket.
+
+**Cache.** A successful insights result is kept for 5 minutes, per router
+instance, in memory. The key is the ordered alias map (alias, ticket ID, and
+`updatedAt` per ticket) plus `truncated`, so any ticket change or a different
+truncation state makes a new call. Failures are not cached. With several server
+instances each has its own cache, so the same queue can cause one call per
+instance; losing the cache is harmless.
+
+**Never sent to the model:** student or TA names, email addresses, user IDs,
+real `ticketId`s, `claimedByTaId`, session or CSRF data, `repoUrl`,
+`repoFilePaths`, and tickets outside the request. The drafter labels replies
+only `STUDENT` or `TA`, with the role taken from the stored account. Redaction
+in the gateway can miss secrets, so users must not paste them into tickets.
+
+UI: `TATicketPage.tsx` has the **Draft with AI** button (claimer of a `CLAIMED`
+ticket only; it fills the Fix note, never submits, and confirms before
+replacing text). `TAQueuePage.tsx` has the **Queue insights** panel.
+
+### Live SoCLaaS test (opt-in)
+
+`test/ta-ai-live-soclaas.integration.test.js` runs both features against the
+real SoCLaaS API with synthetic tickets, an in-memory store, and a stub `db`
+(at most 4 provider calls). It checks shape and safety, not wording. It is run
+by a human only, never by an agent or in CI, and skips otherwise.
+
+Put the settings in `src/codeclinic/.env` (gitignored). Use `.env`, not
+`.env.local`: CRA's test runner does not load `.env.local`. Use placeholders
+here and your own values locally:
+
+```text
+SOCLAAS_API_KEY=<your key>
+SOCLAAS_BASE_URL=https://<host>/v1
+SOCLAAS_MODEL=<model id>
+AI_GLOBAL_LIMIT_PER_MINUTE=<optional, 1-45>
+```
+
+`SOCLAAS_BASE_URL` must be https and end in `/v1`. Run from `src/codeclinic`:
+
+```bash
+RUN_SOCLAAS_TESTS=1 CI=true npx react-scripts test --roots test --testMatch '**/test/**/*.test.*' --watchAll=false ta-ai-live
+```
+
+The test file uses a custom Jest environment,
+`test/helpers/live-fetch-environment.js`. CRA's Jest 27 `node` environment has
+no `fetch`, so the real transport would report `AI_UNAVAILABLE` without
+reaching the provider. The environment copies the host Node's `fetch` and web
+helpers into the test context; production is unaffected.
+
+A `503` whose provider message is "no healthy provider backends" means a
+provider-side outage for that model, not a code fault. Try another model from
+`GET /models`. Do not paste keys, prompts, or responses into issues or logs.
 
 ## Running the production server
 
