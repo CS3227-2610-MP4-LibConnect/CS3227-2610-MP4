@@ -6,7 +6,13 @@ const { canonicalizeEmail, emailKeyFor } = require('./email');
 const MAX_BODY_BYTES = 8 * 1024;
 const MAX_EMAIL_BYTES = 254;
 const MAX_PASSWORD_BYTES = 1024;
-const GENERIC_DENIAL = 'Unable to sign in with those details.';
+const GENERIC_DENIAL = 'Incorrect email or password.';
+// Shown only after the password has been verified (role-aware-login v0.4 R5).
+const INACTIVE_MESSAGE = 'This account is not active. A TA Coordinator must activate it before you can sign in.';
+const WRONG_TYPE_MESSAGES = Object.freeze({
+  STUDENT: 'This is a Student account. Select Student to sign in.',
+  TA: 'This is a TA account. Select TA to sign in.',
+});
 const RETRY_MESSAGE = 'Sign-in is temporarily unavailable. Please try again.';
 const RATE_LIMIT_MESSAGE = 'Unable to sign in right now. Please try again later.';
 const SESSION_COOKIE = '__Host-codeclinic_session';
@@ -243,9 +249,19 @@ function createLoginApp(repository, authStore, options = {}) {
         return res.status(401).json({ message: GENERIC_DENIAL });
       }
       const user = await repository.getUserById(result.userId);
-      if (!user || user.userId !== result.userId || user.accountStatus !== 'ACTIVE' ||
-          user.accountType !== result.accountType || user.accountType !== input.accountType) {
+      if (!user || user.userId !== result.userId || user.accountType !== result.accountType ||
+          !['ACTIVE', 'INACTIVE'].includes(user.accountStatus)) {
         return res.status(401).json({ message: GENERIC_DENIAL });
+      }
+      // The password is verified, so these outcomes may name the reason. They
+      // still count as failed attempts for rate limiting and issue no session.
+      if (user.accountStatus !== 'ACTIVE') {
+        return res.status(403).json({ code: 'ACCOUNT_INACTIVE', message: INACTIVE_MESSAGE });
+      }
+      if (user.accountType !== input.accountType) {
+        return res.status(403).json({
+          code: 'WRONG_ACCOUNT_TYPE', accountType: user.accountType, message: WRONG_TYPE_MESSAGES[user.accountType],
+        });
       }
 
       const current = now();
@@ -347,6 +363,8 @@ module.exports = {
   MAX_EMAIL_BYTES,
   MAX_PASSWORD_BYTES,
   GENERIC_DENIAL,
+  INACTIVE_MESSAGE,
+  WRONG_TYPE_MESSAGES,
   RETRY_MESSAGE,
   SESSION_COOKIE,
   canonicalizeEmail,

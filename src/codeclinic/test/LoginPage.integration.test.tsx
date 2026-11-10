@@ -195,18 +195,30 @@ describe('T05 React to Express login integration', () => {
   test.each([
     ['unknown account', 'absent@example.test', 'synthetic password'],
     ['wrong password', memberEmail, 'incorrect synthetic password'],
-    ['wrong selected type', memberEmail, memberPassword],
-  ])('renders the same real-server denial for %s', async (caseName, email, password) => {
+  ])('renders the same real-server denial for %s', async (_caseName, email, password) => {
     const users = await makeUsers();
     const system = createSyntheticSystem(users);
     const bridge = connectReactFetchToExpress(system.app);
     try {
       render(<LoginPage />);
-      if (caseName === 'wrong selected type') fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
       fill(email, password);
       submit();
-      expect(await screen.findByText('Unable to sign in with those details.')).toBeInTheDocument();
+      expect(await screen.findByText('Incorrect email or password.')).toBeInTheDocument();
       expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
+      expect(system.sessions.size).toBe(0);
+    } finally { bridge.restore(); }
+  });
+
+  test('renders the real-server wrong-type message after a correct password', async () => {
+    const users = await makeUsers();
+    const system = createSyntheticSystem(users);
+    const bridge = connectReactFetchToExpress(system.app);
+    try {
+      render(<LoginPage />);
+      fireEvent.click(screen.getByRole('radio', { name: /^ta$/i }));
+      fill(memberEmail, memberPassword);
+      submit();
+      expect(await screen.findByText('This is a Student account. Select Student to sign in.')).toBeInTheDocument();
       expect(system.sessions.size).toBe(0);
     } finally { bridge.restore(); }
   });

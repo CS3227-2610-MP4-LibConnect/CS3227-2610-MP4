@@ -140,10 +140,23 @@ describe('T03 POST /api/auth/login', () => {
     const evidence = await verifyCredentials(repository, { email, password, accountType: selectedType });
     expect(evidence.passwordMatched).toBe(true);
 
-    const response = await request(makeApp(repository).app).post('/api/auth/login')
+    const { app, authStore } = makeApp(repository);
+    const response = await request(app).post('/api/auth/login')
       .send({ email, password, accountType: selectedType });
-    expect(response.status).toBe(401);
+    expect(response.status).toBe(403);
     expect(response.headers['set-cookie']).toBeUndefined();
+    expect(authStore.createSession).not.toHaveBeenCalled();
+  });
+
+  test.each([
+    ['inactive account', { accountStatus: 'INACTIVE' }, 'password'],
+    ['selected type mismatch', { accountType: 'TA' }, 'password'],
+  ])('a wrong password on an %s still gets the generic 401', async (_label, override) => {
+    const repository = makeRepository({ user: { ...validUser, ...override } });
+    const response = await request(makeApp(repository).app).post('/api/auth/login')
+      .send({ email, password: 'wrong password', accountType: 'STUDENT' });
+    expect(response.status).toBe(401);
+    expect(response.body).toEqual({ message: GENERIC_DENIAL });
   });
 
   test.each([

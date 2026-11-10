@@ -104,7 +104,7 @@ describe('role-aware login', () => {
     'sends one POST with the selected %s type and exact password',
     async (type) => {
       const { request, restore } = mockLoginResponse(401, {
-        message: 'Unable to sign in with those details.',
+        message: 'Incorrect email or password.',
       });
       try {
         render(<LoginPage />);
@@ -129,7 +129,7 @@ describe('role-aware login', () => {
 
   test('shows the uniform denial on HTTP 401 without confirming sign-in', async () => {
     const { restore } = mockLoginResponse(401, {
-      message: 'Unable to sign in with those details.',
+      message: 'Incorrect email or password.',
     });
     try {
       render(<LoginPage />);
@@ -137,9 +137,34 @@ describe('role-aware login', () => {
       submitLogin();
 
       await waitFor(() => expect(screen.getAllByRole('alert').some(
-        (alert) => alert.textContent === 'Unable to sign in with those details.'
+        (alert) => alert.textContent === 'Incorrect email or password.'
       )).toBe(true));
       expect(screen.queryByText(/signed.?in/i)).not.toBeInTheDocument();
+    } finally {
+      restore();
+    }
+  });
+
+  test.each([
+    ['inactive account', { code: 'ACCOUNT_INACTIVE', message: 'x' },
+      'This account is not active. A TA Coordinator must activate it before you can sign in.'],
+    ['TA account selected as Student', { code: 'WRONG_ACCOUNT_TYPE', accountType: 'TA', message: 'x' },
+      'This is a TA account. Select TA to sign in.'],
+    ['Student account selected as TA', { code: 'WRONG_ACCOUNT_TYPE', accountType: 'STUDENT', message: 'x' },
+      'This is a Student account. Select Student to sign in.'],
+    ['unknown 403 code', { code: 'SOMETHING_ELSE', message: 'Injected server text' },
+      'Unable to complete sign in. Please try again.'],
+  ])('shows a specific message on HTTP 403 for %s', async (_label, body, expected) => {
+    const { restore } = mockLoginResponse(403, body);
+    try {
+      render(<LoginPage />);
+      fillLogin('person@example.test', 'synthetic-password');
+      submitLogin();
+
+      await waitFor(() => expect(screen.getAllByRole('alert').some(
+        (alert) => alert.textContent === expected
+      )).toBe(true));
+      expect(screen.queryByText('Injected server text')).not.toBeInTheDocument();
     } finally {
       restore();
     }

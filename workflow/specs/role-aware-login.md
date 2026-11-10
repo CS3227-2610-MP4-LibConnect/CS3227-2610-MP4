@@ -1,8 +1,8 @@
 # Role-aware login specification
 
-Version: 0.3 (2026-11-08)  
-Approval evidence: human replied "approved" to version 0.3 on 2026-11-08; recorded at the human's request; no agent-set approval state  
-Prior approval evidence: human approved version 0.1 scope and `technical-design-proposal.md` version 0.1, then replied "approved" to revised specification version 0.2 on 2026-11-05; no agent-set approval state  
+Version: 0.4 (2026-11-10)  
+Approval evidence: human replied "approved, go ahead with v0.4" on 2026-11-10; recorded at the human's request; no agent-set approval state  
+Prior approval evidence: human replied "approved" to version 0.3 on 2026-11-08; human approved version 0.1 scope and `technical-design-proposal.md` version 0.1, then replied "approved" to revised specification version 0.2 on 2026-11-05; no agent-set approval state  
 Task ID: `role-aware-login`
 
 ## Purpose and scope
@@ -47,7 +47,14 @@ For a structurally valid request, the server MUST trim surrounding email whitesp
 
 ### R5. User-facing outcomes
 
-For nonexistent email, wrong password, wrong selected type, and inactive account, the server MUST return the same HTTP `401` status and response body: `Unable to sign in with those details.` The page MUST display the same message for these cases and MUST not disclose account existence, actual type, or status. A missing account MUST take a safe dummy-hash verification path to reduce timing differences. A temporary server or data-service failure MUST return HTTP `503` with a separate non-sensitive retry message. No denial or failure may issue a session. The UI MUST not treat a response as success unless the server explicitly accepts the login.
+For a nonexistent email, a wrong password, or a malformed or inconsistent account record, the server MUST return the same HTTP `401` status and response body: `Incorrect email or password.` The page MUST display that message for these cases and MUST not disclose account existence, type, or status. A missing account MUST take a safe dummy-hash verification path to reduce timing differences.
+
+Only after the exact password has been verified against a valid account record (v0.4), the server MUST return HTTP `403` with a specific reason and no session:
+
+- inactive account, checked first: `{ "code": "ACCOUNT_INACTIVE", "message": "This account is not active. A TA Coordinator must activate it before you can sign in." }`;
+- active account with a different selected type: `{ "code": "WRONG_ACCOUNT_TYPE", "accountType": "<stored type>", "message": "This is a <Student|TA> account. Select <Student|TA> to sign in." }`.
+
+The page MUST show the matching message from its own fixed text, keyed by `code` and `accountType`, and MUST NOT render server-supplied text. These `403` outcomes count as failed attempts for R7 rate limiting. A temporary server or data-service failure MUST return HTTP `503` with a separate non-sensitive retry message. No denial or failure may issue a session. The UI MUST not treat a response as success unless the server explicitly accepts the login.
 
 ### R6. Authentication boundary
 
@@ -65,12 +72,12 @@ On success, `POST /api/auth/login` MUST return HTTP `200`, the session cookie, a
 4. Given an active student account with a matching password, when Student is selected, the server accepts the login.
 5. Given an active TA account with a matching password, when TA is selected, the server accepts the login.
 6. Given a nonexistent email or wrong password, when a login request is made, the server denies it, the page displays an error, and no authenticated state is established.
-7. Given correct credentials for a Student account, when TA is selected, the server denies it with a generic message that does not reveal the true type; the reverse case behaves the same way.
-8. Given correct credentials for an inactive account, when either type is selected, the server denies it and creates no authenticated state.
+7. Given correct credentials for an active Student account, when TA is selected, the server denies it with `403` `WRONG_ACCOUNT_TYPE` and the page tells the user to select Student; the reverse case behaves the same way. With a wrong password, the same request gets the generic `401`.
+8. Given correct credentials for an inactive account, when either type is selected, the server denies it with `403` `ACCOUNT_INACTIVE`, the page says a TA Coordinator must activate the account, and no authenticated state is created. With a wrong password, the same request gets the generic `401`.
 9. Given a forged client-supplied role, manager flag, account status, user ID, or password hash, the server ignores it for authorization and cannot be induced to accept a mismatched login.
 10. Given a malformed request or an unavailable Firestore service, the server does not authenticate; responses and logs contain no password, hash, or session material.
 11. Given the same email entered with different surrounding whitespace or letter case, lookup uses the same canonical key; account creation or email change rejects a canonical collision, and inconsistent key-to-user mappings fail closed.
-12. Given an unknown email, the endpoint performs safe dummy-hash verification and returns the same `401` status/body as a wrong password, wrong type, or inactive account.
+12. Given an unknown email, the endpoint performs safe dummy-hash verification and returns the same `401` status/body as a wrong password.
 13. Given an accepted login, the response is `200` with only the authenticated type and a new protected session cookie; the page shows a signed-in confirmation state based on the server response.
 14. Given a session past its idle or absolute limit, logout, or an account whose status or role no longer permits access, protected requests deny access. State-changing requests require CSRF protection.
 15. Given repeated failed requests above either approved 15-minute threshold, the endpoint returns a generic `429` and does not create a session or lock the account.
@@ -105,3 +112,11 @@ The human directed amending this specification for the CodeClinic scope. This ve
 The terms follow the 2026-11-08 `Overview.md` amendment: Member → Student, Librarian → TA, manager librarian → TA Coordinator, `MEMBER` → `STUDENT`, `LIBRARIAN` → `TA`, and `memberId` → `studentId`. The `employeeId` and `isManager` field names, the Firestore project ID `libconnect-mp4`, and every security, validation, and session requirement are unchanged.
 
 Implementation impact, for the separate checklist and handoff: stored `accountType` values, the student identifier field, request validation, and UI labels and messages change. No production accounts exist, so records holding the former values in local emulator data are treated as malformed and fail closed; developers clear or re-seed emulator data rather than migrate it.
+
+### 2026-11-10 — v0.4: specific outcomes after a verified password
+
+During user testing, the human found the uniform denial too vague: a newly registered TA awaiting activation could not tell why sign-in failed. Following the common practice of keeping only unknown-email and wrong-password outcomes indistinguishable, R5 now returns `403` with a specific reason for an inactive account or a wrong selected type, but only after the exact password is verified. The generic `401` text becomes `Incorrect email or password.`
+
+Accepted risk: someone who already knows an account's password can learn its type and activation status. Unknown-email and wrong-password responses still reveal nothing, the dummy-hash path is unchanged, and these outcomes still count toward the R7 rate limits. Sessions, rate limits, and all other requirements are unchanged.
+
+The human approved version 0.4 on 2026-11-10.

@@ -303,7 +303,8 @@ describe('POST /api/auth/register', () => {
 
     const librarianLogin = await request(system.app).post('/api/auth/login')
       .send({ accountType: 'TA', email: 'staff@example.test', password });
-    expect(librarianLogin.status).toBe(401);
+    expect(librarianLogin.status).toBe(403);
+    expect(librarianLogin.body).toHaveProperty('code', 'ACCOUNT_INACTIVE');
     expect(librarianLogin.headers['set-cookie']).toBeUndefined();
     expect(system.sessions.size).toBe(1);
   });

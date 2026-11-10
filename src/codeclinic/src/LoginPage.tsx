@@ -47,7 +47,25 @@ function LoginPage() {
       });
 
       if (response.status === 401) {
-        setFormError('Unable to sign in with those details.');
+        setFormError('Incorrect email or password.');
+        return;
+      }
+      if (response.status === 403) {
+        let denial: { code?: unknown; accountType?: unknown } | null = null;
+        try {
+          denial = await response.json();
+        } catch {
+          denial = null;
+        }
+        if (denial?.code === 'ACCOUNT_INACTIVE') {
+          setFormError('This account is not active. A TA Coordinator must activate it before you can sign in.');
+        } else if (denial?.code === 'WRONG_ACCOUNT_TYPE' && denial.accountType === 'TA') {
+          setFormError('This is a TA account. Select TA to sign in.');
+        } else if (denial?.code === 'WRONG_ACCOUNT_TYPE' && denial.accountType === 'STUDENT') {
+          setFormError('This is a Student account. Select Student to sign in.');
+        } else {
+          setFormError('Unable to complete sign in. Please try again.');
+        }
         return;
       }
       if (response.status === 503) {

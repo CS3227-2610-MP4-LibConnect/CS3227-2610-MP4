@@ -89,7 +89,7 @@ test('serves the built frontend and the login API from one origin', async () => 
       email: 'unknown@example.test', password: 'synthetic-password', accountType: 'STUDENT',
     });
     expect(login.status).toBe(401);
-    expect(login.body).toEqual({ message: 'Unable to sign in with those details.' });
+    expect(login.body).toEqual({ message: 'Incorrect email or password.' });
     expect(login.headers['set-cookie']).toBeUndefined();
   } finally {
     fs.rmSync(buildDirectory, { recursive: true, force: true });
