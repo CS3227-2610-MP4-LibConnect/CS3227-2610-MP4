@@ -1,0 +1,30 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand StudentTicketActivity.test.tsx
+
+(node:26820) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketActivity.test.tsx (8.615 s)
+  Student ticket activity pages
+    √ dashboard shows the latest five active summaries and provides My Tickets navigation (633 ms)
+    √ dashboard shows a loading state before active tickets arrive and a distinct empty state (34 ms)
+    √ My Tickets direct visits verify Student access before showing the protected placeholder (70 ms)
+    √ does not show My Tickets to a visitor (52 ms)
+    √ does not show My Tickets to a TA (31 ms)
+    √ dashboard distinguishes failed active-ticket loads from an empty state and can retry (106 ms)
+    √ deep-linked ticket detail waits for Student verification and renders reply text literally (155 ms)
+    √ loads the next reply block and keeps a missing owner author labeled as a Student (144 ms)
+    √ reply submit is single-flight and retains text after a failed response (149 ms)
+    √ closing confirms terminal state and disables reply and close controls (144 ms)
+    √ a close conflict refreshes the ticket and reports the changed state (120 ms)
+    √ a failed refresh after a close conflict keeps close disabled until a successful refresh (230 ms)
+    √ a lost close response is unconfirmed and offers a status refresh (316 ms)
+    √ a successful active status refresh restores the close action after a lost response (242 ms)
+    √ a failed reply block keeps loaded content and retries that block (217 ms)
+    √ keyboard tab order can reach the reply and close actions (635 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       16 passed, 16 total
+Snapshots:   0 total
+Time:        11.798 s
+Ran all test suites matching /StudentTicketActivity.test.tsx/i.

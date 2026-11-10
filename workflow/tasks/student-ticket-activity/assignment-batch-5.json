@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-ticket-activity",
+  "batch": 5,
+  "items": ["T05", "T06"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-ticket-activity.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-ticket-activity/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-ticket-activity/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-ticket-activity/approval-batch-5.md",
+  "implementer": {
+    "agentId": "ticket_batch_5_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/tickets/TicketDetailPage.tsx",
+      "src/codeclinic/src/tickets/TicketDetailPage.css",
+      "src/codeclinic/src/DashboardRouteGuard.tsx",
+      "src/codeclinic/src/index.tsx",
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/test/StudentTicketActivity.test.tsx",
+      "src/codeclinic/test/DashboardRoutes.integration.test.tsx",
+      "src/codeclinic/test/student-ticket-activity.emulator.test.js",
+      "docs/UserGuide.md",
+      "docs/DeveloperGuide.md",
+      "workflow/tasks/student-ticket-activity/implementation-T05-batch-5.md",
+      "workflow/tasks/student-ticket-activity/implementation-T06-batch-5.md",
+      "logs/tasks/student-ticket-activity/implementation-T05-batch-5.md",
+      "logs/tasks/student-ticket-activity/implementation-T06-batch-5.md",
+      "logs/tasks/student-ticket-activity/batch-5-full-test.log",
+      "logs/tasks/student-ticket-activity/batch-5-build.log",
+      "logs/tasks/student-ticket-activity/batch-5-emulator.log"
+    ]
+  },
+  "reviewer": {
+    "agentId": "ticket_batch_5_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Approved task artifacts, tests, and the user's dashboard edit remain uncommitted in the shared workspace. A different reviewer agent will independently inspect the exact diff and evidence.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/student-ticket-activity/review-report-batch-5.md",
+      "logs/tasks/student-ticket-activity/review-batch-5.md"
+    ]
+  },
+  "itemEvidence": {
+    "T05": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T05-batch-5.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T05-batch-5.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketActivity.test.tsx", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report-batch-5.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-5.md",
+      "reviewVerdict": "changes-required"
+    },
+    "T06": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T06-batch-5.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T06-batch-5.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand", "result": "pass" },
+        { "command": "CI=true npm run build", "result": "pass" },
+        { "command": "RUN_FIRESTORE_EMULATOR_TESTS=1 npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js", "result": "pass" },
+        { "command": "320 CSS-pixel rendered browser inspection", "result": "skipped" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report-batch-5.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-5.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

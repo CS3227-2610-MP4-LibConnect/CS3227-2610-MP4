@@ -1,0 +1,652 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand
+
+(node:18808) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/DashboardRoutes.integration.test.tsx (7.494 s)
+  ● dashboard route session guard and logout › rechecks the session after a student-to-TA route transition and hides content while checking
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t verify your session. Please try again.
+            </p>
+            <button
+              type="button"
+            >
+              Retry
+            </button>
+            <a
+              href="/"
+            >
+              Return to sign in
+            </a>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      85 |     });
+      86 |
+    > 87 |     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+         |                                           ^
+      88 |     expect(screen.getByText(/checking your session/i)).toHaveAttribute('aria-busy', 'true');
+      89 |     expect(screen.queryByRole('heading', { name: /ta dashboard/i })).not.toBeInTheDocument();
+      90 |
+
+      at test/DashboardRoutes.integration.test.tsx:87:43
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+  ● dashboard route session guard and logout › posts CSRF logout and navigates only after 204 confirmation
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "/"
+    Received: "/student/dashboard"
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t confirm sign out. Your dashboard is hidden. Please retry.
+            </p>
+            <button
+              type="button"
+            >
+              Retry logout
+            </button>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      239 |
+      240 |     fireEvent.click(await screen.findByRole('button', { name: /log out|sign out/i }));
+    > 241 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+          |                                                          ^
+      242 |     expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/auth/csrf', expect.objectContaining({ method: 'GET', credentials: 'same-origin' }));
+      243 |     expect(fetchMock).toHaveBeenNthCalledWith(3, '/api/auth/logout', expect.objectContaining({
+      244 |       method: 'POST',
+
+      at test/DashboardRoutes.integration.test.tsx:241:58
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+  ● dashboard route session guard and logout › keeps dashboard hidden and permits retry after missing CSRF token
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      295 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      296 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 297 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      298 |   });
+      299 |
+      300 |   test('keeps dashboard hidden when logout fails over the network', async () => {
+
+      at test/DashboardRoutes.integration.test.tsx:297:23
+
+  ● dashboard route session guard and logout › keeps dashboard hidden and permits retry after CSRF service failure
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      295 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      296 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 297 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      298 |   });
+      299 |
+      300 |   test('keeps dashboard hidden when logout fails over the network', async () => {
+
+      at test/DashboardRoutes.integration.test.tsx:297:23
+
+  ● dashboard route session guard and logout › keeps dashboard hidden when CSRF retrieval fails over the network
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      318 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      319 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 320 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      321 |   });
+      322 |
+      323 |   test('a later dashboard visit is denied after confirmed logout', async () => {
+
+      at Object.<anonymous> (test/DashboardRoutes.integration.test.tsx:320:23)
+
+  ● dashboard route session guard and logout › a later dashboard visit is denied after confirmed logout
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "/"
+    Received: "/student/dashboard"
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t confirm sign out. Your dashboard is hidden. Please retry.
+            </p>
+            <button
+              type="button"
+            >
+              Retry logout
+            </button>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      329 |     const { unmount } = renderAppAt('/student/dashboard', fetchMock);
+      330 |     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
+    > 331 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+          |                                                          ^
+      332 |     unmount();
+      333 |     renderAppAt('/student/dashboard', fetchMock);
+      334 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+
+      at test/DashboardRoutes.integration.test.tsx:331:58
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+PASS test/student-tickets.api.test.js
+PASS test/StudentTickets.test.tsx (5.787 s)
+  ● Console
+
+    console.error
+      An update to NotificationBell inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+    console.error
+      An update to StudentDashboard inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      33 |         setTicketsState('ready');
+      34 |       } catch {
+    > 35 |         setTicketsState('error');
+         |         ^
+      36 |       } finally {
+      37 |         activeTicketRequest.current = null;
+      38 |       }
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setTicketsState (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/StudentDashboard.tsx:35:9
+
+    console.error
+      An update to NotificationBell inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+PASS test/login.session.test.js
+PASS test/RegistrationPage.test.tsx
+PASS test/registration.api.test.js
+PASS test/login.credentials.test.js
+PASS test/LoginPage.integration.test.tsx
+PASS test/LoginPage.test.tsx
+PASS test/StudentTicketActivity.test.tsx
+PASS test/AccountPages.test.tsx
+PASS test/server.test.js
+PASS test/account-r7-server.test.js
+PASS test/account-guards.test.js
+PASS test/student-ticket-activity.contract.test.js
+PASS test/account-server-wiring.test.js
+PASS test/registration.endpoint.test.js
+PASS test/notifications.api.test.js
+PASS test/NotificationsRoute.test.tsx
+PASS test/account-routes.test.js
+PASS test/Notifications.test.tsx
+PASS test/student-tickets.storage.test.js
+PASS test/AppHeader.test.tsx
+PASS test/SharedTheme.test.tsx
+PASS test/RegistrationNavigation.test.tsx
+PASS test/account-store.test.js
+PASS test/ai-redact.test.js
+PASS test/email.test.js
+PASS test/firestore-target.test.js
+PASS test/ai-browser-boundary.test.js
+PASS test/bootstrap-coordinator.test.js
+PASS test/firestore-rate-counter.test.js
+PASS test/ai-config.test.js
+PASS test/firestore-store.test.js
+PASS test/ai-transport-hardening.test.js
+PASS test/ai-rate-limit.test.js
+PASS test/ai-usage-store.test.js
+PASS test/ai-prompt.test.js
+PASS test/ai-gateway.test.js
+PASS test/ai-features.test.js
+PASS test/ai-parse.test.js
+PASS test/notifications.notify.test.js
+PASS test/ai-transport.test.js
+
+Summary of all failing tests
+FAIL test/DashboardRoutes.integration.test.tsx (7.494 s)
+  ● dashboard route session guard and logout › rechecks the session after a student-to-TA route transition and hides content while checking
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t verify your session. Please try again.
+            </p>
+            <button
+              type="button"
+            >
+              Retry
+            </button>
+            <a
+              href="/"
+            >
+              Return to sign in
+            </a>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      85 |     });
+      86 |
+    > 87 |     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+         |                                           ^
+      88 |     expect(screen.getByText(/checking your session/i)).toHaveAttribute('aria-busy', 'true');
+      89 |     expect(screen.queryByRole('heading', { name: /ta dashboard/i })).not.toBeInTheDocument();
+      90 |
+
+      at test/DashboardRoutes.integration.test.tsx:87:43
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+  ● dashboard route session guard and logout › posts CSRF logout and navigates only after 204 confirmation
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "/"
+    Received: "/student/dashboard"
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t confirm sign out. Your dashboard is hidden. Please retry.
+            </p>
+            <button
+              type="button"
+            >
+              Retry logout
+            </button>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      239 |
+      240 |     fireEvent.click(await screen.findByRole('button', { name: /log out|sign out/i }));
+    > 241 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+          |                                                          ^
+      242 |     expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/auth/csrf', expect.objectContaining({ method: 'GET', credentials: 'same-origin' }));
+      243 |     expect(fetchMock).toHaveBeenNthCalledWith(3, '/api/auth/logout', expect.objectContaining({
+      244 |       method: 'POST',
+
+      at test/DashboardRoutes.integration.test.tsx:241:58
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+  ● dashboard route session guard and logout › keeps dashboard hidden and permits retry after missing CSRF token
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      295 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      296 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 297 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      298 |   });
+      299 |
+      300 |   test('keeps dashboard hidden when logout fails over the network', async () => {
+
+      at test/DashboardRoutes.integration.test.tsx:297:23
+
+  ● dashboard route session guard and logout › keeps dashboard hidden and permits retry after CSRF service failure
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      295 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      296 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 297 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      298 |   });
+      299 |
+      300 |   test('keeps dashboard hidden when logout fails over the network', async () => {
+
+      at test/DashboardRoutes.integration.test.tsx:297:23
+
+  ● dashboard route session guard and logout › keeps dashboard hidden when CSRF retrieval fails over the network
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 2
+    Received number of calls: 3
+
+      318 |     expect(await screen.findByRole('button', { name: /retry logout/i })).toBeInTheDocument();
+      319 |     expect(screen.queryByRole('heading', { name: /student dashboard/i })).not.toBeInTheDocument();
+    > 320 |     expect(fetchMock).toHaveBeenCalledTimes(2);
+          |                       ^
+      321 |   });
+      322 |
+      323 |   test('a later dashboard visit is denied after confirmed logout', async () => {
+
+      at Object.<anonymous> (test/DashboardRoutes.integration.test.tsx:320:23)
+
+  ● dashboard route session guard and logout › a later dashboard visit is denied after confirmed logout
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "/"
+    Received: "/student/dashboard"
+
+    Ignored nodes: comments, script, style
+    <html>
+      <head />
+      <body>
+        <div>
+          <main>
+            <p
+              role="alert"
+            >
+              We couldn’t confirm sign out. Your dashboard is hidden. Please retry.
+            </p>
+            <button
+              type="button"
+            >
+              Retry logout
+            </button>
+          </main>
+        </div>
+      </body>
+    </html>
+
+      329 |     const { unmount } = renderAppAt('/student/dashboard', fetchMock);
+      330 |     fireEvent.click(await screen.findByRole('button', { name: /log out/i }));
+    > 331 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+          |                                                          ^
+      332 |     unmount();
+      333 |     renderAppAt('/student/dashboard', fetchMock);
+      334 |     await waitFor(() => expect(window.location.pathname).toBe('/'));
+
+      at test/DashboardRoutes.integration.test.tsx:331:58
+      at runWithExpensiveErrorDiagnosticsDisabled (node_modules/@testing-library/dom/dist/config.js:47:12)
+      at checkCallback (node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+      at checkRealTimersCallback (node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+      at Timeout.task [as _onTimeout] (node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+
+
+Test Suites: 1 failed, 4 skipped, 42 passed, 43 of 47 total
+Tests:       6 failed, 4 skipped, 788 passed, 798 total
+Snapshots:   0 total
+Time:        76.602 s, estimated 82 s
+Ran all test suites.
+
+Final full suite after adding the active-ticket fixture. Command: npm test -- --watchAll=false --runInBand
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand
+
+(node:20128) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketActivity.test.tsx
+PASS test/StudentTickets.test.tsx (5.649 s)
+  ● Console
+
+    console.error
+      An update to NotificationBell inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+    console.error
+      An update to StudentDashboard inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      33 |         setTicketsState('ready');
+      34 |       } catch {
+    > 35 |         setTicketsState('error');
+         |         ^
+      36 |       } finally {
+      37 |         activeTicketRequest.current = null;
+      38 |       }
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setTicketsState (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/StudentDashboard.tsx:35:9
+
+    console.error
+      An update to NotificationBell inside a test was not wrapped in act(...).
+      
+      When testing, code that causes React state updates should be wrapped into act(...):
+      
+      act(() => {
+        /* fire events that update state */
+      });
+      /* assert on the output */
+      
+      This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+      53 |       const body = await response.json() as { unreadCount?: unknown };
+      54 |       if (typeof body.unreadCount !== 'number' || !Number.isFinite(body.unreadCount)) throw new Error('Unread count unavailable.');
+    > 55 |       if (mounted.current) setCount(Math.min(99, Math.max(0, Math.floor(body.unreadCount))));
+         |                            ^
+      56 |     } catch { if (mounted.current) setCount(null); }
+      57 |   }, []);
+      58 |   useEffect(() => {
+
+      at node_modules/react-dom/cjs/react-dom-client.development.js:20466:19
+      at runWithFiberInDEV (node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+      at warnIfUpdatesNotWrappedWithActDEV (node_modules/react-dom/cjs/react-dom-client.development.js:20465:9)
+      at scheduleUpdateOnFiber (node_modules/react-dom/cjs/react-dom-client.development.js:17920:11)
+      at dispatchSetStateInternal (node_modules/react-dom/cjs/react-dom-client.development.js:9556:13)
+      at setCount (node_modules/react-dom/cjs/react-dom-client.development.js:9513:7)
+      at src/notifications/Notifications.tsx:55:28
+
+PASS test/DashboardRoutes.integration.test.tsx
+PASS test/student-tickets.api.test.js
+PASS test/RegistrationPage.test.tsx
+PASS test/registration.api.test.js
+PASS test/login.session.test.js
+PASS test/LoginPage.integration.test.tsx
+PASS test/login.credentials.test.js
+PASS test/LoginPage.test.tsx
+PASS test/AccountPages.test.tsx
+PASS test/NotificationsRoute.test.tsx
+PASS test/notifications.api.test.js
+PASS test/Notifications.test.tsx
+PASS test/student-ticket-activity.contract.test.js
+PASS test/account-routes.test.js
+PASS test/server.test.js
+PASS test/account-r7-server.test.js
+PASS test/student-tickets.storage.test.js
+PASS test/registration.endpoint.test.js
+PASS test/account-server-wiring.test.js
+PASS test/AppHeader.test.tsx
+PASS test/account-guards.test.js
+PASS test/RegistrationNavigation.test.tsx
+PASS test/SharedTheme.test.tsx
+PASS test/account-store.test.js
+PASS test/ai-redact.test.js
+PASS test/email.test.js
+PASS test/ai-gateway.test.js
+PASS test/ai-features.test.js
+PASS test/ai-browser-boundary.test.js
+PASS test/firestore-target.test.js
+PASS test/ai-prompt.test.js
+PASS test/ai-config.test.js
+PASS test/ai-parse.test.js
+PASS test/bootstrap-coordinator.test.js
+PASS test/ai-transport.test.js
+PASS test/notifications.notify.test.js
+PASS test/ai-rate-limit.test.js
+PASS test/firestore-rate-counter.test.js
+PASS test/ai-usage-store.test.js
+PASS test/ai-transport-hardening.test.js
+PASS test/firestore-store.test.js
+
+Test Suites: 4 skipped, 43 passed, 43 of 47 total
+Tests:       4 skipped, 795 passed, 799 total
+Snapshots:   0 total
+Time:        73.925 s, estimated 86 s
+Ran all test suites.
+exit_code=0

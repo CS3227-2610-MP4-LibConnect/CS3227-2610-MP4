@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-ticket-activity",
+  "batch": 1,
+  "items": ["T01", "T02"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-ticket-activity.md", "version": "0.2" },
+    "checklist": { "path": "workflow/tasks/student-ticket-activity/tasks.md", "version": "0.1" },
+    "handoff": { "path": "workflow/tasks/student-ticket-activity/handoff.md", "version": "0.1" }
+  },
+  "approvalEvidence": "workflow/tasks/student-ticket-activity/approval-batch-1.md",
+  "implementer": {
+    "agentId": "ticket_batch_1_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/tickets/store.js",
+      "src/codeclinic/server/tickets/route.js",
+      "src/codeclinic/server/tickets/validation.js",
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/firebase.json",
+      "src/codeclinic/firestore.indexes.json",
+      "src/codeclinic/test/student-ticket-activity.contract.test.js",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "src/codeclinic/test/student-tickets.storage.test.js",
+      "workflow/tasks/student-ticket-activity/implementation-T01.md",
+      "workflow/tasks/student-ticket-activity/implementation-T02.md",
+      "logs/tasks/student-ticket-activity/implementation-T01.md",
+      "logs/tasks/student-ticket-activity/implementation-T02.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "ticket_batch_1_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "The approved spec, preimplementation tests, and the user's dashboard edit are uncommitted in the shared workspace; a separate clean checkout would omit task context. A different review agent will independently inspect the exact files and diff.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/student-ticket-activity/review-report.md",
+      "logs/tasks/student-ticket-activity/review-batch-1.md"
+    ]
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T01.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T01.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.contract.test.js test/student-tickets.storage.test.js --testNamePattern=active|creates one C1|lists only safe", "result": "pass" },
+        { "command": "Local Standard Firestore emulator indexed active-ticket query (synthetic data; see review-batch-1.md)", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-1.md",
+      "reviewVerdict": "pass"
+    },
+    "T02": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T02.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T02.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.contract.test.js test/student-tickets.storage.test.js --testNamePattern=active|detail|reads an owned|does not read replies|creates one C1|lists only safe", "result": "pass" },
+        { "command": "Reviewer malformed-ID and missing-author route reproductions (see review-batch-1.md)", "result": "fail" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-1.md",
+      "reviewVerdict": "changes-required"
+    }
+  }
+}

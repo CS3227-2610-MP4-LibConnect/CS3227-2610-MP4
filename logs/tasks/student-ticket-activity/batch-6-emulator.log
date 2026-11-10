@@ -1,0 +1,12 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js
+
+PASS test/student-ticket-activity.emulator.test.js (14.182 s)
+  √ student ticket activity query, ownership, paging, writes, and close race work in Firestore emulator (12157 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       1 passed, 1 total
+Snapshots:   0 total
+Time:        14.438 s
+Ran all test suites within paths "test/student-ticket-activity.emulator.test.js".

@@ -16,6 +16,7 @@ and the former application path `src/libconnect-mp4`.
 - [Registration and account records](#registration-and-account-records)
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
 - [Student ticket creation](#student-ticket-creation)
+- [Student ticket activity](#student-ticket-activity)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
 - [Security design](#security-design)
@@ -129,9 +130,9 @@ Every dashboard load calls `GET /api/auth/session` before rendering the dashboar
 
 ## Student ticket creation
 
-The shipped ticket scope is create-only. `TicketCreatePage` is protected by the
-session route guard at `/student/tickets/new`; the dashboard's **Ask for Help**
-section and Student header link navigate to that route. The form validates
+`TicketCreatePage` is protected by the session route guard at
+`/student/tickets/new`; the dashboard's **Ask for Help** section and Student
+header link navigate to that route. The form validates
 required text, the seven fixed language choices, up to five trimmed lowercase
 unique tags, optional source context, and the approved text and byte limits.
 Source context is either up to three inline code files or a public GitHub URL
@@ -148,14 +149,15 @@ resolution fields, and empty arrays/null values for absent optional fields.
 Repository URLs are stored as references and are not fetched. Creation does
 not create a persisted notification. A successful `201` lets the client return
 to the Student dashboard with transient confirmation; failures remain on the
-form. Ticket lists, details, edits, closes, replies, and TA transitions are
-outside this implementation.
+form. Active dashboard cards, ticket details, Student replies, and Student
+close are described in [Student ticket activity](#student-ticket-activity).
+Editing and TA transitions are outside this implementation.
 
 Focused UI, API, and storage checks are in `test/StudentTickets.test.tsx`,
 `test/student-tickets.api.test.js`, and `test/student-tickets.storage.test.js`.
 The storage test verifies the exact C1 document shape and Firestore timestamp
-types; it uses a controlled Firestore interface. The task's local emulator
-assertion is recorded separately in `workflow/tasks/student-tickets/implementation-T04.md`.
+types; it uses a controlled Firestore interface. The earlier creation emulator
+assertion is recorded in `workflow/tasks/student-tickets/implementation-T04.md`.
 
 ```mermaid
 sequenceDiagram
@@ -177,6 +179,51 @@ sequenceDiagram
 Logout first calls `GET /api/auth/csrf` to rotate and obtain a token, then sends that token in `X-CSRF-Token` with `POST /api/auth/logout`. Express compares the token hash, deletes the session, and clears the cookie on `204`. The UI returns to login after `204` or a confirmed unauthenticated `401`; on an unconfirmed error it hides dashboard content and offers a retry.
 
 The local Firestore collections used by these flows are `users`, `emailKeys`, `loginSessions`, and `loginFailureCounters`. Only server code creates or changes their authentication records.
+
+## Student ticket activity
+
+`DashboardRouteGuard` protects `/student/tickets` and
+`/student/tickets/:ticketId` on direct entry and refresh. Express serves the
+SPA shell for the detail path; the browser guard checks the cookie-backed
+session before the ticket page renders. The full My Tickets list is deferred.
+
+`GET /api/tickets/active` derives the owner from the verified current Student
+account, queries only `OPEN` and `CLAIMED` records, orders by descending
+`updatedAt` and ascending `ticketId`, and limits results to five. The composite
+Firestore index is defined in `firestore.indexes.json` and wired from
+`firebase.json`. Deploying that index is a separate operation.
+
+`GET /api/tickets/:ticketId` checks ownership before returning the safe ticket
+projection or reply data. Replies are ordered by `createdAt` and `replyId` and
+returned in blocks of 50. A bounded opaque cursor identifies the next page;
+each request checks the session and ticket ownership again. Author names come
+from trusted account records, with `[deleted account]` for a missing owner
+author. `TicketDetailPage` preserves earlier replies when another block fails,
+renders text literally, and distinguishes Student and TA messages with role
+labels and layout.
+
+Reply and close requests require a session-bound CSRF token. Reply writes trim
+surrounding whitespace and update ticket `updatedAt` in the same transaction.
+Close transitions only active owned tickets to `CLOSED`, clears claim and
+resolution fields, and re-reads state transactionally. The client reports
+success only after server confirmation and reloads state after a conflict.
+
+Run the synthetic Firestore Emulator integration from `src/codeclinic` with the
+emulator at `127.0.0.1:8080` and these variables set in the test shell:
+
+```powershell
+$env:RUN_FIRESTORE_EMULATOR_TESTS = '1'
+$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
+$env:CODECLINIC_FIRESTORE_MODE = 'local-emulator'
+$env:CODECLINIC_FIRESTORE_PROJECT_ID = 'demo-codeclinic'
+npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js
+```
+
+The integration creates synthetic local users, sessions, tickets, and replies,
+then deletes those records. It covers ownership isolation, the indexed five
+ticket query, a 50+1 reply boundary with equal timestamps, a reply and dashboard
+refresh, close field semantics, and concurrent close attempts. It does not
+access a live project or deploy index configuration.
 
 ## Account management
 

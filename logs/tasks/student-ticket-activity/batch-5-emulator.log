@@ -1,0 +1,9 @@
+# Batch 5 emulator and direct-shell execution notes
+
+The emulator and direct-shell commands, exact results, and UI limitation are recorded in `workflow/tasks/student-ticket-activity/implementation-T06-batch-5.md`.
+
+Key results:
+
+- Firestore Emulator Standard at `127.0.0.1:8080`; synthetic ticket integration passed 1 suite/1 test.
+- Direct Express shell: detail and dashboard paths each returned `200 text/html; charset=utf-8` and included the SPA root marker.
+- CUA returned no apps or browsers and `Browsers: Error: The browser access host is unavailable`; actual 320 CSS-pixel visual inspection is unresolved.
