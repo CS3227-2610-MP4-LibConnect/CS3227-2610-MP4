@@ -24,6 +24,7 @@ const SYSTEM_PROMPT = [
   'For anything the ticket leaves unexplained, say what the TA should check.',
   'Name only files, tools, libraries, settings, and places that appear in the ticket; do not mention any other framework, tool, or setting.',
   'Each thing you ask the TA to check must be something the ticket mentions, such as a file, a line, a setting, or the reported output, and never a guessed cause.',
+  'Always state a concrete fix the student can apply; the limits on names and the final check apply to the problem, the cause, and the checks, not to the fix, which may name a standard language feature or a common library function even if the ticket does not mention it.',
   'Before replying, reread your note and delete any component, tool, or place the ticket does not mention (such as a server, browser console, framework, or security policy) and any check that names a cause the ticket does not state.',
   'Reply with exactly one JSON object of the form {"draft": "<the resolution note>"}.',
 ].join('\n');

@@ -1,7 +1,7 @@
 # AI TA assist specification
 
-Version: 0.3 (2026-11-09)
-Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4. The human replied "ok" to the v0.2 proposal (opt-in live SoCLaaS test) on 2026-11-09, authorising these edits. The v0.2 text is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Both are recorded from the human's messages; no agent-set approval state. v0.3 (one R5 message) was approved when the human chose "Approve both rounds (Recommended)" for the improvement rounds on 2026-11-09.
+Version: 0.4 (2026-11-10)
+Approval evidence: the human replied "alright, lets use v0.1 for now" to version 0.1 on 2026-11-09, after the orchestrator's recommendations for Q1–Q4. The human replied "ok" to the v0.2 proposal (opt-in live SoCLaaS test) on 2026-11-09, authorising these edits. The v0.2 text is human-approved: the human chose "Approve both (Recommended)" on 2026-11-09, recorded from the human's answer. Both are recorded from the human's messages; no agent-set approval state. v0.3 (one R5 message) was approved when the human chose "Approve both rounds (Recommended)" for the improvement rounds on 2026-11-09. v0.4 (the R1 fix clarification) was approved when the human chose "Clarify spec, commit + push (Recommended)" on 2026-11-10 to settle round 6 review R6-2.
 Task ID: `ai-ta-assist` (from approved `workflow/PLAN.md` v0.1, TA owner)
 
 ## Purpose and scope
@@ -77,7 +77,9 @@ with:
 
 - a fixed `systemPrompt`: write a short, factual resolution note for a course
   help-desk ticket (the problem, the cause, and the fix or the concept), in
-  plain text, without names, and without new information beyond the ticket;
+  plain text, without names, and without new facts about the ticket; the fix
+  may name a standard language feature or a common library function that the
+  ticket does not mention;
 - `buildUserContent(input)`: a labelled plain-text block with
   - `title`, `language`, `conceptTags`, `errorOutput`, `expectedBehaviour`,
     `actualBehaviour`, and `attempted`;
@@ -264,3 +266,4 @@ gateway is disabled, every AI button still renders and returns the
 - 2026-11-09 (v0.2): The human asked for real SoCLaaS verification ("help me change that, i want the real soclaas in. i will add my cridencial in .env") and replied "ok" to the orchestrator's v0.2 proposal. Added an opt-in, human-run live verification layer (the "Live verification" section and a matrix row). The stub-gateway layers are unchanged, and so are R1–R6 and scenarios 1–11.
 - 2026-11-09: The human approved the v0.2 text ("Approve both (Recommended)"), together with the T01–T07 tests.
 - 2026-11-09 (v0.3): The human asked for "2 rounds of improvement-testing-improvement-testing" after the pre-PR check, and chose "Approve both rounds (Recommended)" on 2026-11-09. R5: the insights `AI_INVALID_OUTPUT` message is now "The AI reply could not be used. Please try again." (review note I6). The drafter message is unchanged. Nothing else changed.
+- 2026-11-10 (v0.4): the human chose "Clarify spec, commit + push (Recommended)" on 2026-11-10 to settle round 6 review R6-2. R1: "without new information beyond the ticket" now reads "without new facts about the ticket; the fix may name a standard language feature or a common library function that the ticket does not mention". This matches T26, where live drafts had stopped stating the fix that R1 requires. Nothing else changed.
