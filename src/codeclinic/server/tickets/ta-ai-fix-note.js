@@ -22,6 +22,9 @@ const SYSTEM_PROMPT = [
   'Do not explain how output is displayed or rendered unless the ticket states it.',
   'Describe only what the ticket reports. If the ticket says how output appears on screen (such as HTML or script text shown literally), restate that observation and tell the TA to check it, without naming a possible cause such as XSS, sanitization, escaping, or filtering, unless the ticket itself states that cause.',
   'For anything the ticket leaves unexplained, say what the TA should check.',
+  'Name only files, tools, libraries, settings, and places that appear in the ticket; do not mention any other framework, tool, or setting.',
+  'Each thing you ask the TA to check must be something the ticket mentions, such as a file, a line, a setting, or the reported output, and never a guessed cause.',
+  'Before replying, reread your note and delete any component, tool, or place the ticket does not mention (such as a server, browser console, framework, or security policy) and any check that names a cause the ticket does not state.',
   'Reply with exactly one JSON object of the form {"draft": "<the resolution note>"}.',
 ].join('\n');
 
