@@ -1,0 +1,13 @@
+T04-W1 review follow-up (2026-11-09)
+
+Finding preserved: `workflow/tasks/student-tickets/review-T04.md` identified that `browser-inspection-server.js` used `candidate.startsWith(root)`, allowing a sibling path with the same string prefix to be considered contained.
+
+Fix: replaced the string-prefix check with `isWithinRoot(rootPath, candidatePath)`, which uses `path.relative` and rejects a result equal to `..`, a result starting with `..${path.sep}`, or an absolute relative result. The server now starts only when run as the main module and exports the helper so the browser harness can exercise the exact check.
+
+Direct check command, from `src/codeclinic`:
+`node -e "const a=require('node:assert/strict');const p=require('node:path');const {isWithinRoot,root}=require('./test/browser-inspection-server');a.equal(isWithinRoot(root,p.join(root,'index.html')),true);a.equal(isWithinRoot(root,p.resolve(root+'-private','secret')),false);a.equal(isWithinRoot(root,p.resolve(root,'..','secret')),false);console.log('PASS: in-root accepted; sibling-prefix and parent escapes rejected')"`
+Result: `PASS: in-root accepted; sibling-prefix and parent escapes rejected`.
+
+Browser rerun command: `node .\test\browser-inspection.js`, using the locally served optimized build and synthetic session/CSRF/ticket responses. Result: PASS; path-containment assertions passed, viewport/document/body width were 320, no horizontal overflow, Tab reached the title and submit, and Space-submit focused the first invalid field with its associated error. Full JSON and output: `implementation-T04-browser.json` and `implementation-T04-W1-browser-run.log`; screenshots: `browser-inspection-320-top.png` and `browser-inspection-320-bottom.png`. Both the local server and Chrome processes were stopped after the run.
+
+No production source, dependencies, checklist, current-state file, review report, or approval state was changed.

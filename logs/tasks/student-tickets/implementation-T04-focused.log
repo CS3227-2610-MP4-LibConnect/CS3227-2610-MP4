@@ -1,0 +1,14 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --runInBand --watchAll=false --silent StudentTickets student-tickets.api student-tickets.storage
+
+(node:36896) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTickets.test.tsx (6.564 s)
+PASS test/student-tickets.api.test.js
+PASS test/student-tickets.storage.test.js
+
+Test Suites: 3 passed, 3 total
+Tests:       58 passed, 58 total
+Snapshots:   0 total
+Time:        13.839 s

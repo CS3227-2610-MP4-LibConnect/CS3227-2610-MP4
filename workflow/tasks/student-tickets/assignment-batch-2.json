@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 2,
+  "items": ["T02", "T03"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/batch-2-dispatch.md",
+  "implementer": {
+    "agentId": "implementer-tickets-2",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/src/tickets/",
+      "src/codeclinic/src/index.tsx",
+      "src/codeclinic/src/DashboardRouteGuard.tsx",
+      "src/codeclinic/src/StudentDashboard.tsx",
+      "src/codeclinic/src/AppHeader.tsx",
+      "src/codeclinic/test/StudentTickets.test.tsx",
+      "src/codeclinic/test/server.test.js",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "workflow/tasks/student-tickets/implementation-T02.md",
+      "workflow/tasks/student-tickets/implementation-T03.md",
+      "logs/tasks/student-tickets/implementation-T02.md",
+      "logs/tasks/student-tickets/implementation-T03.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-2",
+    "worktree": "shared-workspace",
+    "separationException": "Implementation remains uncommitted in the shared workspace; an exact clean checkout may be unavailable. The reviewer must document the actual review surface and compensating controls.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T02": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T02.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T02.md",
+      "checks": [
+        { "command": "npm test -- --runInBand --watchAll=false --silent StudentTickets.test.tsx -t \"direct entry|visitor is returned|required fields|language is a fixed-choice|valid submission|Unicode code-point|rejects query markers|serialized request|stays on the form\"", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --silent server.test.js", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T02.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T02.md",
+      "reviewVerdict": "pass-with-follow-up"
+    },
+    "T03": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T03.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T03.md",
+      "checks": [
+        { "command": "npm test -- --runInBand --watchAll=false StudentTickets.test.tsx", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --silent server.test.js", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T03.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T03.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

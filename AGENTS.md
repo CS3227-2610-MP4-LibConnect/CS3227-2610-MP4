@@ -36,12 +36,15 @@ The applicable skill must be selected and recorded in the handoff. The
 repository-specific skill mapping and the `specdocs` path adapter are defined
 in `workflow/README.md`; do not create a second specification tree.
 
-The analyst prepares the specification, task checklist, and handoff for separate
-human approvals. Once those approvals are in place, the orchestrator coordinates
-test writing and task grouping, presents the grouping for human approval, then
-assigns approved checklist items to implementers one task at a time. The
-orchestrator reconciles each group's evidence before starting the next, arranges
-independent review, and presents the review findings for a human merge decision.
+The analyst prepares the specification, dependency-ordered task checklist, and
+handoff for separate human approvals. Once those approvals are in place, the
+orchestrator coordinates test writing, proposes ordered batches of up to two
+checklist items, and presents the batch plan for human approval. One implementer
+completes the items in each approved batch sequentially, with separate
+verification evidence for each. One different reviewer independently reviews
+each item and the combined change before the next batch starts. The
+orchestrator reconciles the evidence and presents the review findings for a
+human merge decision.
 It owns shared checklist updates and agent handoff records; no agent response or
 passing test advances an approval gate.
 
@@ -110,6 +113,47 @@ summaries under `logs/chat/<name>/`. Only a human may record an approval as gran
 an agent must not approve its own specification, implementation, or review.
 Evidence must be reproducible and must not contain secrets or unnecessary
 personal data.
+For active tasks, read `workflow/tasks/<task-id>/current-state.md` when joining
+or resuming a phase, if it exists. Treat it as a navigation index and verify
+its claims against the approved artifacts and linked evidence; it grants no
+approval or permission. The orchestrator updates it at meaningful checkpoints
+as described in `workflow/README.md`.
+
+### Efficient evidence collection
+
+- Use targeted file and line searches first, with bounded output. Open only
+  changed files and the sections of approved artifacts needed for the current
+  decision; avoid rereading or pasting unchanged material already in context.
+- Capture verbose test output in a task-local log. Inspect the suite summary and
+  first distinct failure before expanding to the relevant stack trace or test
+  case. Keep the complete output available as evidence, and report every failing
+  suite and unresolved risk even when failures share a cause.
+- Keep command results and agent handoffs focused on the files, findings,
+  decisions, and questions needed for the next step. Link to task artifacts and
+  full logs instead of copying their contents; give independent reviewers
+  enough exact context to verify the change.
+- Stop optional repeat or broader testing once required checks and concrete
+  risks are resolved. Expand inspection or testing only for a remaining risk,
+  a failed check, or a required gate.
+- Never reduce required verification or discard failure evidence solely to save
+  input tokens.
+
+### Browser image verification
+
+- When a task requires visual or image-based verification in a browser, inform
+  the human that they need to perform that test. Give the exact page or route,
+  viewport size, interaction steps, and visual conditions to check, including
+  overflow and visible focus where relevant.
+- Ask the human to report the result and provide screenshots when they are
+  needed to assess the layout. Request only the relevant view and avoid
+  unnecessary personal data in screenshots.
+- Record the human's observations and any supplied images in the task evidence.
+  Do not claim the visual check passed until that evidence supports it. Keep
+  the criterion open if the human has not completed the test or the evidence is
+  inconclusive.
+- Continue independent nonvisual verification while waiting. Do not repeatedly
+  probe browser availability or create a new verification batch solely because
+  the agent's browser host is unavailable.
 
 ## Repository Structure
 

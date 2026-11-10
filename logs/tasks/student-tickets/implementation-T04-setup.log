@@ -1,0 +1,11 @@
+T04 setup and failed-attempt record (2026-11-09)
+
+Preflight: `openspec list --json` returned a project root at the repository and an empty `changes` array. `openspec status --change student-tickets --json` returned `Change 'student-tickets' not found. No changes exist.` The repository adapter in workflow/README.md maps specdocs/OpenSpec references to workflow/specs and workflow/tasks; no duplicate OpenSpec change tree was created.
+
+Initial Firebase CLI attempt:
+- `firebase emulators:exec ...` with the default config location failed before emulator startup: `EPERM: operation not permitted, open 'C:\Users\Junho\.config\configstore\firebase-tools.json'`.
+- Setting `XDG_CONFIG_HOME` inside the task-local logs directory resolved the config access. The CLI then reported `Could not start Firestore Emulator, port taken` because port 8080 was occupied. Process metadata access was denied; the listener was not written to or stopped.
+- A first assertion script invocation failed module resolution (`Cannot find module 'firebase-admin/app'`), followed by an Admin SDK API mismatch (`TypeError: admin.firestore is not a function`). The script was corrected to use exported `firebase-admin/app` and `firebase-admin/firestore` APIs and `NODE_PATH` from the package directory.
+- Successful isolated command: `firebase emulators:exec --only firestore --project demo-codeclinic-t04 --config ..\..\logs\tasks\student-tickets\firebase-T04.json --non-interactive "node .\test\emulator-C1-assertion.js"`. It started on port 8180, passed all C1 assertions, deleted the synthetic ticket, and shut down.
+
+Initial browser automation draft failed with `ReferenceError: Cannot determine intended module format because both 'require' and top-level await are present`, then a follow-up edit produced `SyntaxError: Unexpected end of input`. The script was wrapped in an async function, rerun in local Chrome, and passed. The final successful output is in `implementation-T04-browser-run.log`; the browser endpoints were loopback-only synthetic stubs. The CUA surface independently reported `Browsers: Error: The browser access host is unavailable.`

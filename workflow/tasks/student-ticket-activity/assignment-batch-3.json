@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-ticket-activity",
+  "batch": 3,
+  "items": ["T03", "T04"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-ticket-activity.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-ticket-activity/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-ticket-activity/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-ticket-activity/approval-batch-3.md",
+  "implementer": {
+    "agentId": "ticket_batch_3_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/tickets/route.js",
+      "src/codeclinic/server/tickets/store.js",
+      "src/codeclinic/server/tickets/validation.js",
+      "src/codeclinic/src/StudentDashboard.tsx",
+      "src/codeclinic/src/DashboardViews.css",
+      "src/codeclinic/src/DashboardRouteGuard.tsx",
+      "src/codeclinic/src/index.tsx",
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/src/tickets/MyTicketsPage.tsx",
+      "src/codeclinic/test/student-ticket-activity.contract.test.js",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "src/codeclinic/test/student-tickets.storage.test.js",
+      "src/codeclinic/test/StudentTicketActivity.test.tsx",
+      "workflow/tasks/student-ticket-activity/implementation-T03-batch-3.md",
+      "workflow/tasks/student-ticket-activity/implementation-T04-batch-3.md",
+      "logs/tasks/student-ticket-activity/implementation-T03-batch-3.md",
+      "logs/tasks/student-ticket-activity/implementation-T04-batch-3.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "ticket_batch_3_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Approved task artifacts, tests, and the user's dashboard edit remain uncommitted in the shared workspace. A different reviewer agent will independently inspect the exact diff and evidence.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/student-ticket-activity/review-report-batch-3.md",
+      "logs/tasks/student-ticket-activity/review-batch-3.md"
+    ]
+  },
+  "itemEvidence": {
+    "T03": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T03-batch-3.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T03-batch-3.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.contract.test.js test/student-tickets.api.test.js test/student-tickets.storage.test.js", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report-batch-3.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-3.md",
+      "reviewVerdict": "changes-required"
+    },
+    "T04": {
+      "implementationReport": "workflow/tasks/student-ticket-activity/implementation-T04-batch-3.md",
+      "implementationLog": "logs/tasks/student-ticket-activity/implementation-T04-batch-3.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketActivity.test.tsx --testNamePattern='dashboard shows the latest five active summaries|dashboard shows a loading state|My Tickets direct visits|does not show My Tickets|dashboard distinguishes failed active-ticket loads'", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-ticket-activity/review-report-batch-3.md",
+      "reviewLog": "logs/tasks/student-ticket-activity/review-batch-3.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

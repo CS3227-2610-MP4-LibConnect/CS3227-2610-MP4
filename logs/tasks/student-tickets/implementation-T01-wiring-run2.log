@@ -1,0 +1,25 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --runInBand --watchAll=false --verbose student-tickets.storage.test account-r7-server.test
+
+(node:13548) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/account-r7-server.test.js
+  √ mounted R7 guard blocks account, support, and notifications but permits the limited password-change endpoints (197 ms)
+  √ forced-change sessions cannot bypass R7 with get /API/account (12 ms)
+  √ forced-change sessions cannot bypass R7 with get /Api/account (12 ms)
+  √ forced-change sessions cannot bypass R7 with patch /API/account/profile (9 ms)
+  √ forced-change sessions cannot bypass R7 with get /aPi/support/accounts?type=STUDENT (8 ms)
+  √ forced-change sessions cannot bypass R7 with post /API/support/accounts/u1/status (9 ms)
+  √ forced-change sessions cannot bypass R7 with get /API/notifications/unread-count (8 ms)
+  √ forced-change sessions cannot bypass R7 with post /API/notifications/read-all (10 ms)
+  √ case-insensitive password-change endpoint remains allowed (28 ms)
+
+PASS test/student-tickets.storage.test.js
+  √ creates one C1 ticket document at the generated ticket path (5 ms)
+
+Test Suites: 2 passed, 2 total
+Tests:       10 passed, 10 total
+Snapshots:   0 total
+Time:        8.231 s
+Ran all test suites matching /student-tickets.storage.test|account-r7-server.test/i.

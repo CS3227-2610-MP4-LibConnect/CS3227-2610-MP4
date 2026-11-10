@@ -1,0 +1,686 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand student-ticket-activity.contract.test.js StudentTicketActivity.test.tsx
+
+(node:11416) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/StudentTicketActivity.test.tsx (8.308 s)
+  ● Student ticket activity pages › dashboard shows the latest five active summaries and provides My Tickets navigation
+
+    Unable to find role="region" and name `/active tickets/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div
+        id="root"
+      />
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                aria-label="Notifications, 0 unread"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      34 |     window.history.replaceState({}, '', '/student/dashboard');
+      35 |     render(appTree as React.ReactElement);
+    > 36 |     expect(await screen.findByRole('region', { name: /active tickets/i })).toBeInTheDocument();
+         |                         ^
+      37 |     expect(await screen.findByRole('link', { name: /ticket 0/i })).toHaveAttribute('href', '/student/tickets/ticket-0');
+      38 |     expect(screen.getByRole('link', { name: /load all/i })).toHaveAttribute('href', '/student/tickets');
+      39 |     expect(screen.queryByRole('link', { name: /ticket 5/i })).not.toBeInTheDocument();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:36:25)
+
+  ● Student ticket activity pages › dashboard distinguishes failed active-ticket loads from an empty state and can retry
+
+    Unable to find role="button" and name `/retry/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                aria-label="Notifications, 0 unread"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      54 |     window.history.replaceState({}, '', '/student/dashboard');
+      55 |     render(appTree as React.ReactElement);
+    > 56 |     const retry = await screen.findByRole('button', { name: /retry/i });
+         |                                ^
+      57 |     expect(screen.queryByText(/no active tickets/i)).not.toBeInTheDocument();
+      58 |     fireEvent.click(retry);
+      59 |     expect(await screen.findByText(/no active tickets/i)).toBeInTheDocument();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:56:32)
+
+  ● Student ticket activity pages › deep-linked ticket detail waits for Student verification and renders reply text literally
+
+    Unable to find role="heading" and name "<script>literal</script>"
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="login-page"
+        >
+          <section
+            aria-labelledby="login-title"
+            class="login-card"
+          >
+            <div
+              aria-hidden="true"
+              class="brand-mark"
+            >
+              C
+            </div>
+            <p
+              class="eyebrow"
+            >
+              CODECLINIC
+            </p>
+            <h1
+              id="login-title"
+            >
+              Welcome back
+            </h1>
+            <p
+              class="login-intro"
+            >
+              Sign in to continue to CodeClinic.
+            </p>
+            <form
+              class="login-form"
+              novalidate=""
+            >
+              <fieldset
+                class="account-type-fieldset"
+              >
+                <legend>
+                  Sign in as
+                </legend>
+                <div
+                  class="account-type-options"
+                >
+                  <label
+                    class="account-type-option is-selected"
+                  >
+                    <input
+                      checked=""
+                      name="accountType"
+                      type="radio"
+                      value="STUDENT"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      S
+                    </span>
+                    <span>
+                      Student
+                    </span>
+                  </label>
+                  <label
+                    class="account-type-option"
+                  >
+                    <input
+                      name="accountType"
+                      type="radio"
+                      value="TA"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      T
+                    </span>
+                    <span>
+                      TA
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="email"
+                >
+                  Email address
+                </label>
+                <input
+                  aria-describedby="email-error"
+                  aria-invalid="false"
+                  autocomplete="username"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  type="email"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="email-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  aria-describedby="password-error"
+                  aria-invalid="false"
+                  autocomplete="current-password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="password-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                aria-live="polite"
+                class="form-error"
+                role="alert"
+              />
+              <button
+                class="submit-button"
+                type="submit"
+              >
+                Sign in
+                 
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </button>
+            </form>
+            <p
+              class="login-footer"
+            >
+              New to CodeClinic? 
+              <a
+                href="/register"
+              >
+                Register
+              </a>
+            </p>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      72 |     window.history.replaceState({}, '', '/student/tickets/ticket-1');
+      73 |     render(appTree as React.ReactElement);
+    > 74 |     expect(await screen.findByRole('heading', { name: '<script>literal</script>' })).toBeInTheDocument();
+         |                         ^
+      75 |     expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeInTheDocument();
+      76 |     const renderedApp = document.body.lastElementChild as HTMLElement;
+      77 |     expect(renderedApp.querySelector('script')).toBeNull();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:74:25)
+
+  ● Student ticket activity pages › reply submit is single-flight and retains text after a failed response
+
+    Unable to find role="textbox" and name `/reply/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="login-page"
+        >
+          <section
+            aria-labelledby="login-title"
+            class="login-card"
+          >
+            <div
+              aria-hidden="true"
+              class="brand-mark"
+            >
+              C
+            </div>
+            <p
+              class="eyebrow"
+            >
+              CODECLINIC
+            </p>
+            <h1
+              id="login-title"
+            >
+              Welcome back
+            </h1>
+            <p
+              class="login-intro"
+            >
+              Sign in to continue to CodeClinic.
+            </p>
+            <form
+              class="login-form"
+              novalidate=""
+            >
+              <fieldset
+                class="account-type-fieldset"
+              >
+                <legend>
+                  Sign in as
+                </legend>
+                <div
+                  class="account-type-options"
+                >
+                  <label
+                    class="account-type-option is-selected"
+                  >
+                    <input
+                      checked=""
+                      name="accountType"
+                      type="radio"
+                      value="STUDENT"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      S
+                    </span>
+                    <span>
+                      Student
+                    </span>
+                  </label>
+                  <label
+                    class="account-type-option"
+                  >
+                    <input
+                      name="accountType"
+                      type="radio"
+                      value="TA"
+                    />
+                    <span
+                      aria-hidden="true"
+                      class="option-icon"
+                    >
+                      T
+                    </span>
+                    <span>
+                      TA
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="email"
+                >
+                  Email address
+                </label>
+                <input
+                  aria-describedby="email-error"
+                  aria-invalid="false"
+                  autocomplete="username"
+                  id="email"
+                  name="email"
+                  placeholder="you@example.com"
+                  type="email"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="email-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                class="form-field"
+              >
+                <label
+                  for="password"
+                >
+                  Password
+                </label>
+                <input
+                  aria-describedby="password-error"
+                  aria-invalid="false"
+                  autocomplete="current-password"
+                  id="password"
+                  name="password"
+                  placeholder="Enter your password"
+                  type="password"
+                />
+                <div
+                  aria-live="polite"
+                  class="field-error"
+                  id="password-error"
+                  role="alert"
+                />
+              </div>
+              <div
+                aria-live="polite"
+                class="form-error"
+                role="alert"
+              />
+              <button
+                class="submit-button"
+                type="submit"
+              >
+                Sign in
+                 
+                <span
+                  aria-hidden="true"
+                >
+                  →
+                </span>
+              </button>
+            </form>
+            <p
+              class="login-footer"
+            >
+              New to CodeClinic? 
+              <a
+                href="/register"
+              >
+                Register
+              </a>
+            </p>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      92 |     window.history.replaceState({}, '', '/student/tickets/ticket-1');
+      93 |     render(appTree as React.ReactElement);
+    > 94 |     const input = await screen.findByRole('textbox', { name: /reply/i });
+         |                                ^
+      95 |     fireEvent.change(input, { target: { value: 'I tried this.' } });
+      96 |     const submit = screen.getByRole('button', { name: /send reply/i });
+      97 |     fireEvent.click(submit);
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketActivity.test.tsx:94:32)
+
+FAIL test/student-ticket-activity.contract.test.js
+  ● active ticket query contract › filters by owner and active status in Firestore, orders with a stable tie-breaker, and limits before reading
+
+    TypeError: store.listActive is not a function
+
+      23 |     };
+      24 |     const store = createFirestoreTicketStore({ collection(name) { operations.push(['collection', name]); return query; } });
+    > 25 |     const result = await store.listActive('student-a');
+         |                                ^
+      26 |     expect(operations.slice(0, 4)).toEqual([
+      27 |       ['collection', 'tickets'], ['where', 'studentId', '==', 'student-a'],
+      28 |       ['where', 'status', 'in', ['OPEN', 'CLAIMED']], ['orderBy', 'updatedAt', 'desc'],
+
+      at Object.<anonymous> (test/student-ticket-activity.contract.test.js:25:32)
+      at TestScheduler.scheduleTests (node_modules/@jest/core/build/TestScheduler.js:333:13)
+      at runJest (node_modules/@jest/core/build/runJest.js:404:19)
+      at _run10000 (node_modules/@jest/core/build/cli/index.js:320:7)
+      at runCLI (node_modules/@jest/core/build/cli/index.js:173:3)
+
+  ● Student ticket activity API contract › active summaries are available only to an authenticated Student and are not cacheable
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      61 |     const visitor = await request(app).get('/api/tickets/active');
+      62 |     const student = await request(app).get('/api/tickets/active').set('Cookie', cookie);
+    > 63 |     expect(visitor.status).toBe(401);
+         |                            ^
+      64 |     expect(student.status).toBe(200);
+      65 |     expect(student.headers['cache-control']).toBe('no-store');
+      66 |   });
+
+      at Object.<anonymous> (test/student-ticket-activity.contract.test.js:63:28)
+
+  ● Student ticket activity API contract › detail read hides another Student’s ticket as missing and uses no-store
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "no-store"
+    Received: undefined
+
+      71 |     const response = await request(app).get('/api/tickets/foreign-ticket').set('Cookie', cookie);
+      72 |     expect(response.status).toBe(404);
+    > 73 |     expect(response.headers['cache-control']).toBe('no-store');
+         |                                               ^
+      74 |     expect(JSON.stringify(response.body)).not.toMatch(/foreign-ticket|student-b/i);
+      75 |   });
+      76 |
+
+      at Object.<anonymous> (test/student-ticket-activity.contract.test.js:73:47)
+
+  ● Student ticket activity API contract › reply requires CSRF and accepts only a bounded message field
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      80 |     const { app, cookie, csrf } = createRouter({ store });
+      81 |     const missingCsrf = await request(app).post('/api/tickets/ticket-1/replies').set('Cookie', cookie).send({ message: 'Hello' });
+    > 82 |     expect(missingCsrf.status).toBe(403);
+         |                                ^
+      83 |     expect(reply).not.toHaveBeenCalled();
+      84 |     const forged = await request(app).post('/api/tickets/ticket-1/replies').set('Cookie', cookie)
+      85 |       .set('X-CSRF-Token', csrf).send({ message: 'Hello', authorUserId: 'attacker' });
+
+      at Object.<anonymous> (test/student-ticket-activity.contract.test.js:82:32)
+
+  ● Student ticket activity API contract › close requires CSRF and returns a conflict for a terminal-state ticket
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      92 |     const { app, cookie, csrf } = createRouter({ store: { create: jest.fn(), close } });
+      93 |     const noCsrf = await request(app).post('/api/tickets/ticket-1/close').set('Cookie', cookie).send({});
+    > 94 |     expect(noCsrf.status).toBe(403);
+         |                           ^
+      95 |     const conflict = await request(app).post('/api/tickets/ticket-1/close').set('Cookie', cookie)
+      96 |       .set('X-CSRF-Token', csrf).send({});
+      97 |     expect(conflict.status).toBe(409);
+
+      at Object.<anonymous> (test/student-ticket-activity.contract.test.js:94:27)
+
+Test Suites: 2 failed, 2 total
+Tests:       9 failed, 9 total
+Snapshots:   0 total
+Time:        14.787 s
+Ran all test suites matching /student-ticket-activity.contract.test.js|StudentTicketActivity.test.tsx/i.

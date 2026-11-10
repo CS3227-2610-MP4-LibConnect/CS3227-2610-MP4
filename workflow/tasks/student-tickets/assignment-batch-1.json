@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 1,
+  "items": ["T01"],
+  "splitReason": "Review the security-sensitive ticket API and C1 data contract before the dependent protected form starts.",
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.3" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.2" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.2" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/batch-plan.md",
+  "implementer": {
+    "agentId": "implementer-tickets-1",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/server/tickets/",
+      "src/codeclinic/test/student-tickets.api.test.js",
+      "src/codeclinic/test/student-tickets.storage.test.js",
+      "workflow/tasks/student-tickets/implementation-T01.md",
+      "logs/tasks/student-tickets/implementation-T01.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-1",
+    "worktree": "shared-workspace",
+    "separationException": "The clean review checkout is at the preimplementation baseline; uncommitted implementation files were reviewed independently in the shared workspace with full file/diff inspection and focused tests.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T01.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T01.md",
+      "checks": [
+        { "command": "npm test -- --runInBand --watchAll=false --silent student-tickets.api student-tickets.storage server.test login.session account-server-wiring notifications.api", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --silent login.credentials account-routes", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --silent student-tickets.api student-tickets.storage", "result": "pass" },
+        { "command": "npm test -- --runInBand --watchAll=false --silent server.test login.session account-server-wiring login.credentials account-routes", "result": "pass" },
+        { "command": "git diff --check", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-T01.md",
+      "reviewLog": "logs/tasks/student-tickets/review-T01.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

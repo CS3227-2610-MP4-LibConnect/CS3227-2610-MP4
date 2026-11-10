@@ -1,0 +1,42 @@
+(node:34880) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+!  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection.
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-codeclinic", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+!  firestore: Did not find a Cloud Firestore rules file specified in a firebase.json config file.
+!  firestore: The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+
+[90m┌─────────────────────────────────────────────────────────────┐[39m
+[90m│[39m ✔  All emulators ready! It is now safe to connect your app. [90m│[39m
+[90m│[39m i  View Emulator UI at http://127.0.0.1:4000/               [90m│[39m
+[90m└─────────────────────────────────────────────────────────────┘[39m
+
+[90m┌───────────[39m[90m┬────────────────[39m[90m┬─────────────────────────────────┐[39m
+[90m│[39m[33m Emulator  [39m[90m│[39m[33m Host:Port      [39m[90m│[39m[33m View in Emulator UI             [39m[90m│[39m
+[90m├───────────[39m[90m┼────────────────[39m[90m┼─────────────────────────────────┤[39m
+[90m│[39m Firestore [90m│[39m 127.0.0.1:8080 [90m│[39m http://127.0.0.1:4000/firestore [90m│[39m
+[90m└───────────[39m[90m┴────────────────[39m[90m┴─────────────────────────────────┘[39m
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+
+T06 Batch 7 emulator verification transcript:
+
+- Start command from `src/codeclinic`: `firebase emulators:start --only firestore --project demo-codeclinic --non-interactive` with `APPDATA` and `XDG_CONFIG_HOME` redirected to task temp directories. Firestore started at `127.0.0.1:8080` in Standard edition. Firebase reported that the CLI MOTD/remote config was unavailable; no rules file was configured, so the emulator defaulted to allow. The initial attempt to append test output to this same file while the emulator process redirected into it was rejected by PowerShell as an in-use file; the emulator was stopped and restarted without file redirection. This was a log capture issue; the test then ran normally.
+- Test command with `RUN_FIRESTORE_EMULATOR_TESTS=1`, `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, `CODECLINIC_FIRESTORE_MODE=local-emulator`, and `CODECLINIC_FIRESTORE_PROJECT_ID=demo-codeclinic`: `npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js`.
+- Result: PASS, 1 suite / 1 test, 14.079s. Test covers query, ownership, paging, writes, and close race. The emulator was stopped after the run. This is synthetic local application integration; it does not validate Firestore Rules.
+
+Full-suite result: `CI=true npm test -- --watchAll=false --runInBand` — PASS, 43 suites / 797 tests passed, 4 suites / 4 tests skipped, 801 total, 92.491s. The four opt-in suites remained skipped in the general run; the assigned ticket emulator suite ran separately above. Full output: `batch-7-full-test.log`.
+
+Build result: `CI=true npm run build` — PASS, optimized production build compiled. Output: `batch-7-build.log`.
+
+Final emulator rerun after the final T05 changes:
+
+- Firestore Emulator Standard edition started for demo project `demo-codeclinic` at `127.0.0.1:8080`; Firebase reported the remote MOTD/config could not be fetched and warned that no rules file was configured (emulator defaulted to allow). No live project was accessed.
+- With `RUN_FIRESTORE_EMULATOR_TESTS=1`, `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, `CODECLINIC_FIRESTORE_MODE=local-emulator`, and `CODECLINIC_FIRESTORE_PROJECT_ID=demo-codeclinic`, ran `npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-activity.emulator.test.js` from `src/codeclinic`.
+- PASS: 1 suite / 1 test, 15.855s; query, ownership, paging, writes, and close-race coverage. Emulator was stopped after the run. This is synthetic application-level integration and does not validate Firestore Rules.

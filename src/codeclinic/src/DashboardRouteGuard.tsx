@@ -2,11 +2,15 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { TADashboard } from './TADashboard';
 import { StudentDashboard } from './StudentDashboard';
 import AccountPages from './AccountPages';
+import TicketCreatePage from './tickets/TicketCreatePage';
+import TicketDetailPage from './tickets/TicketDetailPage';
+import MyTicketsPage from './tickets/MyTicketsPage';
+import DashboardLogout from './DashboardLogout';
 
 type AccountType = 'STUDENT' | 'TA';
 type GuardState = 'checking' | 'ready' | 'denied' | 'retry';
 
-function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
+function DashboardRouteGuard({ accountType, ticketId }: { accountType: AccountType; ticketId?: string }) {
   const [state, setState] = useState<GuardState>('checking');
   const [verifiedAccountType, setVerifiedAccountType] = useState<AccountType | null>(null);
   const [verifiedName, setVerifiedName] = useState<string | null>(null);
@@ -127,6 +131,19 @@ function DashboardRouteGuard({ accountType }: { accountType: AccountType }) {
     setVerifiedName(null);
     setState('checking');
   };
+  if (accountType === 'STUDENT' && window.location.pathname === '/student/tickets/new') {
+    return <DashboardLogout onConfirmed={clearVerifiedAccount} studentNavigation>
+      <TicketCreatePage />
+    </DashboardLogout>;
+  }
+  if (accountType === 'STUDENT' && window.location.pathname === '/student/tickets') {
+    return <MyTicketsPage onLogoutConfirmed={clearVerifiedAccount} />;
+  }
+  if (accountType === 'STUDENT' && ticketId && window.location.pathname === `/student/tickets/${ticketId}`) {
+    return <DashboardLogout onConfirmed={clearVerifiedAccount} studentNavigation>
+      <TicketDetailPage ticketId={ticketId} />
+    </DashboardLogout>;
+  }
   if (window.location.pathname === '/account/password-change') return <AccountPages mode="password-change" />;
   if (window.location.pathname === `/${accountType.toLowerCase()}/account`) return <AccountPages mode="account" />;
   if (accountType === 'TA' && window.location.pathname === '/ta/students') return <AccountPages mode="students" />;
