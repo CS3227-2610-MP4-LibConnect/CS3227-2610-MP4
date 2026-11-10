@@ -278,7 +278,7 @@ test('support action failures remain in the support page and do not expose serve
   render(<AccountPages mode="students" />);
   await screen.findByText('Student Example');
   fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
-  expect(await screen.findByRole('alert')).toHaveTextContent('Could not complete this support action. Please try again.');
+  expect(await screen.findByRole('alert')).toHaveTextContent("You don't have permission to change this account.");
   expect(screen.queryByText('<script>unsafe</script>')).not.toBeInTheDocument();
   expect(screen.getByText('Student Example')).toBeInTheDocument();
 });
@@ -322,4 +322,25 @@ test("TAs page hides support actions on the coordinator's own row but keeps them
   const otherRow = screen.getByText('Other TA').closest('li')!;
   expect(within(otherRow).getByRole('button', { name: 'Deactivate' })).toBeInTheDocument();
   expect(within(otherRow).getByRole('button', { name: 'Reset password' })).toBeInTheDocument();
+});
+
+test.each([
+  [404, 'This account no longer exists. Refresh the page to update the list.'],
+  [503, 'The account service is temporarily unavailable. Please try again in a moment.'],
+  [500, 'Could not complete this support action. Please try again.'],
+])('a support action failing with HTTP %i explains why with fixed text', async (status, expected) => {
+  jest.spyOn(window, 'confirm').mockReturnValue(true);
+  jest.spyOn(global, 'fetch').mockImplementation(async (input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url === '/api/account') return new Response(JSON.stringify(account), { status: 200 });
+    if (url.startsWith('/api/support/accounts?')) return new Response(JSON.stringify({ accounts: [entry], nextCursor: null }), { status: 200 });
+    if (url === '/api/auth/csrf') return new Response(JSON.stringify({ csrfToken: 'token' }), { status: 200 });
+    if (url.endsWith('/status')) return new Response(JSON.stringify({ message: 'Injected server text' }), { status });
+    return new Response('{}', { status: 500 });
+  });
+  render(<AccountPages mode="students" />);
+  await screen.findByText('Student Example');
+  fireEvent.click(screen.getByRole('button', { name: 'Deactivate' }));
+  expect(await screen.findByRole('alert')).toHaveTextContent(expected);
+  expect(screen.queryByText('Injected server text')).not.toBeInTheDocument();
 });

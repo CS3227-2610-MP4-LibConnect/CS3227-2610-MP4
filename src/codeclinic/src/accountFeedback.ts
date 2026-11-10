@@ -21,6 +21,17 @@ export async function readFailure(response: Response, context: FailureContext, t
     : context === 'password' ? 'Could not change your password. Please try again.'
       : 'Could not complete this support action. Please try again.';
   if (context === 'support' && response.status === 401) return sessionFailure();
+  // Support routes return no codes beyond 401, so explain the failure by status
+  // with fixed local text; the server body is never shown.
+  if (context === 'support' && response.status === 403) {
+    return { message: "You don't have permission to change this account." };
+  }
+  if (context === 'support' && response.status === 404) {
+    return { message: 'This account no longer exists. Refresh the page to update the list.' };
+  }
+  if (context === 'support' && response.status === 503) {
+    return { message: 'The account service is temporarily unavailable. Please try again in a moment.' };
+  }
   let body: unknown;
   try { body = await response.json(); } catch { return { message: fallback }; }
   if (!body || typeof body !== 'object') return { message: fallback };
