@@ -46,3 +46,21 @@ env:
   availability: 
     - BUILD
     - RUNTIME
+
+# AI gateway (spec workflow/specs/ai-gateway.md R2). The key and base URL are
+# Secret Manager secrets (`firebase apphosting:secrets:set ... --project prod`);
+# only the model name is a plain value. Runtime only: the build never needs them.
+- variable: SOCLAAS_API_KEY
+  secret: SOCLAAS_API_KEY
+  availability:
+    - RUNTIME
+
+- variable: SOCLAAS_BASE_URL
+  secret: SOCLAAS_BASE_URL
+  availability:
+    - RUNTIME
+
+- variable: SOCLAAS_MODEL
+  value: qwen3.6:35b
+  availability:
+    - RUNTIME
