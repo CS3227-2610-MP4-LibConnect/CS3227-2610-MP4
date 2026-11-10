@@ -4,6 +4,41 @@ const ALLOWED_FIELDS = new Set([
   'conceptTags', 'files', 'repoUrl', 'repoFilePaths',
 ]);
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
+const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
+const CURSOR_PATTERN = /^[A-Za-z0-9_-]{1,256}$/;
+
+function validateTicketId(value) {
+  return typeof value === 'string' && TICKET_ID_PATTERN.test(value);
+}
+
+function validateReplyInput(body) {
+  if (!isRecord(body) || Object.keys(body).some((key) => key !== 'message') ||
+      typeof body.message !== 'string') return null;
+  const message = body.message.trim();
+  if (characterLength(message) < 1 || characterLength(message) > 5000) return null;
+  return { message };
+}
+
+function decodeReplyCursor(value, Timestamp) {
+  if (typeof value !== 'string' || !CURSOR_PATTERN.test(value)) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(value, 'base64url').toString('utf8'));
+    if (!parsed || !Number.isSafeInteger(parsed.seconds) || parsed.seconds < 0 ||
+        !Number.isInteger(parsed.nanoseconds) || parsed.nanoseconds < 0 || parsed.nanoseconds >= 1e9 ||
+        typeof parsed.replyId !== 'string' || !TICKET_ID_PATTERN.test(parsed.replyId)) return null;
+    return { createdAt: new Timestamp(parsed.seconds, parsed.nanoseconds), replyId: parsed.replyId };
+  } catch (error) {
+    return null;
+  }
+}
+
+function encodeReplyCursor(cursor) {
+  const timestamp = cursor && cursor.createdAt;
+  if (!timestamp || !Number.isSafeInteger(timestamp.seconds) || !Number.isInteger(timestamp.nanoseconds) ||
+      typeof cursor.replyId !== 'string' || !TICKET_ID_PATTERN.test(cursor.replyId)) return null;
+  return Buffer.from(JSON.stringify({ seconds: timestamp.seconds, nanoseconds: timestamp.nanoseconds, replyId: cursor.replyId }))
+    .toString('base64url');
+}
 
 function characterLength(value) {
   return Array.from(value).length;
@@ -105,4 +140,4 @@ function validateTicketInput(body) {
   };
 }
 
-module.exports = { LANGUAGES, validateTicketInput };
+module.exports = { LANGUAGES, validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor };

@@ -40,6 +40,10 @@ function fixture() {
           const key = `${name}/${id}`;
           return {
             id,
+            path: key,
+            collection(subcollection) {
+              return db.collection(`${key}/${subcollection}`);
+            },
             async get() {
               const value = records.get(key);
               return { exists: value !== undefined, id, data: () => value };
@@ -60,9 +64,15 @@ function fixture() {
     async runTransaction(callback) {
       return callback({
         async get(ref) { return ref.get(); },
-        create(ref, value) { records.set(ref.path, value); },
+        create(ref, value) {
+          if (failWrite) throw new Error('synthetic storage failure');
+          records.set(ref.path, value);
+        },
         set(ref, value) { records.set(ref.path, value); },
-        update(ref, value) { records.set(ref.path, { ...(records.get(ref.path) || {}), ...value }); },
+        update(ref, value) {
+          if (failWrite) throw new Error('synthetic storage failure');
+          records.set(ref.path, { ...(records.get(ref.path) || {}), ...value });
+        },
         delete(ref) { records.delete(ref.path); },
       });
     },
@@ -94,6 +104,12 @@ function fixture() {
     app, records, tickets: () => collection('tickets'), ticketEntries: () => collectionEntries('tickets'),
     notifications: () => collection('notifications'),
     actor, failWrite(value) { failWrite = value; }, cleanup() { fs.rmSync(build, { recursive: true, force: true }); },
+    seedTicket(ticketId, studentId, status = 'OPEN') {
+      const ticket = { ticketId, studentId, status, claimedByTaId: status === 'CLAIMED' ? 'ta-1' : null,
+        fixNote: null, resolvedAt: null, updatedAt: require('@google-cloud/firestore').Timestamp.fromMillis(1000) };
+      records.set(`tickets/${ticketId}`, ticket);
+      return ticket;
+    },
   };
   activeFixtures.push(system);
   return system;
@@ -305,6 +321,160 @@ describe('POST /api/tickets authentication and write boundary', () => {
     expect(response.status).toBe(503);
     expect(JSON.stringify(response.body)).not.toMatch(/synthetic|Loop boundary|student/i);
     expect(system.tickets()).toHaveLength(0);
+    system.cleanup();
+  });
+});
+
+describe('GET /api/tickets/:ticketId bounded detail input', () => {
+  test('rejects an encoded slash in the ticket ID as a safe 400', async () => {
+    const system = fixture();
+    const student = system.actor('student');
+    const response = await request(system.app).get('/api/tickets/a%2Fb').set('Cookie', student.cookie);
+    expect(response.status).toBe(400);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(JSON.stringify(response.body)).not.toMatch(/stack|firestore|student/i);
+    system.cleanup();
+  });
+
+  test('rejects malformed cursors as a safe 400', async () => {
+    const system = fixture();
+    const student = system.actor('student');
+    const response = await request(system.app).get('/api/tickets/valid-ticket?cursor=not-a-valid-cursor').set('Cookie', student.cookie);
+    expect(response.status).toBe(400);
+    expect(response.headers['cache-control']).toBe('no-store');
+    system.cleanup();
+  });
+});
+
+describe('POST /api/tickets/:ticketId/replies and /close', () => {
+  test.each(['OPEN', 'CLAIMED'])('stores an owned reply on an active %s ticket and advances its timestamp', async (status) => {
+    const system = fixture();
+    const student = system.actor('verified-student');
+    system.seedTicket('active-ticket', 'verified-student', status);
+    const response = await request(system.app).post('/api/tickets/active-ticket/replies').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({ message: '  Keep  internal spacing.  ' });
+    const ticket = system.records.get('tickets/active-ticket');
+    const replies = [...system.records.entries()].filter(([key]) => key.startsWith('tickets/active-ticket/replies/'));
+    expect(response.status).toBe(201);
+    expect(response.headers['cache-control']).toBe('no-store');
+    expect(response.body.reply).toMatchObject({ author: { name: 'Student', role: 'STUDENT' }, message: 'Keep  internal spacing.' });
+    expect(replies).toHaveLength(1);
+    expect(replies[0][1]).toMatchObject({ replyId: response.body.reply.replyId, ticketId: 'active-ticket',
+      authorUserId: 'verified-student', message: 'Keep  internal spacing.' });
+    expectFirestoreTimestamp(replies[0][1].createdAt);
+    expectFirestoreTimestamp(ticket.updatedAt);
+    expect(ticket.status).toBe(status);
+    system.cleanup();
+  });
+
+  test('denies visitor, TA, missing CSRF, and a different ticket owner before writes', async () => {
+    const system = fixture();
+    system.seedTicket('other-ticket', 'student-1');
+    const otherStudent = system.actor('student-2');
+    const ta = system.actor('ta', 'TA');
+    const visitor = await request(system.app).post('/api/tickets/other-ticket/replies').send({ message: 'hello' });
+    const deniedTa = await request(system.app).post('/api/tickets/other-ticket/replies').set('Cookie', ta.cookie)
+      .set('X-CSRF-Token', ta.csrf).send({ message: 'hello' });
+    const noCsrf = await request(system.app).post('/api/tickets/other-ticket/close').set('Cookie', otherStudent.cookie).send({});
+    const crossOwner = await request(system.app).post('/api/tickets/other-ticket/replies').set('Cookie', otherStudent.cookie)
+      .set('X-CSRF-Token', otherStudent.csrf).send({ message: 'hello' });
+    expect([visitor.status, deniedTa.status, noCsrf.status, crossOwner.status]).toEqual([401, 403, 403, 404]);
+    expect([...system.records.keys()].filter((key) => key.startsWith('tickets/other-ticket/replies/'))).toHaveLength(0);
+    expect(system.records.get('tickets/other-ticket').status).toBe('OPEN');
+    system.cleanup();
+  });
+
+  test.each([
+    ['blank', { message: '  \n ' }],
+    ['oversized', { message: 'x'.repeat(5001) }],
+    ['forged author', { message: 'hello', authorUserId: 'attacker' }],
+    ['forged status', { message: 'hello', status: 'RESOLVED' }],
+    ['wrong message type', { message: ['hello'] }],
+  ])('rejects %s reply bodies without writes', async (_label, body) => {
+    const system = fixture();
+    const student = system.actor('student');
+    system.seedTicket('active-ticket', 'student');
+    const response = await request(system.app).post('/api/tickets/active-ticket/replies').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send(body);
+    expect(response.status).toBe(400);
+    expect([...system.records.keys()].filter((key) => key.startsWith('tickets/active-ticket/replies/'))).toHaveLength(0);
+    expect(system.records.get('tickets/active-ticket').updatedAt.toMillis()).toBe(1000);
+    system.cleanup();
+  });
+
+  test.each(['replies', 'close'])('returns no-store parser errors for malformed and oversized %s requests', async (action) => {
+    const system = fixture();
+    const student = system.actor('student');
+    system.seedTicket('active-ticket', 'student');
+    const path = `/api/tickets/active-ticket/${action}`;
+    const malformed = await request(system.app).post(path).set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).set('Content-Type', 'application/json').send('{');
+    const oversized = await request(system.app).post(path).set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).set('Content-Type', 'application/json').send(JSON.stringify({ message: 'x'.repeat(132_000) }));
+    expect(malformed.status).toBe(400);
+    expect(oversized.status).toBe(413);
+    expect(malformed.headers['cache-control']).toBe('no-store');
+    expect(oversized.headers['cache-control']).toBe('no-store');
+    expect([...system.records.keys()].filter((key) => key.startsWith('tickets/active-ticket/replies/'))).toHaveLength(0);
+    expect(system.records.get('tickets/active-ticket').status).toBe('OPEN');
+    system.cleanup();
+  });
+
+  test.each(['OPEN', 'CLAIMED'])('closes an owned %s ticket without a resolution', async (status) => {
+    const system = fixture();
+    const student = system.actor('student');
+    system.seedTicket('active-ticket', 'student', status);
+    const response = await request(system.app).post('/api/tickets/active-ticket/close').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({});
+    expect(response.status).toBe(200);
+    expect(system.records.get('tickets/active-ticket')).toMatchObject({ status: 'CLOSED', claimedByTaId: null, fixNote: null, resolvedAt: null });
+    expectFirestoreTimestamp(system.records.get('tickets/active-ticket').updatedAt);
+    system.cleanup();
+  });
+
+  test('rejects forged close fields and returns safe storage failure without changing state', async () => {
+    const system = fixture();
+    const student = system.actor('student');
+    const ticket = system.seedTicket('active-ticket', 'student', 'CLAIMED');
+    const forged = await request(system.app).post('/api/tickets/active-ticket/close').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({ studentId: 'attacker', status: 'CLOSED' });
+    expect(forged.status).toBe(400);
+    expect(system.records.get('tickets/active-ticket')).toEqual(ticket);
+    system.failWrite(true);
+    const failed = await request(system.app).post('/api/tickets/active-ticket/close').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({});
+    expect(failed.status).toBe(503);
+    expect(JSON.stringify(failed.body)).not.toMatch(/synthetic|student/i);
+    expect(system.records.get('tickets/active-ticket')).toEqual(ticket);
+    system.cleanup();
+  });
+
+  test.each(['CLOSED', 'RESOLVED'])('does not overwrite terminal %s state on reply or repeated close', async (status) => {
+    const system = fixture();
+    const student = system.actor('student');
+    const ticket = system.seedTicket('terminal-ticket', 'student', status);
+    const reply = await request(system.app).post('/api/tickets/terminal-ticket/replies').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({ message: 'hello' });
+    const close = await request(system.app).post('/api/tickets/terminal-ticket/close').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({});
+    expect(reply.status).toBe(409);
+    expect(close.status).toBe(409);
+    expect(system.records.get('tickets/terminal-ticket').status).toBe(status);
+    expect(system.records.get('tickets/terminal-ticket').updatedAt).toBe(ticket.updatedAt);
+    expect([...system.records.keys()].filter((key) => key.startsWith('tickets/terminal-ticket/replies/'))).toHaveLength(0);
+    system.cleanup();
+  });
+
+  test('returns safe 503 without claiming success when the transaction fails', async () => {
+    const system = fixture();
+    const student = system.actor('student');
+    system.seedTicket('active-ticket', 'student');
+    system.failWrite(true);
+    const response = await request(system.app).post('/api/tickets/active-ticket/replies').set('Cookie', student.cookie)
+      .set('X-CSRF-Token', student.csrf).send({ message: 'hello' });
+    expect(response.status).toBe(503);
+    expect(JSON.stringify(response.body)).not.toMatch(/synthetic|hello|student/i);
+    expect([...system.records.keys()].filter((key) => key.startsWith('tickets/active-ticket/replies/'))).toHaveLength(0);
     system.cleanup();
   });
 });
