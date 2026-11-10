@@ -441,3 +441,63 @@ There are no Critical, High, or Medium findings. The round 5 evidence (implement
 ### Verdict
 
 **Pass with follow-up.** T24 and T25 add three fixed-string prompt lines and two new unit files, within the v0.7 limits. They do not conflict with the existing lines or weaken the injection defences, and the growth is immaterial against the caps. Both tasks are verified at unit level; their live effect rests on the orchestrator's reported log 40. R5-1 (Low, record-keeping) should be closed before T25 is ticked. Ticking T24 and T25, the commit, and any merge remain human decisions. This review does not approve a merge.
+
+## Improvement round 6 review (2026-11-10)
+
+Reviewer: independent reviewer (did not implement T26). The human approved this round on 2026-11-10. Execution log: `logs/tasks/ai-ta-assist/45-reviewer-round6.md`.
+
+### Versions and approvals checked
+
+- Spec v0.3, R1 (unchanged): the prompt covers "the problem, the cause, and the fix or the concept", "without new information beyond the ticket". Checklist `tasks.md` v0.8, Group 12 (T26), and handoff v0.8 with its limits: prompt wording and tests only. The v0.8 approval evidence is the human's request to fix R5-2 on 2026-11-10, recorded in both change logs. No approval was inferred from tests or agent messages. T26 remains unchecked; this review does not tick it.
+- The implementer reported (log 44) that it skipped its preflight and did not read the spec, checklist, or handoff. This review checked the change against all three directly (see R6-3 for the evidence discrepancy).
+
+### Diff examined (exception recorded)
+
+Same `workflow/README.md` exception as the round 4, T23, and round 5 reviews: a separate clean worktree, a detached `d2b3418` with the uncommitted round 6 work applied as a patch, and `node_modules` symlinked. Compensating controls: the diff and untracked list were taken against `d2b3418`; the reviewer made no production, test, or checklist edits; the suite, `tsc`, and the build were run independently; no `.env`, no network, `RUN_SOCLAAS_TESTS` unset; the live harness and the scratchpad `e2e/` folder were not run or read.
+
+- Production: `server/tickets/ta-ai-fix-note.js` gains one line (27) in `SYSTEM_PROMPT`. Lines 13–26, the T25 self-check (now 28), and the reply line (now 29, last) are unchanged.
+- New untracked test: `test/ta-ai-prompts.round6.test.js` (4 tests).
+- Tracked docs: `tasks.md` and `handoff.md` v0.8 bumps, Group 12, and change-log entries.
+- Untracked evidence: `implementation-T26.md` and logs 43–44.
+- No diff under `server/ai/`, routes, UI, `buildUserContent`, `parse`, or caps. `git diff --stat d2b3418 -- src/codeclinic/test src/codeclinic/server/ai` is empty, so no existing test was edited.
+
+### Assessment
+
+- **Scope.** Within the v0.8 limits. Line 27 carries all three T26 bullets (a concrete fix is required; the name limits and the final check apply to the problem, cause, and checks, not the fix; the fix may name a standard language feature or common library function) and is placed directly before the self-check, as the checklist requires.
+- **Fixed string.** A single-quoted literal in the array, with no template literal, `${`, or concatenation. The system message stays byte-identical across calls (`server/ai/prompt.js:8`, `:60-62`).
+- **Placement.** The self-check is second-last and the reply line is last (`round6.test.js:18-21`, and the unchanged `round5b.test.js:14`).
+- **R5-2 and R1.** Line 27 resolves R5-2 as worded: line 25's name limit no longer blocks a fix that needs a function or library absent from the ticket. Log 44 reports the fix was stated in 5/5 normal drafts (2/5 before) and 5/5 datefix drafts (0/5 before), with the caveat in R6-4. Against R1 it is consistent with "the fix or the concept" (a fix satisfies it). It sits in some tension with R1's "without new information beyond the ticket" and with line 17, which line 27 does not exempt (R6-2).
+- **T22/T23 and T24/T25.** No textual contradiction. Line 27 restates that the name limits and the self-check still apply to "the problem, the cause, and the checks". So the exemption does not cover causes (lines 19, 22, 23) or checks (lines 24, 26, 28). The open-ended phrase "a common library function" does not textually reach causes or checks, but it could let a *fix* name a framework API, and it slightly weakens the self-check's reach (R6-1).
+- **The "framework" check (log 44: 1/25, against 0/25 before).** The hit is in a check ("check if the framework is auto-escaping"), not a fix. So it is not a use of the new exemption. It is a lapse against lines 23, 25, 26, and 28, which line 27 keeps in force. One in 25 is indistinguishable from 0/25 at this sample size (round 4 was 4/25), and the draft is advisory and TA-reviewed. A plausible mechanism is that saying the final check does "not" apply to some text makes it apply less firmly to the rest. This needs no blocking action; optional wording is proposed under R6-1.
+- **Injection defences.** These are not weakened. `SHARED_PREAMBLE`, delimiter neutralisation, message order, `buildUserContent`, `parse`, and the caps are unchanged, and `ta-ai-rounds.review.test.js:22-27` still passes. Line 27 lets the *model* name a standard feature in the fix; it gives ticket text no new authority. A ticket that plants a "fix" can at most get it repeated in a bounded (2,000-char), plain-text, TA-reviewed draft, as before.
+- **Length.** The feature prompt is now 1,992 characters and 17 lines (+268 over round 5). R5-4's advice to consolidate rather than append was not followed (R6-5).
+- **Tests.** The new file is meaningful at the wording level. It asserts the exact new sentence once, its position directly before the self-check, the self-check second-last and reply last, and retention of earlier-round clauses. It would fail if line 27 were removed, reworded, duplicated, or moved. The `${`/`undefined` test is weak but source inspection confirms the literal. Unit tests cannot show model behaviour; the live effect rests on log 44.
+
+### Verification (exact results in log 45)
+
+- Full suite, from `src/codeclinic`: exit 0. Test Suites: 5 skipped, 70 passed, 70 of 75 total. Tests: 9 skipped, 1297 passed, 1306 total (round 5: 1293/1302; +4 from round6). `round6` and `round5b` both passed.
+- `npx tsc --noEmit -p .`: exit 0, no output.
+- `npm run build`: exit 0, "Compiled successfully." (one Node `DEP0176` deprecation notice).
+- The live harness was not run. Log 44 is reported orchestrator evidence only.
+
+### Per-task verification
+
+| Task | Verified? | Basis |
+| --- | --- | --- |
+| T26 | Yes (unit level) | `ta-ai-fix-note.js:27` matches the T26 checklist bullets and sits directly before the self-check; asserted by `round6.test.js:13-21`. Live effect is reported only (log 44). |
+
+### Findings
+
+| ID | Severity | Location | Evidence | Action |
+| --- | --- | --- | --- | --- |
+| R6-1 | Info | `ta-ai-fix-note.js:27`; log 44 | "A common library function" is open-ended and could cover a framework API in the fix. Separately, one HTML draft named "framework" inside a check (1/25, from 0/25), which line 27 does not permit. That is a lapse, not a loophole, and is within noise at n=25. | No blocking action. If the human wants it tightened in a later round (prompt wording and tests only, then re-measure), replace line 27 with: `Always state a concrete fix the student can apply, as its own sentence and not as a check; only that fix may name a standard language feature or a common library function the ticket does not mention, never a framework, server, or tool, and the problem, the cause, and every check must still name only what the ticket mentions.` |
+| R6-2 | Low | `ta-ai-fix-note.js:27` vs `:17`, `:20`; spec R1 | "Always state a concrete fix" and the naming exemption go beyond the ticket's content, while R1 and line 17 say "without new information beyond the ticket" and line 20 says to check rather than guess when the cause is unclear. Line 17 is not exempted, so the model gets two rules that disagree. The T26 text is human-approved (checklist v0.8), but the spec ranks above the checklist. | The human confirms that the v0.8 approval is the intended reading of R1 (a standard fix is not "new information"). Optionally, the analyst proposes a spec v0.4 clarification for human approval. No production change needed now. |
+| R6-3 | Low | `logs/tasks/ai-ta-assist/43-implementer-round6.md:2`; `implementation-T26.md` | Log 43 says "Read spec R1, tasks T26, handoff, R5-2", but log 44 records that the implementer reported skipping its preflight. `implementation-T26.md` does not record the deviation. This review checked the change against the spec, checklist, and handoff and found it matches T26. | The orchestrator appends a correction note to log 43 and implementation-T26 (without rewriting the original lines) recording the preflight skip. |
+| R6-4 | Info | log 44:8, :26 | The datefix fix pattern was widened after seeing the round 6 output. 5/5 rests on that pattern and the orchestrator's reading (the original pattern gave 2/5). Log 44 does not say whether the b6 baseline (0/5) was rescored with the widened pattern. | The orchestrator records whether b6 was rescored with the widened pattern; if not, rescore the saved outputs. |
+| R6-5 | Info | `ta-ai-fix-note.js:12-30` | The prompt grew again (1,724 to 1,992 chars) by appending, against R5-4. It is not a defect and is well within the caps. | Consolidate in any later round. |
+
+There are no Critical, High, or Medium findings. The round 6 evidence (implementation-T26, logs 43–44) holds no credentials, `.env` values, session data, or model output beyond counts and short quoted terms.
+
+### Verdict
+
+**Pass with follow-up.** T26 adds one fixed-string prompt line, correctly placed, plus one new unit file, within the v0.8 limits. It resolves R5-2 without textually loosening the limits on causes or checks or weakening the injection defences. T26 is verified at unit level; its live effect rests on the orchestrator's reported log 44. R6-2 (the human's confirmation of the R1 reading) and R6-3 (the evidence correction) should be closed before T26 is ticked. R6-1 is optional. Ticking T26, the commit, and any merge remain human decisions. This review does not approve a merge.
