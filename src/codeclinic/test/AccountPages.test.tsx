@@ -43,9 +43,21 @@ test('Students page confirms deactivation and shows a reset password only once',
   await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/status'))).toBe(true));
   fireEvent.click(screen.getByRole('button', { name: 'Reset password' }));
   expect(await screen.findByText('SafePass23456789')).toBeInTheDocument();
-  expect(screen.getAllByText(/will not be shown again/i)).toHaveLength(2);
-  fireEvent.click(screen.getByRole('button', { name: 'Hide password' }));
+  expect(screen.getByRole('heading', { name: 'Temporary password for Student Example' })).toBeInTheDocument();
+  expect(screen.getAllByText(/will not be shown again/i)).toHaveLength(1);
+  const writeText = jest.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+  fireEvent.click(screen.getByRole('button', { name: 'Copy password' }));
+  expect(await screen.findByRole('button', { name: 'Copied ✓' })).toBeInTheDocument();
+  expect(writeText).toHaveBeenCalledWith('SafePass23456789');
+  expect(screen.getByText('Password copied to the clipboard.')).toBeInTheDocument();
+  writeText.mockRejectedValueOnce(new Error('denied'));
+  fireEvent.click(screen.getByRole('button', { name: 'Copied ✓' }));
+  expect(await screen.findByText(/copy it manually/i)).toBeInTheDocument();
+  expect(screen.getByText('Temporary password created for Student Example.')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Done' }));
   await waitFor(() => expect(screen.queryByText('SafePass23456789')).not.toBeInTheDocument());
+  expect(screen.queryByText(/Temporary password created/)).not.toBeInTheDocument();
 });
 
 test('TAs page is available to coordinator mode and forced password page presents the required change form', async () => {

@@ -27,3 +27,11 @@
 .account-field-error { margin: -10px 0 0; font-size: .95rem; }
 .account-form input[aria-invalid="true"] { border-color: var(--lc-color-error); }
 @media (max-width: 640px) { .account-page { width: calc(100% - 24px); margin: 24px auto; } .account-panel { padding: 18px; } .account-list li { align-items: stretch; flex-direction: column; } }
+.temp-password h2 { margin: 0 0 8px; font-size: 1.2rem; font-weight: 500; }
+.temp-password__warning { margin: 0 0 16px; color: var(--lc-color-muted); line-height: 1.5; }
+.temp-password__warning strong { color: var(--lc-color-navy); }
+.temp-password__row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; }
+.temp-password__value { flex: 1 1 240px; min-width: 0; padding: 10px 14px; border: 1px dashed var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: var(--lc-color-accent-surface); color: var(--lc-color-navy); font-size: 1.1rem; letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
+.account-page .temp-password__copy { border-color: var(--lc-color-blue); background: var(--lc-color-blue); color: var(--lc-color-surface); font-weight: 600; }
+.account-page .temp-password__copy:hover { background: var(--lc-color-blue-hover); }
+.temp-password__copy-status { min-height: 1.5em; margin: 8px 0 12px; color: var(--lc-color-muted); font-size: .9rem; }

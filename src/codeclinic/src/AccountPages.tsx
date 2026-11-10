@@ -32,7 +32,8 @@ export default function AccountPages({ mode }: Props) {
   const [account, setAccount] = useState<Account | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
+  const [temporaryPassword, setTemporaryPassword] = useState<{ value: string; name: string } | null>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const [message, setMessage] = useState('');
   const [loadError, setLoadError] = useState('');
   const [loadRetry, setLoadRetry] = useState<'account' | 'support' | 'session'>('account');
@@ -159,7 +160,7 @@ export default function AccountPages({ mode }: Props) {
       let body: { temporaryPassword?: unknown } = {};
       try { body = await response.json(); } catch { /* use the local fallback below */ }
       if (typeof body.temporaryPassword !== 'string') { setSupportError(actionFallback('support')); return; }
-      setTemporaryPassword(body.temporaryPassword); setMessage(`Temporary password for ${entry.name}. Copy it now; it will not be shown again.`);
+      setTemporaryPassword({ value: body.temporaryPassword, name: entry.name }); setCopyStatus('idle'); setMessage(`Temporary password created for ${entry.name}.`);
     } catch (error) { setSupportError(error instanceof AccountActionError ? error.accountFailure : actionFallback('support')); }
     finally { setBusy(false); }
   };
@@ -221,6 +222,20 @@ export default function AccountPages({ mode }: Props) {
       {passwordError?.field === 'newPassword' && <p id="password-newPassword-error" className="account-field-error" role="alert">{passwordError.message}</p>}
       <button className="submit-button" disabled={busy}>Set new password</button>
     </form>}
+    {temporaryPassword && <section className="account-panel temp-password" aria-labelledby="temp-password-title">
+      <h2 id="temp-password-title">Temporary password for {temporaryPassword.name}</h2>
+      <p className="temp-password__warning"><strong>Copy it now. It will not be shown again.</strong> Share it with {temporaryPassword.name} outside CodeClinic. They will be asked to set a new password when they next sign in.</p>
+      <div className="temp-password__row">
+        <code className="temp-password__value">{temporaryPassword.value}</code>
+        <button type="button" className="temp-password__copy" onClick={() => {
+          const clipboard = navigator.clipboard;
+          if (!clipboard) { setCopyStatus('failed'); return; }
+          clipboard.writeText(temporaryPassword.value).then(() => setCopyStatus('copied'), () => setCopyStatus('failed'));
+        }}>{copyStatus === 'copied' ? 'Copied ✓' : 'Copy password'}</button>
+      </div>
+      <p className="temp-password__copy-status" role="status">{copyStatus === 'copied' ? 'Password copied to the clipboard.' : copyStatus === 'failed' ? 'Could not copy automatically. Select the password and copy it manually.' : ''}</p>
+      <button type="button" className="temp-password__done" onClick={() => { setTemporaryPassword(null); setCopyStatus('idle'); setMessage(''); }}>Done</button>
+    </section>}
     {(mode === 'students' || mode === 'tas') && <section className="account-panel">
       {supportError && <div className="account-form-error" role="alert" tabIndex={-1} ref={supportAlert}><p>{supportError.message}</p>{supportError.signIn && <> <a href="/">Sign in</a></>}</div>}
       {!loading && !loadError && entries.length === 0 ? <p>No accounts found.</p> : entries.length > 0 && <ul className="account-list">{entries.map((entry) => <li key={entry.userId}>
@@ -234,6 +249,5 @@ export default function AccountPages({ mode }: Props) {
       </li>)}</ul>}
       {nextCursor && <button type="button" disabled={busy} onClick={() => { setSupportError(null); void loadEntries(nextCursor).catch(() => setSupportError(actionFallback('support'))); }}>Load more</button>}
     </section>}
-    {temporaryPassword && <section className="account-panel" aria-label="Temporary password"><p>This password will not be shown again. Share it with the account owner outside CodeClinic.</p><code>{temporaryPassword}</code><button type="button" onClick={() => void navigator.clipboard?.writeText(temporaryPassword)}>Copy password</button><button type="button" onClick={() => setTemporaryPassword(null)}>Hide password</button></section>}
   </main></>;
 }
