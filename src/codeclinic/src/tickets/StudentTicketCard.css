@@ -1,0 +1,7 @@
+.student-ticket-card--muted {
+  background: var(--lc-color-page);
+}
+
+.student-ticket-card--muted:hover {
+  background: var(--lc-color-surface);
+}

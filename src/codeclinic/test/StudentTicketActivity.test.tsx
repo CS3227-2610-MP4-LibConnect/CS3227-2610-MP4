@@ -40,7 +40,7 @@ describe('Student ticket activity pages', () => {
     expect(screen.getByText('loops, arrays')).toBeInTheDocument();
     expect(screen.getAllByText('No concept tags')).toHaveLength(4);
     expect(screen.getByText(/Claimed/)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /load all/i })).toHaveAttribute('href', '/student/tickets');
+    expect(screen.getByRole('link', { name: 'View all tickets' })).toHaveAttribute('href', '/student/tickets');
     expect(screen.queryByRole('link', { name: /ticket 5/i })).not.toBeInTheDocument();
   });
 
@@ -60,11 +60,12 @@ describe('Student ticket activity pages', () => {
     expect(await screen.findByText(/no active tickets yet/i)).toBeInTheDocument();
   });
 
-  test('My Tickets direct visits verify Student access before showing the protected placeholder', async () => {
+  test('My Tickets direct visits verify Student access before requesting the protected list', async () => {
     let resolveSession!: (value: ReturnType<typeof response>) => void;
     const pending = new Promise<ReturnType<typeof response>>((resolve) => { resolveSession = resolve; });
     const fetchMock = jest.fn().mockImplementation((url: RequestInfo | URL) => {
       if (url === '/api/auth/session') return pending;
+      if (url === '/api/tickets?view=open') return Promise.resolve(response(200, { tickets: [] }));
       if (url === '/api/notifications/unread-count') return Promise.resolve(response(200, { unreadCount: 0 }));
       return Promise.resolve(response(404));
     });
@@ -75,8 +76,8 @@ describe('Student ticket activity pages', () => {
     expect(screen.queryByRole('heading', { name: /my tickets/i })).not.toBeInTheDocument();
     await act(async () => { resolveSession(response(200, { accountType: 'STUDENT' })); });
     expect(await screen.findByRole('heading', { name: /my tickets/i })).toBeInTheDocument();
-    expect(screen.getByText(/full ticket list coming later/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /back to student dashboard/i })).toHaveAttribute('href', '/student/dashboard');
+    expect(await screen.findByRole('status')).toHaveTextContent(/no open tickets yet/i);
+    expect(fetchMock).toHaveBeenCalledWith('/api/tickets?view=open', expect.anything());
     expect(fetchMock).not.toHaveBeenCalledWith('/api/tickets/active', expect.anything());
   });
 
@@ -86,6 +87,7 @@ describe('Student ticket activity pages', () => {
     render(appTree as React.ReactElement);
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     expect(screen.queryByRole('heading', { name: /my tickets/i })).not.toBeInTheDocument();
+    expect(global.fetch).not.toHaveBeenCalledWith('/api/tickets?view=open', expect.anything());
   });
 
   test('does not show My Tickets to a TA', async () => {
@@ -94,6 +96,7 @@ describe('Student ticket activity pages', () => {
     render(appTree as React.ReactElement);
     expect(await screen.findByRole('heading', { name: /access denied/i })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /my tickets/i })).not.toBeInTheDocument();
+    expect(global.fetch).not.toHaveBeenCalledWith('/api/tickets?view=open', expect.anything());
   });
 
   test('dashboard distinguishes failed active-ticket loads from an empty state and can retry', async () => {

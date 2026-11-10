@@ -187,13 +187,24 @@ The local Firestore collections used by these flows are `users`, `emailKeys`, `l
 `DashboardRouteGuard` protects `/student/tickets` and
 `/student/tickets/:ticketId` on direct entry and refresh. Express serves the
 SPA shell for the detail path; the browser guard checks the cookie-backed
-session before the ticket page renders. The full My Tickets list is deferred.
+session before either ticket page renders. My Tickets loads the list only
+after the guard succeeds and requests each page from the server.
 
 `GET /api/tickets/active` derives the owner from the verified current Student
 account, queries only `OPEN` and `CLAIMED` records, orders by descending
 `updatedAt` and ascending `ticketId`, and limits results to five. The composite
 Firestore index is defined in `firestore.indexes.json` and wired from
 `firebase.json`. Deploying that index is a separate operation.
+
+`GET /api/tickets?view=open|closed&cursor=...` serves the protected My Tickets
+page. The server rechecks the active Student account and derives the owner from
+the session. Open groups `OPEN` and `CLAIMED`; Closed groups `CLOSED` and
+`RESOLVED`. Each bounded page returns up to 20 safe summaries, ordered by
+descending `updatedAt` then ascending `ticketId`; its opaque cursor is bound to
+the selected view. The list query requires the composite index on `studentId`,
+`status`, `updatedAt`, and `ticketId` in `firestore.indexes.json`. Production
+index deployment is separate from application code and must precede production
+use of this query.
 
 `GET /api/tickets/:ticketId` checks ownership before returning the safe ticket
 projection or reply data. Replies are ordered by `createdAt` and `replyId` and
@@ -223,9 +234,10 @@ npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-ac
 
 The integration creates synthetic local users, sessions, tickets, and replies,
 then deletes those records. It covers ownership isolation, the indexed five
-ticket query, a 50+1 reply boundary with equal timestamps, a reply and dashboard
-refresh, close field semantics, and concurrent close attempts. It does not
-access a live project or deploy index configuration.
+ticket query, both My Tickets views with all four statuses, tied-time page
+boundaries across 20-item pages for two Students, a 50+1 reply boundary, a
+reply and dashboard refresh, close field semantics, and concurrent close
+attempts. It does not access a live project or deploy index configuration.
 
 ## Account management
 

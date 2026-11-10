@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DashboardLogout from './DashboardLogout';
+import StudentTicketCard from './tickets/StudentTicketCard';
 import './DashboardViews.css';
 
 type ActiveTicket = {
@@ -64,19 +65,13 @@ export function StudentDashboard({ onLogoutConfirmed, name }: { onLogoutConfirme
         <section className="dashboard-panel student-active-tickets" aria-labelledby="student-active-tickets-heading" aria-busy={ticketsState === 'loading'}>
           <div className="student-active-tickets-heading">
             <h2 id="student-active-tickets-heading">Active Tickets</h2>
-            <a className="student-load-all" href="/student/tickets">Load all</a>
+            <a className="student-load-all" href="/student/tickets">View all tickets</a>
           </div>
           {ticketsState === 'loading' && <p role="status" aria-live="polite">Loading active tickets…</p>}
           {ticketsState === 'error' && <div role="alert"><p>Active tickets couldn’t be loaded.</p><button type="button" onClick={() => { void loadActiveTickets(); }}>Retry</button></div>}
           {ticketsState === 'ready' && activeTickets.length === 0 && <p>No active tickets yet.</p>}
           {ticketsState === 'ready' && activeTickets.length > 0 && <ul className="student-active-ticket-list">
-            {activeTickets.map((ticket) => <li key={ticket.ticketId}>
-              <a className="student-active-ticket-card" href={`/student/tickets/${encodeURIComponent(ticket.ticketId)}`}>
-                <span className="student-active-ticket-title">{ticket.title}</span>
-                <span className="student-active-ticket-meta">{ticket.language} · {ticket.status === 'CLAIMED' ? 'Claimed' : 'Open'}</span>
-                <span className="student-active-ticket-tags">{ticket.conceptTags.length ? ticket.conceptTags.join(', ') : 'No concept tags'}</span>
-              </a>
-            </li>)}
+            {activeTickets.map((ticket) => <li key={ticket.ticketId}><StudentTicketCard ticket={ticket} /></li>)}
           </ul>}
         </section>
       </main>

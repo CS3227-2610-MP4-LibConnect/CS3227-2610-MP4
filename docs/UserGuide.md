@@ -5,10 +5,9 @@ problems as tickets, and TAs claim, answer, and resolve them. AI coaches student
 with hints and helps TAs, without doing the work for them.
 
 The current build provides registration, sign-in, account updates, account
-support, a notifications inbox, Student ticket creation and activity, and a
-My Tickets placeholder. Ticket editing, a full My Tickets list, TA ticket
-workflows, and role-specific AI features are not available yet; [Planned
-features](#planned-features) lists them.
+support, a notifications inbox, Student ticket creation and activity, the full
+My Tickets list, TA ticket workflows, and role-specific AI features. Ticket
+editing is not available yet; [Planned features](#planned-features) lists it.
 
 ## Accessing the app
 
@@ -63,14 +62,24 @@ or eight hours after signing in.
 The Student dashboard is a landing page headed **Student Dashboard**. It shows
 **Welcome back** followed by your registered name. Select **CodeClinic** at the
 top left to return to the dashboard, or **Log out** at the top right to sign
-out. The navigation also includes **Account** and **Notifications**.
+out. The navigation also includes **My Tickets**, **Account**, and
+**Notifications**.
 
 The **Active tickets** section shows up to five of your most recently updated
 open or claimed tickets. Select a ticket card to see its details and
 conversation. A loading message appears while tickets are fetched; if there
-are none, the section says so. If loading fails, use **Retry**. **Load all**
-opens the protected My Tickets page, which explains that the full list is
-coming later and links back to the dashboard.
+are none, the section says so. If loading fails, use **Retry**. Select **View
+all tickets** or **My Tickets** in the header to open your protected ticket
+list.
+
+## My Tickets
+
+My Tickets opens with **Open** selected and shows your `OPEN` and `CLAIMED`
+tickets. Select **Closed** to see `CLOSED` and `RESOLVED` tickets. Each card
+shows the readable status (**Open**, **Claimed**, **Closed**, or **Resolved**)
+and opens the ticket details. Select **Load more** to continue through a long
+list. If a request fails, use **Retry**; tickets already loaded remain visible
+when loading a later page fails.
 
 ## Creating a ticket
 

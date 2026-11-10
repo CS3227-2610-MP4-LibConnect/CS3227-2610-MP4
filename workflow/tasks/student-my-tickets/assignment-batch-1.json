@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-my-tickets",
+  "batch": 1,
+  "items": ["T01", "T02"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-my-tickets.md", "version": "0.1" },
+    "checklist": { "path": "workflow/tasks/student-my-tickets/tasks.md", "version": "0.1" },
+    "handoff": { "path": "workflow/tasks/student-my-tickets/handoff.md", "version": "0.1" }
+  },
+  "approvalEvidence": "workflow/tasks/student-my-tickets/approval-batch-plan-v0.1.md",
+  "implementer": {
+    "agentId": "ticket_implement_batch1",
+    "worktree": "shared workspace; preserves existing uncommitted dashboard wording and preimplementation tests",
+    "allowedFiles": [
+      "src/codeclinic/server/tickets/route.js",
+      "src/codeclinic/server/tickets/store.js",
+      "src/codeclinic/server/tickets/validation.js",
+      "src/codeclinic/server/tickets/list-cursor.js",
+      "src/codeclinic/firestore.indexes.json",
+      "src/codeclinic/src/AppHeader.tsx",
+      "src/codeclinic/src/StudentDashboard.tsx",
+      "src/codeclinic/src/DashboardViews.css",
+      "src/codeclinic/src/tickets/StudentTicketCard.tsx",
+      "src/codeclinic/src/tickets/StudentTicketCard.css",
+      "src/codeclinic/test"
+    ]
+  },
+  "reviewer": {
+    "agentId": "ticket_review_batch1",
+    "worktree": "C:/Users/Junho/AppData/Local/Temp/student-my-tickets-batch1-checkout (clean local clone with exact Batch 1 files overlaid)",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/student-my-tickets/implementation-T01.md",
+      "implementationLog": "logs/tasks/student-my-tickets/implementation-T01.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-my-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-my-tickets/review-batch-1.md",
+      "reviewVerdict": "pass-with-follow-up"
+    },
+    "T02": {
+      "implementationReport": "workflow/tasks/student-my-tickets/implementation-T02.md",
+      "implementationLog": "logs/tasks/student-my-tickets/implementation-T02.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketCard.test.tsx test/AppHeader.test.tsx test/StudentTicketActivity.test.tsx test/StudentTickets.test.tsx", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-my-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-my-tickets/review-batch-1.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

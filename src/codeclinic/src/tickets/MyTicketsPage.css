@@ -1,0 +1,87 @@
+.my-tickets-panel {
+  display: grid;
+  gap: var(--lc-space-5);
+}
+
+.my-tickets-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--lc-space-control-gap);
+}
+
+.my-tickets-heading-row h2 {
+  margin: 0;
+}
+
+.my-tickets-toggle {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--lc-space-2);
+}
+
+.my-tickets-toggle button,
+.my-tickets-feedback button,
+.my-tickets-load-more {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-navy);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.my-tickets-toggle button[aria-pressed="true"] {
+  border-color: var(--lc-color-navy);
+  background: var(--lc-color-navy);
+  color: var(--lc-color-surface);
+}
+
+.my-tickets-toggle button:focus-visible,
+.my-tickets-feedback button:focus-visible,
+.my-tickets-load-more:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
+.my-tickets-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--lc-space-control-gap);
+}
+
+.my-tickets-feedback p {
+  margin: 0;
+  color: var(--lc-color-text);
+}
+
+.my-tickets-list {
+  width: 100%;
+}
+
+.my-tickets-load-more {
+  justify-self: start;
+  border-color: var(--lc-color-blue-link);
+  color: var(--lc-color-blue-link);
+}
+
+.my-tickets-load-more:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
+@media (max-width: 360px) {
+  .my-tickets-panel {
+    padding-right: var(--lc-space-4);
+    padding-left: var(--lc-space-4);
+  }
+
+  .my-tickets-heading-row {
+    align-items: flex-start;
+  }
+}
