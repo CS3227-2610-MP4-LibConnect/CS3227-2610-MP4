@@ -51,8 +51,11 @@ block delivery of the core features.
 
 #### Bug FAQ
 
-- As a **student**, I want to search resolved tickets by error or concept so
-  that I can fix common problems myself.
+- As a **student**, I want to search tickets from all students whose stored
+  status is `RESOLVED`, by title or concept tags, so that I can find common
+  problems. Search cards show title and tags; opening a result shows the fix
+  note and conversation with **Student** and **TA** speaker labels. Names
+  written inside messages may remain visible.
 
 #### AI assistance
 
@@ -80,7 +83,8 @@ block delivery of the core features.
   TAs know who is helping.
 - As a **TA**, I want to reply in a ticket's thread.
 - As a **TA**, I want to resolve a ticket with a short fix note so that the
-  solution can appear in the Bug FAQ.
+  ticket becomes eligible for the Bug FAQ. The ticket owner and TAs can read it
+  in the regular ticket view; the Bug FAQ also shows it in the opened result.
 
 #### AI assistance
 
@@ -154,8 +158,12 @@ A **Ticket** represents one student's coding problem, identified by its
 - `fixNote`: TA-confirmed resolution note, set when resolved
 - `createdAt`, `updatedAt`, `resolvedAt`: timestamps
 
-Only the ticket's student and TAs may read a ticket. The Bug FAQ shows only an
-anonymised view of resolved tickets.
+Only the ticket's student and TAs may read its full details through the regular
+ticket route. The Bug FAQ lets Students search tickets with stored status
+`RESOLVED`; Student-closed `CLOSED` tickets are excluded. Search cards show
+title and concept tags. Opening a result shows title, tags, fix note, and
+conversation with **Student** and **TA** speaker labels. Names typed inside
+messages may remain visible. This limited view does not guarantee anonymity.
 
 ### Reply
 
@@ -316,3 +324,18 @@ student and TA experiences remain visually consistent.
   development and production projects. The deployment constraint above was
   updated. The human approved this amendment on 2026-11-08; production is the
   existing `libconnect-mp4` cloud project.
+
+- 2026-11-12: The human corrected the Bug FAQ status rule after approving its
+  initial v0.1 CLOSED-only specification. Only stored `RESOLVED` tickets are
+  searchable; Student-closed `CLOSED` tickets are excluded. Search is by title
+  or concept tags, with title/tag-only results. The human approved the status
+  amendment proposal; the revised feature specification awaits fresh approval.
+- 2026-11-12: Drafted the Bug FAQ v0.3 detail amendment after the human asked
+  to include fix notes and conversation, accepted Student/TA speaker labels,
+  allowed names inside message text, and instructed continuation. The v0.3
+  specification awaits human approval.
+
+- 2026-11-13: Reconciled the current Bug FAQ status after the human approved
+  specification, checklist, and handoff v0.4, verified the 320 CSS px dashboard
+  view, and approved the reviewed implementation for merge. The feature was
+  committed locally as `f84fe2c`; live Firestore/index readiness is unverified.

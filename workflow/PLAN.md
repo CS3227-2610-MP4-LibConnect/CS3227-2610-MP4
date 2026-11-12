@@ -1,7 +1,7 @@
 # CodeClinic Delivery Plan
 
-Version: 0.2 (2026-11-12)
-Approval evidence: human replied "approved" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state. The v0.2 Student chatbot status and scope reconciliation was requested by the human on 2026-11-12. The owner names remain to be confirmed by the team.
+Version: 0.5 (2026-11-13; Bug FAQ status reconciled)
+Approval evidence: human replied "approved" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state. The v0.2 Student chatbot status and scope reconciliation was requested by the human on 2026-11-12. The human approved Bug FAQ specification, checklist, and handoff v0.4 on 2026-11-12, verified the 320 CSS px dashboard view, approved the reviewed implementation for merge, and requested this status reconciliation on 2026-11-13. This edit records the Bug FAQ status; it does not claim separate approval of the entire delivery plan or confirm the owner names.
 
 This plan orders the CodeClinic features by dependency and assigns ownership.
 Product scope is defined in `Overview.md`; acceptance criteria belong in each
@@ -25,7 +25,7 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 | 4 | `student-ticket-activity` | Dashboard active-ticket cards; owned ticket detail and reply thread; Student reply and close | `student-tickets` data model and creation | Student owner | v0.3 approved; implemented, independently reviewed, and human-verified at 320 CSS pixels |
 | 4 | `ai-error-explainer` | Student ticket help chatbot on Create Ticket and owned ticket detail: concept explanations, progressive hints, and create-page wording suggestions shown only in chat | `ai-gateway`, `student-tickets`, `student-ticket-activity` | Student owner | v0.6 approved; implemented, independently reviewed, and human browser/screen-reader verified; committed locally 2026-11-12. Provider compatibility and human merge decision pending |
 | 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | v0.2 approved; implemented, reviewed, and accepted 2026-11-09 (live SoCLaaS test passed) |
-| 4 | `bug-faq` | Search anonymised resolved tickets; replaces retired `member-catalog-search` | `ta-ticket-queue` | Student owner | Not drafted |
+| 4 | `bug-faq` | Student dashboard search of `RESOLVED` tickets by title or tags; cards show title/tags and opened results show fix note/conversation with Student/TA speaker labels | `ta-ticket-queue`, `student-ticket-activity` dashboard | Student owner | v0.4 approved; implemented, independently reviewed, human-verified at 320 CSS px, merge-approved, and committed locally as `f84fe2c`; live Firestore/index readiness unverified |
 | 5 | `student-my-tickets` | Paginated owner-scoped Open/Closed ticket lists with status labels and shared dashboard cards | `student-tickets` data model, `student-ticket-activity` dashboard and routes | Student owner | v0.1 approved; implemented, independently reviewed, and committed locally 2026-11-10; Firestore index not deployed |
 | 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | v0.1 approved |
 | 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | v0.1 approved |
@@ -112,6 +112,26 @@ helpers. Move route wiring into `server/index.js` and the email helpers into
 their own module.
 
 ## Amendments
+
+- 2026-11-13: At the human's request, reconciled the current Bug FAQ row and
+  plan status with the approved v0.4 specification and completed local commit.
+  Earlier draft and approval entries below remain as dated history.
+
+- 2026-11-12: The human approved the Bug FAQ status amendment proposal after
+  correcting the initial v0.1 requirement. This draft v0.4 plan aligns Bug FAQ
+  eligibility to stored `RESOLVED` only; Student-closed `CLOSED` tickets are
+  excluded. The initial v0.3 `CLOSED` wording remains in history below.
+- 2026-11-12: Drafted a Bug FAQ v0.3 amendment for an opened detail view with
+  fix note and conversation; speaker labels are Student/TA and message text,
+  including names typed in it, remains literal. The human instructed
+  continuation; v0.3 specification awaits approval.
+- 2026-11-12: Bumped this plan alignment to v0.5 for the Bug FAQ detail draft;
+  search cards retain title/tags while opened results show fix note and
+  conversation. This plan update awaits approval with the specification.
+
+- 2026-11-12: The human approved `bug-faq` specification v0.1 and the aligned
+  plan wording. Its search uses only stored `CLOSED` tickets, with a Title/Tags
+  selector below Ask for Help. Cross-owner results expose only title and tags.
 
 - 2026-11-08: Created for the CodeClinic scope at the human's direction.
 - 2026-11-08: Added *Planned design details*, moved from

@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 2,
+  "taskId": "bug-faq",
+  "batch": 1,
+  "items": [
+    "T01",
+    "T02"
+  ],
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/bug-faq.md",
+      "version": "0.4"
+    },
+    "checklist": {
+      "path": "workflow/tasks/bug-faq/tasks.md",
+      "version": "0.4"
+    },
+    "handoff": {
+      "path": "workflow/tasks/bug-faq/handoff.md",
+      "version": "0.4"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/bug-faq/batch-plan.md",
+  "implementer": {
+    "agentId": "bug-faq-implementer-v04",
+    "worktree": "implementation-shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/tickets/faq-store.js",
+      "src/codeclinic/server/tickets/faq-token.js",
+      "src/codeclinic/server/tickets/faq-routes.js",
+      "src/codeclinic/server/tickets/store.js",
+      "src/codeclinic/server/tickets/route.js",
+      "src/codeclinic/server/tickets/list-cursor.js",
+      "src/codeclinic/server/tickets/index.js",
+      "src/codeclinic/server/server.js",
+      "src/codeclinic/firestore.indexes.json",
+      "src/codeclinic/test/bug-faq.store.contract.test.js",
+      "src/codeclinic/test/bug-faq.tokens.contract.test.js",
+      "src/codeclinic/test/bug-faq.api.contract.test.js",
+      "workflow/tasks/bug-faq/implementation-T01-v0.4.md",
+      "workflow/tasks/bug-faq/implementation-T02-v0.4.md",
+      "logs/tasks/bug-faq/implementation-T01-v0.4-2026-11-12.md",
+      "logs/tasks/bug-faq/implementation-T02-v0.4-2026-11-12.md",
+      "src/codeclinic/test/ta-tickets.indexes.test.js",
+      "workflow/tasks/bug-faq/implementation-T01-v0.4-correction.md",
+      "logs/tasks/bug-faq/implementation-T01-v0.4-correction-2026-11-12.md",
+      "workflow/tasks/bug-faq/implementation-T01-v0.4-correction2.md",
+      "logs/tasks/bug-faq/implementation-T01-v0.4-correction2-2026-11-12.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "bug-faq-independent-reviewer-v04",
+    "worktree": "clean-HEAD-snapshot-with-Batch-1-overlay",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/bug-faq/implementation-T01-v0.4-correction3.md",
+      "implementationLog": "logs/tasks/bug-faq/implementation-T01-v0.4-correction3-2026-11-12.md",
+      "checks": [
+        {
+          "command": "cd src/codeclinic; npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js ta-tickets.indexes.test.js",
+          "result": "pass"
+        },
+        {
+          "command": "git diff --check",
+          "result": "pass"
+        }
+      ],
+      "reviewReport": "workflow/tasks/bug-faq/review-T01-v0.4-correction3-rerun.md",
+      "reviewLog": "logs/tasks/bug-faq/review-T01-v0.4-correction3-2026-11-12.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "priorReview": {
+        "report": "workflow/tasks/bug-faq/review-T01-v0.4-correction.md",
+        "log": "logs/tasks/bug-faq/review-T01-v0.4-correction-2026-11-12.md",
+        "verdict": "changes-required",
+        "previousReview": {
+          "report": "workflow/tasks/bug-faq/review-T01-v0.4.md",
+          "log": "logs/tasks/bug-faq/review-T01-v0.4-2026-11-12.md",
+          "verdict": "changes-required"
+        }
+      },
+      "followUpResolution": "The route-level typed-cursor rejection identified in this review was corrected and independently verified under the approved T02 correction; see workflow/tasks/bug-faq/implementation-T02-v0.4-correction3.md and review-T02-v0.4-correction3.md."
+    },
+    "T02": {
+      "implementationReport": "workflow/tasks/bug-faq/implementation-T02-v0.4-correction3.md",
+      "implementationLog": "logs/tasks/bug-faq/implementation-T02-v0.4-correction3-2026-11-12.md",
+      "checks": [
+        {
+          "command": "cd src/codeclinic; npm test -- --runInBand --watchAll=false bug-faq.api.contract.test.js",
+          "result": "pass"
+        },
+        {
+          "command": "cd src/codeclinic; npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js bug-faq.api.contract.test.js ta-tickets.indexes.test.js student-tickets.api.test.js student-tickets.storage.test.js server.test.js",
+          "result": "pass"
+        },
+        {
+          "command": "git diff --check",
+          "result": "pass"
+        }
+      ],
+      "reviewReport": "workflow/tasks/bug-faq/review-T02-v0.4-correction3.md",
+      "reviewLog": "logs/tasks/bug-faq/review-T02-v0.4-correction3-2026-11-12.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "priorReview": {
+        "report": "workflow/tasks/bug-faq/review-T02-v0.4.md",
+        "log": "logs/tasks/bug-faq/review-T02-v0.4-2026-11-12.md",
+        "verdict": "pass"
+      }
+    }
+  },
+  "correctionDispatch": {
+    "revision": 3,
+    "item": "T01",
+    "humanApproval": "Approved in conversation on 2026-11-12",
+    "finding": "DocumentReference cursor reconstruction loses source project/database identity, and accepted large cursor values can exceed token caps and silently suppress continuation.",
+    "scope": [
+      "src/codeclinic/server/tickets/faq-store.js",
+      "src/codeclinic/test/bug-faq.store.contract.test.js"
+    ],
+    "evidence": [
+      "workflow/tasks/bug-faq/review-T01-v0.4-correction2.md",
+      "logs/tasks/bug-faq/review-T01-v0.4-correction2-2026-11-12.md"
+    ],
+    "implementer": "bug-faq-implementer-v04",
+    "reviewer": "bug-faq-independent-reviewer-v04",
+    "outputReport": "workflow/tasks/bug-faq/implementation-T01-v0.4-correction3.md",
+    "outputLog": "logs/tasks/bug-faq/implementation-T01-v0.4-correction3-2026-11-12.md",
+    "reviewerReport": "workflow/tasks/bug-faq/review-T01-v0.4-correction3-rerun.md",
+    "reviewerLog": "logs/tasks/bug-faq/review-T01-v0.4-correction3-2026-11-12.md",
+    "reviewerVerdict": "pass-with-follow-up",
+    "findings": [
+      "T01 store correction passed independent review. T02/API cursor validators remain Timestamp-only and reject valid tagged non-Timestamp continuation cursors; separate scoped integration correction required."
+    ],
+    "reviewerChecks": [
+      {
+        "command": "node src/workflow/validate-assignment.mjs workflow/tasks/bug-faq/assignment-batch-1.json plan",
+        "summary": "assignment plan valid",
+        "result": "pass"
+      },
+      {
+        "command": "CI=true npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js ta-tickets.indexes.test.js",
+        "summary": "3 suites, 51 tests",
+        "result": "pass"
+      },
+      {
+        "command": "CI=true npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js bug-faq.api.contract.test.js ta-tickets.indexes.test.js student-tickets.api.test.js student-tickets.storage.test.js server.test.js",
+        "summary": "8 suites, 166 tests",
+        "result": "pass"
+      }
+    ]
+  },
+  "correctionHistory": [
+    {
+      "item": "T01",
+      "humanApproval": "Approved in conversation on 2026-11-12",
+      "finding": "Malformed createdAt documents can prevent search cursor advancement, hiding later valid matches.",
+      "scope": [
+        "src/codeclinic/server/tickets/faq-store.js",
+        "src/codeclinic/test/bug-faq.store.contract.test.js"
+      ],
+      "evidence": [
+        "workflow/tasks/bug-faq/review-T01-v0.4.md",
+        "logs/tasks/bug-faq/review-T01-v0.4-2026-11-12.md"
+      ],
+      "implementer": "bug-faq-implementer-v04",
+      "reviewer": "bug-faq-independent-reviewer-v04",
+      "outputReport": "workflow/tasks/bug-faq/implementation-T01-v0.4-correction.md",
+      "outputLog": "logs/tasks/bug-faq/implementation-T01-v0.4-correction-2026-11-12.md",
+      "reviewerReport": "workflow/tasks/bug-faq/review-T01-v0.4-correction.md",
+      "reviewerLog": "logs/tasks/bug-faq/review-T01-v0.4-correction-2026-11-12.md",
+      "reviewerVerdict": "changes-required",
+      "reviewerChecks": [
+        {
+          "result": "pass",
+          "summary": "3 suites, 44 tests",
+          "command": "npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js ta-tickets.indexes.test.js"
+        },
+        {
+          "result": "pass",
+          "summary": "8 suites, 159 tests",
+          "command": "npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js bug-faq.api.contract.test.js ta-tickets.indexes.test.js student-tickets.api.test.js student-tickets.storage.test.js server.test.js"
+        }
+      ]
+    },
+    {
+      "revision": 2,
+      "item": "T01",
+      "humanApproval": "Approved in conversation on 2026-11-12",
+      "finding": "Firestore GeoPoint createdAt values are serialized as plain maps in continuation tokens, changing Firestore query ordering and potentially preventing pagination progress.",
+      "scope": [
+        "src/codeclinic/server/tickets/faq-store.js",
+        "src/codeclinic/test/bug-faq.store.contract.test.js"
+      ],
+      "evidence": [
+        "workflow/tasks/bug-faq/review-T01-v0.4-correction.md",
+        "logs/tasks/bug-faq/review-T01-v0.4-correction-2026-11-12.md"
+      ],
+      "implementer": "bug-faq-implementer-v04",
+      "reviewer": "bug-faq-independent-reviewer-v04",
+      "outputReport": "workflow/tasks/bug-faq/implementation-T01-v0.4-correction2.md",
+      "outputLog": "logs/tasks/bug-faq/implementation-T01-v0.4-correction2-2026-11-12.md",
+      "reviewerReport": "workflow/tasks/bug-faq/review-T01-v0.4-correction2.md",
+      "reviewerLog": "logs/tasks/bug-faq/review-T01-v0.4-correction2-2026-11-12.md",
+      "reviewerVerdict": "changes-required",
+      "findings": [
+        "Firestore DocumentReference cursor reconstruction loses source database identity.",
+        "Accepted cursor boundary values can exceed the FAQ token size cap and silently suppress continuation."
+      ],
+      "reviewerChecks": [
+        {
+          "command": "npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js ta-tickets.indexes.test.js",
+          "summary": "3 suites, 46 tests",
+          "result": "pass"
+        },
+        {
+          "command": "npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js bug-faq.api.contract.test.js ta-tickets.indexes.test.js student-tickets.api.test.js student-tickets.storage.test.js server.test.js",
+          "summary": "8 suites, 161 tests",
+          "result": "pass"
+        }
+      ]
+    }
+  ],
+  "followUpDispatch": {
+    "revision": 1,
+    "item": "T02",
+    "humanApproval": "Approved in conversation on 2026-11-12",
+    "finding": "API routes accept only Timestamp-parts cursors and reject tagged non-Timestamp boundaries emitted by the store.",
+    "scope": [
+      "src/codeclinic/server/tickets/faq-routes.js",
+      "src/codeclinic/test/bug-faq.api.contract.test.js"
+    ],
+    "evidence": [
+      "workflow/tasks/bug-faq/review-T01-v0.4-correction3-rerun.md",
+      "logs/tasks/bug-faq/review-T01-v0.4-correction3-2026-11-12.md"
+    ],
+    "implementer": "bug-faq-implementer-v04",
+    "reviewer": "bug-faq-independent-reviewer-v04",
+    "outputReport": "workflow/tasks/bug-faq/implementation-T02-v0.4-correction3.md",
+    "outputLog": "logs/tasks/bug-faq/implementation-T02-v0.4-correction3-2026-11-12.md",
+    "reviewerReport": "workflow/tasks/bug-faq/review-T02-v0.4-correction3.md",
+    "reviewerLog": "logs/tasks/bug-faq/review-T02-v0.4-correction3-2026-11-12.md",
+    "reviewerVerdict": "pass-with-follow-up",
+    "findings": [
+      "No blocking code findings. Live Firestore end-to-end/index readiness and browser visual behavior remain unverified and are assigned to T04."
+    ],
+    "reviewerChecks": [
+      {
+        "command": "CI=true npm test -- --runInBand --watchAll=false bug-faq.api.contract.test.js",
+        "summary": "1 suite, 31 tests",
+        "result": "pass"
+      },
+      {
+        "command": "CI=true npm test -- --runInBand --watchAll=false bug-faq.store.contract.test.js bug-faq.tokens.contract.test.js bug-faq.api.contract.test.js ta-tickets.indexes.test.js student-tickets.api.test.js student-tickets.storage.test.js server.test.js",
+        "summary": "8 suites, 170 tests",
+        "result": "pass"
+      },
+      {
+        "command": "git diff --check",
+        "summary": "no whitespace errors",
+        "result": "pass"
+      }
+    ]
+  }
+}

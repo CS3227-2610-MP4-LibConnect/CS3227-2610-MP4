@@ -1,7 +1,7 @@
 # TA ticket queue specification
 
-Version: 0.1 (2026-11-09)
-Approval evidence: the human replied "approved, go with your proposals for Q1–Q4" to version 0.1 on 2026-11-09; recorded from the human's message; no agent-set approval state.
+Version: 0.2 (2026-11-13; Bug FAQ out-of-scope note reconciled)
+Approval evidence: v0.1 was approved on 2026-11-09. The human requested this status-only reconciliation on 2026-11-13 after approving Bug FAQ v0.4 and its reviewed implementation. This edit does not change TA ticket behavior or claim separate approval of new TA requirements.
 Task ID: `ta-ticket-queue` (from approved `workflow/PLAN.md` v0.1, TA owner)
 
 ## Purpose and scope
@@ -25,7 +25,10 @@ Out of scope:
 - The AI Fix Note Drafter and Queue Insights. These belong to `ai-ta-assist`.
   R6 accepts only TA-confirmed text, so that feature can later fill the draft
   field without changing this API.
-- The Bug FAQ, which belongs to `bug-faq`. It reads `RESOLVED` tickets.
+- The Bug FAQ, which belongs to `bug-faq`. Its approved v0.4 feature reads only
+  `RESOLVED` tickets; Student-closed tickets are excluded. Search cards show
+  title/tags; opened results include the fix note and conversation with
+  Student/TA speaker labels. Names typed within messages may remain visible.
 - Session requests (optional), reassigning a claim to another TA, deleting a
   reply, and editing a reply.
 
@@ -288,6 +291,21 @@ maps `ticketId` to `/ta/tickets/:ticketId`.
   filtered production queries remain at risk.
 
 ## Amendments
+
+- 2026-11-13: At the human's request, updated the out-of-scope Bug FAQ note
+  to name approved v0.4 and removed the stale draft status. The TA ticket
+  behavior and state machine remain unchanged.
+
+- 2026-11-12: After the human corrected Bug FAQ eligibility, revised this
+  out-of-scope note to `RESOLVED` only while preserving TA resolution behavior.
+  The human approved the amendment proposal; Bug FAQ v0.2 awaits fresh approval.
+- 2026-11-12: Updated the out-of-scope Bug FAQ note to reflect its v0.3 draft
+  detail view. The human instructed continuation after clarifying message-name
+  visibility; Bug FAQ v0.3 awaits specification approval. TA behavior is
+  unchanged.
+- 2026-11-12: At the human's approved Bug FAQ v0.1 scope correction, updated
+  the out-of-scope FAQ note from `RESOLVED` to `CLOSED`. The TA resolve
+  workflow, fix-note data contract, and ticket state machine are unchanged.
 
 - 2026-11-09: Drafted at the human's direction. The human chose to define the
   shared ticket data contract in this spec, pending the Student owner's
