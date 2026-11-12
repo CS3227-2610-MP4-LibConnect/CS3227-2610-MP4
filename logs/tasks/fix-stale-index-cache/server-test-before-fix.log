@@ -1,0 +1,26 @@
+FAIL test/server.test.js
+  ✓ serves the built frontend and the login API from one origin (123 ms)
+  ✕ does not let browsers keep a stale app shell across releases built with a fixed file time (8 ms)
+
+  ● does not let browsers keep a stale app shell across releases built with a fixed file time
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "no-cache"
+    Received: "public, max-age=0"
+
+      163 |
+      164 |     expect(firstVisit.text).toContain('main.aaaaaaaa.js');
+    > 165 |     expect(firstVisit.headers['cache-control']).toBe('no-cache');
+          |                                                 ^
+      166 |     const unchanged = await request(app).get('/').set('If-None-Match', firstVisit.headers.etag);
+      167 |     expect(unchanged.status).toBe(304);
+      168 |     writeRelease('bbbbbbbb');
+
+      at Object.<anonymous> (test/server.test.js:165:49)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 passed, 2 total
+Snapshots:   0 total
+Time:        1.501 s, estimated 2 s
+Ran all test suites matching /test\/server.test.js/i.

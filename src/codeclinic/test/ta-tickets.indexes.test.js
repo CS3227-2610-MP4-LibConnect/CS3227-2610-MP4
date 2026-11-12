@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const { createFirestoreTicketStore } = require('../server/tickets/store');
+const { createFirestoreNotificationStore } = require('../server/notifications/route');
 
 const indexFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'firestore.indexes.json'), 'utf8'));
 // The TA queue's indexes are the `tickets` indexes that start with `status`;
 // the student activity indexes start with `studentId` or are on `replies`.
 const taQueueIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' && i.fields[0].fieldPath === 'status');
+const notificationIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'notifications');
 
 /** Fake Firestore that records the where/orderBy calls a store method builds. */
 function recordStoreQuery(run) {
@@ -47,7 +49,7 @@ describe('Firestore index file', () => {
   test('has only COLLECTION-scoped composite indexes and no overrides', () => {
     expect(indexFile.fieldOverrides).toEqual([]);
     for (const index of indexFile.indexes) {
-      expect(['tickets', 'replies']).toContain(index.collectionGroup);
+      expect(['tickets', 'replies', 'notifications']).toContain(index.collectionGroup);
       expect(index.queryScope).toBe('COLLECTION');
     }
   });
@@ -59,9 +61,34 @@ describe('Firestore index file', () => {
     }
   });
 
-  test('contains exactly the student activity and TA queue indexes', () => {
-    expect(indexFile.indexes).toHaveLength(2 + taQueueIndexes.length);
+  test('contains exactly the student activity, TA queue and notification inbox indexes', () => {
+    expect(indexFile.indexes).toHaveLength(2 + taQueueIndexes.length + notificationIndexes.length);
     expect(taQueueIndexes).toHaveLength(4);
+    expect(notificationIndexes).toHaveLength(1);
+  });
+});
+
+describe('notification inbox Firestore index', () => {
+  test("a user's inbox list (recipient, newest first) has exactly one matching index", async () => {
+    const wheres = [];
+    const orders = [];
+    const query = {
+      where(field, op, value) { wheres.push({ field, op, value }); return query; },
+      orderBy(field, dir = 'asc') { orders.push({ field, dir }); return query; },
+      startAfter() { return query; },
+      limit() { return query; },
+      async get() { return { docs: [] }; },
+    };
+    const store = createFirestoreNotificationStore({ collection: () => query });
+    await store.listForRecipient('user-1', null, 20);
+
+    const needed = requiredFields({ wheres, orders });
+    expect(needed).toEqual([
+      { fieldPath: 'recipientUserId', order: 'ASCENDING' },
+      { fieldPath: 'createdAt', order: 'DESCENDING' },
+    ]);
+    const matches = notificationIndexes.filter((i) => JSON.stringify(i.fields) === JSON.stringify(needed));
+    expect(matches).toHaveLength(1);
   });
 });
 

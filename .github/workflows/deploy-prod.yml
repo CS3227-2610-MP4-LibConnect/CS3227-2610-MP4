@@ -1,0 +1,104 @@
+# Production deployment of Firestore indexes, with smoke checks
+# (workflow/specs/environments-and-deployment.md v0.3, R6, R7 and R9).
+#
+# It runs after CI succeeds on a push to main, or when started by hand, and waits for a team
+# member to approve the `production` environment. The app itself is still rolled out by
+# Firebase App Hosting's automatic rollout; moving that step here is the remaining part of R6.
+# One-time setup: workflow/tasks/environments-and-deployment/deploy-prod-setup.md
+name: Deploy production
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# R9: read-only by default. Only the deploy job may request an ID token.
+permissions:
+  contents: read
+
+# Never run two production deployments at once, and never cancel one halfway.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Firestore indexes
+    # A successful CI run for a push to main in this repository (never a fork or a pull request),
+    # or a manual run started on main.
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: src/codeclinic
+    steps:
+      - name: Check out the commit that passed CI
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      # Keyless sign-in through Workload Identity Federation: no service-account key is stored.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      # --non-interactive never deletes production indexes that are missing from the file;
+      # removing an index stays a deliberate manual step.
+      - name: Deploy Firestore indexes
+        env:
+          FIREBASE_PROJECT: ${{ vars.FIREBASE_PROJECT_ID }}
+        run: npx --yes firebase-tools@15.34.0 deploy --only firestore:indexes --project "$FIREBASE_PROJECT" --non-interactive
+
+      - name: List production indexes
+        env:
+          FIREBASE_PROJECT: ${{ vars.FIREBASE_PROJECT_ID }}
+        run: npx --yes firebase-tools@15.34.0 firestore:indexes --project "$FIREBASE_PROJECT" --non-interactive
+
+  smoke-check:
+    name: Smoke check production
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # R7: read-only checks. They never create accounts, sign in or call AI features.
+    steps:
+      - name: Check the app shell, SPA routing and the session API
+        env:
+          BASE_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          set -euo pipefail
+          check() {
+            local path="$1" expected="$2" content_type="${3:-}"
+            local headers
+            headers=$(curl -sS -o /dev/null -D - --max-time 20 "${BASE_URL%/}${path}")
+            local status
+            status=$(printf '%s' "$headers" | awk 'NR==1 {print $2}')
+            echo "GET ${path} -> ${status}"
+            [ "$status" = "$expected" ] || { echo "Expected ${expected}"; exit 1; }
+            if [ -n "$content_type" ]; then
+              printf '%s' "$headers" | grep -qi "^content-type: ${content_type}" || { echo "Expected ${content_type}"; exit 1; }
+            fi
+          }
+          check / 200 text/html
+          check /register 200 text/html
+          check /api/auth/session 401
