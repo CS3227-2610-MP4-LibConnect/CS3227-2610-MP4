@@ -1,0 +1,9 @@
+PASS test/server.test.js
+  ✓ serves the built frontend and the login API from one origin (129 ms)
+  ✓ does not let browsers keep a stale app shell across releases built with a fixed file time (22 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       2 passed, 2 total
+Snapshots:   0 total
+Time:        1.568 s, estimated 2 s
+Ran all test suites matching /test\/server.test.js/i.

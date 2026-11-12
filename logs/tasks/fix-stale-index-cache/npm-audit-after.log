@@ -1,0 +1,45 @@
+# npm audit report
+
+glob  9.0.0 - 14.0.1
+Severity: moderate
+Glob: AbortSignal cancellation bypass allows post-timeout filesystem traversal - https://github.com/advisories/GHSA-3g3m-2fjr-6pw4
+Depends on vulnerable versions of minimatch
+fix available via `npm audit fix --force`
+Will install firebase-admin@14.3.0, which is a breaking change
+node_modules/@google-cloud/firestore-api/node_modules/glob
+  rimraf  4.2.0 - 6.1.3
+  Depends on vulnerable versions of glob
+  node_modules/@google-cloud/firestore-api/node_modules/rimraf
+    gaxios  7.1.3
+    Depends on vulnerable versions of rimraf
+    node_modules/@google-cloud/firestore-api/node_modules/gaxios
+      gcp-metadata  8.1.3 - 8.1.4
+      Depends on vulnerable versions of gaxios
+      node_modules/@google-cloud/firestore-api/node_modules/gcp-metadata
+    google-gax  
+    Depends on vulnerable versions of rimraf
+    node_modules/@google-cloud/firestore-api/node_modules/google-gax
+      @google-cloud/firestore-api  *
+      Depends on vulnerable versions of google-gax
+      node_modules/@google-cloud/firestore-api
+        @google-cloud/firestore  >=9.0.0
+        Depends on vulnerable versions of @google-cloud/firestore-api
+        node_modules/@google-cloud/firestore
+          firebase-admin  >=14.4.0
+          Depends on vulnerable versions of @google-cloud/firestore
+          node_modules/firebase-admin
+
+minimatch  7.0.0 - 11.0.0
+Severity: moderate
+minimatch has potential denial of service via globparts amplification - https://github.com/advisories/GHSA-g3hv-75wg-m249
+fix available via `npm audit fix --force`
+Will install firebase-admin@14.3.0, which is a breaking change
+node_modules/@google-cloud/firestore-api/node_modules/minimatch
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
