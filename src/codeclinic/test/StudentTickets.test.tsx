@@ -214,14 +214,117 @@ describe('protected ticket creation page and form', () => {
       fireEvent.change(await screen.findByRole('textbox', { name: new RegExp(name, 'i') }), { target: { value } });
     }
     fireEvent.change(await screen.findByRole('combobox', { name: /language/i }), { target: { value: 'Python' } });
-    for (let index = 0; index < 3; index += 1) {
-      fireEvent.click(screen.getByRole('button', { name: /add code file/i }));
-      fireEvent.change(screen.getByRole('textbox', { name: new RegExp(`filename ${index + 1}`, 'i') }), { target: { value: `file${index}.txt` } });
-      fireEvent.change(screen.getByRole('textbox', { name: new RegExp(`code file contents ${index + 1}`, 'i') }), { target: { value: 'x'.repeat(24576) } });
-    }
+    const picker = screen.getByLabelText(/code files/i) as HTMLInputElement;
+    fireEvent.change(picker, { target: { files: [
+      new File(['x'.repeat(24576)], 'file0.txt', { type: 'text/plain' }),
+      new File(['x'.repeat(24576)], 'file1.txt', { type: 'text/plain' }),
+      new File(['x'.repeat(24576)], 'file2.txt', { type: 'text/plain' }),
+    ] } });
+    await screen.findByText('file2.txt');
     fireEvent.click(screen.getByRole('button', { name: /submit ticket/i }));
     expect(await screen.findByText(/too large to submit/i)).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('selects UTF-8 files into the existing JSON files contract and supports removal', async () => {
+    const fetchMock = jest.fn()
+      .mockResolvedValueOnce(response(200, { accountType: 'STUDENT' }))
+      .mockResolvedValueOnce(response(200, { csrfToken: 'synthetic-csrf' }))
+      .mockResolvedValueOnce(response(201, { ticketId: 'synthetic-ticket' }));
+    renderAppAt('/student/tickets/new', fetchMock);
+    const picker = await screen.findByLabelText(/code files/i);
+    expect(screen.queryByRole('textbox', { name: /filename|code file contents/i })).not.toBeInTheDocument();
+    fireEvent.change(picker, { target: { files: [
+      new File(['print("first")'], 'first.py', { type: 'text/plain' }),
+      new File(['console.log(2)'], 'second.ts', { type: 'text/plain' }),
+    ] } });
+    expect(await screen.findByText('first.py')).toBeInTheDocument();
+    expect(await screen.findByText('second.ts')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /remove second\.ts/i }));
+    for (const [name, value] of [['Title', 'Issue'], ['Expected behaviour', 'Expected'], ['Actual behaviour', 'Actual'], ['Attempted', 'Tried']]) {
+      fireEvent.change(screen.getByRole('textbox', { name: new RegExp(name, 'i') }), { target: { value } });
+    }
+    fireEvent.change(screen.getByRole('combobox', { name: /language/i }), { target: { value: 'Python' } });
+    fireEvent.click(screen.getByRole('button', { name: /submit ticket/i }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => url === '/api/tickets')).toBe(true));
+    const createCall = fetchMock.mock.calls.find(([url]) => url === '/api/tickets');
+    expect(JSON.parse(String(createCall?.[1]?.body)).files).toEqual([{ filename: 'first.py', content: 'print("first")' }]);
+    expect(window.localStorage.length).toBe(0);
+    expect(window.sessionStorage.length).toBe(0);
+  });
+
+  test.each([
+    ['oversized', () => new File(['x'.repeat(24577)], 'large.py')],
+    ['invalid basename', () => new File(['x'], '..')],
+    ['invalid UTF-8', () => new File([new Uint8Array([0xc3, 0x28])], 'bad.py')],
+  ])('rejects %s selection accessibly and preserves an earlier accepted file', async (_kind, invalidFile) => {
+    const fetchMock = jest.fn().mockResolvedValue(response(200, { accountType: 'STUDENT' }));
+    renderAppAt('/student/tickets/new', fetchMock);
+    const picker = await screen.findByLabelText(/code files/i);
+    fireEvent.change(picker, { target: { files: [new File(['keep'], 'keep.py')] } });
+    expect(await screen.findByText('keep.py')).toBeInTheDocument();
+    fireEvent.change(picker, { target: { files: [invalidFile()] } });
+    expect(await screen.findByRole('alert')).toHaveTextContent(/file|UTF-8|24 KiB|basename/i);
+    expect(screen.getByText('keep.py')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('rejects a fourth file and blocks files together with repository source', async () => {
+    const fetchMock = jest.fn().mockResolvedValue(response(200, { accountType: 'STUDENT' }));
+    renderAppAt('/student/tickets/new', fetchMock);
+    const picker = await screen.findByLabelText(/code files/i);
+    fireEvent.change(picker, { target: { files: ['a.py', 'b.py', 'c.py'].map((name) => new File(['x'], name)) } });
+    expect(await screen.findByText('c.py')).toBeInTheDocument();
+    fireEvent.change(picker, { target: { files: [new File(['x'], 'd.py')] } });
+    expect(await screen.findByRole('alert')).toHaveTextContent(/three|3|up to/i);
+    expect(screen.getByText('a.py')).toBeInTheDocument();
+    fireEvent.change(screen.getByRole('textbox', { name: /public github url/i }), { target: { value: 'https://github.com/example/repo' } });
+    fireEvent.change(screen.getByRole('textbox', { name: /relevant file paths/i }), { target: { value: 'src/main.py' } });
+    for (const [name, value] of [['Title', 'Issue'], ['Expected behaviour', 'Expected'], ['Actual behaviour', 'Actual'], ['Attempted', 'Tried']]) {
+      fireEvent.change(screen.getByRole('textbox', { name: new RegExp(name, 'i') }), { target: { value } });
+    }
+    fireEvent.change(screen.getByRole('combobox', { name: /language/i }), { target: { value: 'Python' } });
+    fireEvent.click(screen.getByRole('button', { name: /submit ticket/i }));
+    expect(await screen.findByText(/choose files or a repository reference, not both/i)).toBeInTheDocument();
+    expect(picker).toHaveFocus();
+    expect(picker).toHaveAttribute('aria-invalid', 'true');
+    expect(picker).toHaveAttribute('aria-describedby', 'ticket-source-error');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not submit a ticket or send create help chat while a file read is pending', async () => {
+    const readers: FileReader[] = [];
+    const readSpy = jest.spyOn(FileReader.prototype, 'readAsArrayBuffer').mockImplementation(function (this: FileReader) {
+      readers.push(this);
+    });
+    const fetchMock = jest.fn().mockResolvedValue(response(200, { accountType: 'STUDENT' }));
+    renderAppAt('/student/tickets/new', fetchMock);
+    const picker = await screen.findByLabelText(/code files/i);
+    fireEvent.change(picker, { target: { files: [new File([new Uint8Array([0xc3, 0x28])], 'invalid.py'), new File(['pending'], 'pending.py')] } });
+    expect(screen.getAllByRole('status').some((status) => /reading selected files/i.test(status.textContent ?? ''))).toBe(true);
+    for (const [name, value] of [['Title', 'Issue'], ['Expected behaviour', 'Expected'], ['Actual behaviour', 'Actual'], ['Attempted', 'Tried']]) {
+      fireEvent.change(screen.getByRole('textbox', { name: new RegExp(name, 'i') }), { target: { value } });
+    }
+    fireEvent.change(screen.getByRole('combobox', { name: /language/i }), { target: { value: 'Python' } });
+    fireEvent.submit(screen.getByRole('heading', { name: /create ticket/i }).closest('section')!.querySelector('form')!);
+    fireEvent.click(screen.getByRole('button', { name: /open ticket help bot/i }));
+    fireEvent.change(screen.getByRole('textbox', { name: /your question/i }), { target: { value: 'Help with this draft' } });
+    fireEvent.submit(screen.getByRole('textbox', { name: /your question/i }).closest('form')!);
+    expect(fetchMock.mock.calls.some(([url]) => url === '/api/tickets' || url === '/api/tickets/help-chat')).toBe(false);
+    expect(readSpy).toHaveBeenCalledTimes(2);
+    await act(async () => {
+      Object.defineProperty(readers[0], 'result', { configurable: true, value: new Uint8Array([0xc3, 0x28]).buffer });
+      readers[0].onload?.(new ProgressEvent('load'));
+    });
+    expect(screen.getAllByRole('status').some((status) => /reading selected files/i.test(status.textContent ?? ''))).toBe(true);
+    expect(fetchMock.mock.calls.some(([url]) => url === '/api/tickets' || url === '/api/tickets/help-chat')).toBe(false);
+    await act(async () => {
+      Object.defineProperty(readers[1], 'result', { configurable: true, value: new Uint8Array([112, 101, 110, 100, 105, 110, 103]).buffer });
+      readers[1].onload?.(new ProgressEvent('load'));
+    });
+    expect(await screen.findByRole('alert')).toHaveTextContent(/UTF-8 text/i);
+    expect(screen.queryByText('pending.py')).not.toBeInTheDocument();
+    readSpy.mockRestore();
   });
 
   test.each([

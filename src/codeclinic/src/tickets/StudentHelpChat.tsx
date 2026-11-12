@@ -36,7 +36,7 @@ function replyText(value: unknown): string | null {
 
 type RequestBodyBuilder = (question: string, history: Turn[]) => Record<string, unknown>;
 
-export default function StudentHelpChat({ endpoint, introduction = 'I can offer hints and explain concepts.', buildRequestBody }: { endpoint: string; introduction?: string; buildRequestBody?: RequestBodyBuilder }) {
+export default function StudentHelpChat({ endpoint, introduction = 'I can offer hints and explain concepts.', buildRequestBody, canSend }: { endpoint: string; introduction?: string; buildRequestBody?: RequestBodyBuilder; canSend?: () => boolean }) {
   const [history, setHistory] = useState<Turn[]>([]);
   const [question, setQuestion] = useState('');
   const [pending, setPending] = useState(false);
@@ -64,7 +64,7 @@ export default function StudentHelpChat({ endpoint, introduction = 'I can offer 
 
   const send = async (event: FormEvent) => {
     event.preventDefault();
-    if (pendingRef.current || !question.trim()) return;
+    if (pendingRef.current || !question.trim() || (canSend && !canSend())) return;
     pendingRef.current = true;
     setPending(true);
     setError('');

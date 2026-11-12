@@ -2,7 +2,7 @@ import React, { FormEvent, useRef, useState } from 'react';
 import './TicketCreatePage.css';
 import StudentHelpChat from './StudentHelpChat';
 
-type TicketFile = { filename: string; content: string };
+type TicketFile = { filename: string; content: string; size: number };
 type Errors = Record<string, string>;
 const languages = ['Python', 'Java', 'JavaScript', 'TypeScript', 'C', 'C++', 'Other'];
 const characterLength = (value: string) => Array.from(value).length;
@@ -25,6 +25,7 @@ export default function TicketCreatePage() {
   const [errorOutput, setErrorOutput] = useState('');
   const [tags, setTags] = useState('');
   const [files, setFiles] = useState<TicketFile[]>([]);
+  const [readingFiles, setReadingFiles] = useState(false);
   const [repoUrl, setRepoUrl] = useState('');
   const [repoPaths, setRepoPaths] = useState('');
   const [errors, setErrors] = useState<Errors>({});
@@ -38,7 +39,8 @@ export default function TicketCreatePage() {
   const attemptedRef = useRef<HTMLTextAreaElement>(null);
   const tagsRef = useRef<HTMLInputElement>(null);
   const sourceRef = useRef<HTMLInputElement>(null);
-  const firstFileNameRef = useRef<HTMLInputElement>(null);
+  const codePickerRef = useRef<HTMLInputElement>(null);
+  const readingFilesRef = useRef(false);
 
   const validate = () => {
     const next: Errors = {};
@@ -84,13 +86,13 @@ export default function TicketCreatePage() {
     else if (first === 'attempted') attemptedRef.current?.focus();
     else if (first === 'conceptTags') tagsRef.current?.focus();
     else if (first === 'errorOutput') errorOutputRef.current?.focus();
-    else if (first === 'source') (files.length ? firstFileNameRef.current : sourceRef.current)?.focus();
+    else if (first === 'source') (files.length ? codePickerRef.current : sourceRef.current)?.focus();
     return { next, normalizedTags };
   };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (pending) return;
+    if (pending || readingFilesRef.current) return;
     setMessage('');
     const { next, normalizedTags } = validate();
     if (Object.keys(next).length) return;
@@ -170,20 +172,63 @@ export default function TicketCreatePage() {
         <input ref={tagsRef} id="ticket-tags" value={tags} aria-invalid={Boolean(errors.conceptTags)} aria-describedby={errors.conceptTags ? 'ticket-conceptTags-error' : undefined} onChange={(e) => setTags(e.target.value)} />{fieldError('conceptTags')}
         <fieldset className="ticket-source" aria-describedby={errors.source ? 'ticket-source-error' : undefined}>
           <legend>Source context <span>(optional, choose one method)</span></legend>
-          {files.map((file, index) => <div className="ticket-file" key={index}>
-            <label htmlFor={`ticket-file-name-${index}`}>Filename {index + 1}</label><input ref={index === 0 ? firstFileNameRef : undefined} id={`ticket-file-name-${index}`} maxLength={240} value={file.filename} onChange={(e) => setFiles((current) => current.map((item, i) => i === index ? { ...item, filename: e.target.value } : item))} />
-            <label htmlFor={`ticket-file-content-${index}`}>Code file contents {index + 1}</label><textarea id={`ticket-file-content-${index}`} value={file.content} onChange={(e) => setFiles((current) => current.map((item, i) => i === index ? { ...item, content: e.target.value } : item))} />
-            <button type="button" className="ticket-secondary-button" onClick={() => setFiles((current) => current.filter((_, i) => i !== index))}>Remove file {index + 1}</button>
+          {files.map((file, index) => <div className="ticket-file" key={`${file.filename}-${index}`}>
+            <span>{file.filename} <small>{file.size} bytes</small></span>
+            <button type="button" className="ticket-secondary-button" aria-label={`Remove ${file.filename}`} onClick={() => setFiles((current) => current.filter((_, i) => i !== index))}>Remove</button>
           </div>)}
-          {files.length < 3 && <button type="button" className="ticket-secondary-button" onClick={() => setFiles((current) => [...current, { filename: '', content: '' }])}>Add code file</button>}
+          <label htmlFor="ticket-code-files">Code files <span>(UTF-8 text, up to 3 files, 24 KiB each)</span></label>
+          <input ref={codePickerRef} id="ticket-code-files" type="file" accept="text/*,.txt,.py,.java,.js,.jsx,.ts,.tsx,.c,.h,.cpp,.hpp,.cs,.go,.rs,.rb,.php,.html,.css,.json,.xml,.md,.sql" multiple aria-invalid={Boolean(errors.source)} aria-describedby={errors.source ? 'ticket-source-error' : undefined} disabled={readingFiles} onChange={async (event) => {
+            if (readingFilesRef.current) return;
+            const picker = event.currentTarget;
+            const selected = Array.from(picker.files ?? []);
+            picker.value = '';
+            if (!selected.length) return;
+            const validBasename = (name: string) => name.trim().length > 0 && characterLength(name) <= 120 && name !== '.' && name !== '..' && !/[\\/]/.test(name) && !hasControlCharacters(name);
+            const problem = selected.length + files.length > 3
+              ? 'Attach up to three files.'
+              : selected.some((file) => !validBasename(file.name))
+                ? 'Each filename must be a valid basename of at most 120 characters.'
+                : selected.some((file) => file.size > 24576)
+                  ? 'Each file must be at most 24 KiB.'
+                  : '';
+            if (problem) { setErrors((current) => ({ ...current, source: problem })); return; }
+            setErrors((current) => ({ ...current, source: '' }));
+            readingFilesRef.current = true;
+            setReadingFiles(true);
+            try {
+              const results = await Promise.all(selected.map((file) => new Promise<TicketFile | null>((resolve) => {
+                const reader = new FileReader();
+                reader.onerror = () => resolve(null);
+                reader.onload = () => {
+                  try {
+                    if (!(reader.result instanceof ArrayBuffer)) { resolve(null); return; }
+                    const bytes = new Uint8Array(reader.result);
+                    const encoded = Array.from(bytes, (byte) => `%${byte.toString(16).padStart(2, '0')}`).join('');
+                    const content = decodeURIComponent(encoded);
+                    resolve({ filename: file.name, content, size: file.size });
+                  } catch { resolve(null); }
+                };
+                reader.readAsArrayBuffer(file);
+              })));
+              if (results.some((file) => file === null)) throw new Error('read');
+              const accepted = results as TicketFile[];
+              setFiles((current) => [...current, ...accepted]);
+            } catch {
+              setErrors((current) => ({ ...current, source: 'Files must be readable UTF-8 text. No files from this selection were added.' }));
+            } finally {
+              readingFilesRef.current = false;
+              setReadingFiles(false);
+            }
+          }} />
+          {readingFiles && <p role="status" aria-live="polite">Reading selected files…</p>}
           <label htmlFor="ticket-repo-url">Public GitHub URL</label><input ref={sourceRef} id="ticket-repo-url" type="url" maxLength={510} value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} />
           <label htmlFor="ticket-repo-paths">Relevant file paths <span>(one per line)</span></label><textarea id="ticket-repo-paths" value={repoPaths} onChange={(e) => setRepoPaths(e.target.value)} />
-          {fieldError('source')}
+          {errors.source && <p className="ticket-field-error" id="ticket-source-error" role="alert">{errors.source}</p>}
         </fieldset>
-        <button className="submit-button ticket-submit" type="submit" disabled={pending}>{pending ? 'Submitting…' : 'Submit Ticket'}</button>
+        <button className="submit-button ticket-submit" type="submit" disabled={pending || readingFiles}>{pending ? 'Submitting…' : 'Submit Ticket'}</button>
         {pending && <p role="status" aria-live="polite">Submitting your ticket…</p>}
       </form>
     </section>
-    <StudentHelpChat endpoint="/api/tickets/help-chat" introduction="What help do you need?" buildRequestBody={buildHelpRequest} />
+    <StudentHelpChat endpoint="/api/tickets/help-chat" introduction="What help do you need?" buildRequestBody={buildHelpRequest} canSend={() => !readingFilesRef.current} />
   </main>;
 }

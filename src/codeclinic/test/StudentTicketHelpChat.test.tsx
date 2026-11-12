@@ -56,9 +56,8 @@ describe('Student ticket help chat public UI contract', () => {
     fireEvent.change(screen.getByRole('textbox', { name: /concept tags/i }), { target: { value: 'maps, lookup' } });
     fireEvent.change(screen.getByRole('textbox', { name: /public github url/i }), { target: { value: 'https://github.com/example/repo' } });
     fireEvent.change(screen.getByRole('textbox', { name: /relevant file paths/i }), { target: { value: 'src/main.py' } });
-    fireEvent.click(screen.getByRole('button', { name: /add code file/i }));
-    fireEvent.change(screen.getByRole('textbox', { name: /filename 1/i }), { target: { value: 'main.py' } });
-    fireEvent.change(screen.getByRole('textbox', { name: /file contents 1|code contents 1/i }), { target: { value: 'lookup[key]' } });
+    fireEvent.change(screen.getByLabelText(/code files/i), { target: { files: [new File(['lookup[key]'], 'main.py', { type: 'text/plain' })] } });
+    expect(await screen.findByText('main.py')).toBeInTheDocument();
 
     fireEvent.change(screen.getByRole('textbox', { name: /your question|ask a question/i }), { target: { value: 'Can you suggest clearer wording?' } });
     fireEvent.click(screen.getByRole('button', { name: /^send$/i }));

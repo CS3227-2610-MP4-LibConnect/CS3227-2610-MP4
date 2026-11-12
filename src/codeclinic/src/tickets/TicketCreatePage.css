@@ -30,6 +30,7 @@
 .ticket-back-link { color: var(--lc-color-blue-link); }
 .ticket-source { display: grid; gap: 10px; min-width: 0; margin: 12px 0; padding: 16px; border: 1px solid var(--lc-color-border); border-radius: 12px; }
 .ticket-file { display: grid; gap: 10px; min-width: 0; padding: 14px; border-radius: 10px; background: var(--lc-color-accent-surface); }
+.ticket-file > span { min-width: 0; overflow-wrap: anywhere; }
 .ticket-secondary-button { justify-self: start; min-height: 40px; padding: 7px 12px; border: 1px solid var(--lc-color-control-border); border-radius: var(--lc-radius-control); background: white; color: var(--lc-color-blue); font: inherit; cursor: pointer; }
 .ticket-submit { justify-self: start; margin-top: 6px; }
 @media (max-width: 360px) { .ticket-create-page { padding: 16px 8px 24px; } .ticket-create-card { padding: 20px 12px 24px; } .ticket-source { padding: 12px 8px; } }
