@@ -22,12 +22,35 @@ features. Ticket editing is not available yet;
 
 Use only made-up test details. Do not enter a real password you use elsewhere.
 
-**Testing the TA role:** a new TA account cannot sign in until a TA Coordinator
-activates it. Ask the CodeClinic team for the shared test Coordinator account.
-Its sign-in details are shared privately, not in this guide. Sign in with it,
-open **TAs**, and select **Activate** on your TA test account. The test
-Coordinator can also activate, deactivate and reset other test accounts, so
-use it only on accounts you created.
+### Testing the TA role
+
+A new TA account cannot sign in until a TA Coordinator activates it. For
+testers and examiners, the deployed app has a shared test Coordinator account:
+
+| Field | Value |
+| --- | --- |
+| Email | `test-coordinator@codeclinic.test` |
+| Password | `Password!` |
+| Sign in as | **TA** |
+
+To test the TA features:
+
+1. Register your own TA account, using a made-up email such as
+   `your-name@codeclinic.test`.
+2. Sign in with the test Coordinator account, open **TAs**, and select
+   **Activate** on your account. Then log out.
+3. Sign in with your own TA account. You can also test the Coordinator features
+   (**TAs**, **Students** and account support) with the test Coordinator
+   itself.
+
+Please follow these rules, so the account keeps working for everyone:
+
+- Do not change the test Coordinator's password or email on **Account**.
+- Activate, deactivate or reset only accounts you created yourself.
+
+This is a deliberate exception to the team's rule of keeping credentials out of
+the repository. The account exists only for testing and holds no real data,
+and the team may reset it if it stops working.
 
 ## Creating an account
 
