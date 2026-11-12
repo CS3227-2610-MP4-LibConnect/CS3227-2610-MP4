@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 2,
+  "taskId": "ai-error-explainer",
+  "batch": 6,
+  "items": ["T08"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/ai-error-explainer.md", "version": "0.5" },
+    "checklist": { "path": "workflow/tasks/ai-error-explainer/tasks.md", "version": "0.5" },
+    "handoff": { "path": "workflow/tasks/ai-error-explainer/handoff.md", "version": "0.5" }
+  },
+  "approvalEvidence": "workflow/tasks/ai-error-explainer/batch-6-dispatch-proposal.md",
+  "implementer": {
+    "agentId": "/root/batch6_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/test/student-help-chat.api.test.js",
+      "src/codeclinic/test/student-ticket-help.feature.test.js",
+      "src/codeclinic/test/StudentTicketHelpChat.test.tsx",
+      "src/codeclinic/test/StudentHelpChat.test.tsx",
+      "src/codeclinic/test/ai-gateway.test.js",
+      "workflow/tasks/ai-error-explainer/implementation-T08.md",
+      "logs/tasks/ai-error-explainer/implementation-T08.md",
+      "logs/tasks/ai-error-explainer/implementation-T08-test.txt",
+      "logs/tasks/ai-error-explainer/implementation-T08-build.txt"
+    ]
+  },
+  "reviewer": {
+    "agentId": "/root/batch6_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Repository .git is read-only in the supplied workspace. A different reviewer will inspect the exact Student-only T08 test diff, run focused checks and adversarial review, and retain independent reports before checklist reconciliation.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/ai-error-explainer/review-T08.md",
+      "workflow/tasks/ai-error-explainer/security-review-T08.md",
+      "logs/tasks/ai-error-explainer/review-T08.md",
+      "logs/tasks/ai-error-explainer/review-T08-test.txt",
+      "logs/tasks/ai-error-explainer/review-T08-build.txt"
+    ]
+  }
+}

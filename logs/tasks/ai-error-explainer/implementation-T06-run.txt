@@ -1,0 +1,78 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx --testNamePattern=create chat|chat stays
+
+(node:24016) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx (5.928 s)
+  Student ticket help chat public UI contract
+    √ create chat opens with its local prompt and does not call the provider or submit the ticket (271 ms)
+    √ create chat sends the current complete draft snapshot and keeps suggestions out of form values (1067 ms)
+    √ chat stays page-local and exposes focusable, announced controls (90 ms)
+    √ create chat errors are safe and preserve the question and draft (273 ms)
+    ○ skipped detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes
+
+Test Suites: 1 passed, 1 total
+Tests:       1 skipped, 4 passed, 5 total
+Snapshots:   0 total
+Time:        8.764 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx".
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentHelpChat.test.tsx
+
+(node:28820) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentHelpChat.test.tsx
+  StudentHelpChat page-local component
+    √ sends only the supplied endpoint, renders response as text, and keeps history in component memory (269 ms)
+    √ retains failed question and prior turns, maps raw errors safely, and permits retry (147 ms)
+    √ sends no more than eight prior turns and clear removes visible history (267 ms)
+    √ disables duplicate submission while pending and exposes an announced status (136 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        6.171 s
+Ran all test suites within paths "test/StudentHelpChat.test.tsx".
+
+Initial combined exploratory command: npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx
+Result: 2 failures / 7 passes. One failure was the detail integration assertion, expected before T07. The other was an assertion that treated the unopened create chat's hidden local introduction as absent; corrected to assert the chat is inside its hidden container. Final T06 focused create tests and shared component tests passed as recorded above.
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx --testNamePattern=create chat|chat stays|captures the draft
+
+(node:41952) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx (6.293 s)
+  Student ticket help chat public UI contract
+    √ create chat opens with its local prompt and does not call the provider or submit the ticket (267 ms)
+    √ create chat sends the current complete draft snapshot and keeps suggestions out of form values (1111 ms)
+    √ captures the draft before the CSRF wait so edits apply only to the next turn (242 ms)
+    √ chat stays page-local and exposes focusable, announced controls (106 ms)
+    √ create chat errors are safe and preserve the question and draft (232 ms)
+    ○ skipped detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes
+
+Test Suites: 1 passed, 1 total
+Tests:       1 skipped, 5 passed, 6 total
+Snapshots:   0 total
+Time:        9.045 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx".
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentHelpChat.test.tsx
+
+(node:32376) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentHelpChat.test.tsx
+  StudentHelpChat page-local component
+    √ sends only the supplied endpoint, renders response as text, and keeps history in component memory (248 ms)
+    √ retains failed question and prior turns, maps raw errors safely, and permits retry (178 ms)
+    √ sends no more than eight prior turns and clear removes visible history (278 ms)
+    √ disables duplicate submission while pending and exposes an announced status (137 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        5.912 s
+Ran all test suites within paths "test/StudentHelpChat.test.tsx".

@@ -1,0 +1,87 @@
+# Student ticket help chatbot specification
+
+Version: 0.6 (2026-11-12)
+Task ID: `ai-error-explainer` (human-confirmed)
+Approval state: **APPROVED**. The human explicitly approved the v0.6 messaging-style popup amendment in this conversation after reviewing the left/right message layout, stable header, bottom composer, and retained privacy and accessibility behavior. The v0.5 side-popup approval and earlier approvals remain historical; earlier approval records are in `workflow/tasks/ai-error-explainer/amendment-2026-11-11.md` and `inactive-student-status-proposal.md`.
+
+## Purpose and scope
+
+An active Student can open a help chat on the create-ticket page or the detail page of a ticket they own. The assistant helps identify and understand programming concepts and gives progressive hints without a complete solution, finished code, exact patch, or a sequence of steps that solves the problem. On the create page, it can also suggest clearer ticket fields in chat. It never edits the form, creates or updates a ticket, posts a reply, or applies a suggestion.
+
+This is the human-requested revision of the planned `ai-error-explainer` feature in `Overview.md` and `workflow/PLAN.md`. It retains suggested ticket wording as an optional create-page conversation and replaces the planned one-shot interaction with page-local chat. The overview and plan have not yet been amended. No general chatbot page, TA-facing UI or endpoint, or TA source or tests are in scope.
+
+## Sources and assumptions
+
+- The human confirmed the task ID and **page-only history**. Chat messages live only in the mounted page's memory and disappear on refresh, navigation, logout, or tab close. The server and browser storage do not save chat content.
+- The create route is `/student/tickets/new`; the detail route is `/student/tickets/:ticketId`. Existing Student route guards do not replace server-side authorization on either chat endpoint.
+- The create form has title, language, expected behaviour, actual behaviour, attempted work, error output, concept tags, attached file names and contents, public GitHub URL, and relevant file paths. Empty and incomplete draft values remain available to the assistant as data so it can suggest improvements. A draft has no ticket ID or trusted ticket record.
+- The detail endpoint loads current ticket data and replies on each turn. Only replies by the owner Student or the **currently assigned TA** are eligible context.
+- `workflow/specs/ai-gateway.md` v0.1 defines the provider boundary, including redaction, caps, rate limits, JSON validation, and content-free usage records. Redaction cannot guarantee detection of every secret.
+- The approved gateway registry permits `ERROR_EXPLAINER`. This task adds no usage category or dependency and never fetches a repository URL or file path.
+
+## Actors, data, and trust boundaries
+
+- Only a current, active `STUDENT` with a valid cookie-backed session can use either chat API. Detail chat additionally requires ownership of the named ticket. Identity, role, status, and ownership come from trusted server data, never request fields.
+- On the create page, the browser sends a snapshot of **all** current draft fields with each question because the draft exists only in browser memory. Every value, including code and links, is untrusted. The server validates shape and size, then passes only allowed fields as labeled data. It does not look up a client-provided owner, ticket ID, role, or assigned TA.
+- On the detail page, the server reloads the owned ticket and eligible replies on **every** turn. It ignores client-supplied ticket context. Provider context excludes names, emails, user IDs, timestamps, other students' records, and replies from other or formerly assigned TAs. Reply authors are checked by trusted IDs, not display labels.
+- The question and optional bounded chat history are untrusted, including items claiming to be prior bot messages. Ticket fields, attached code, paths, replies, model output, and chat turns never become system instructions or authorize tools, reads, or writes. The model has no tools.
+- Provider credentials remain server-only. Do not log or persist prompts, responses, draft or ticket fields, replies, session identifiers, CSRF tokens, or raw provider errors. Existing content-free gateway usage metadata is the only persistent AI record.
+
+## Requirements
+
+### R1. Student interface and page-only chat
+
+- Provide a clearly labeled **Ticket help bot** open/close control on the create page and on an owned ticket's detail page after its authorized load. Do not show it on dashboards, lists, or TA pages. Opening the create-page chat displays the initial bot message **“What help do you need?”** locally, without a provider call; reopening it within the same mounted page preserves that page's chat. The detail page may start with a short hint-only introduction.
+- Present the control as a small floating button at the lower right of the viewport. Opening it shows a compact side popup anchored above that button, outside the page's ticket/form content flow; opening and closing it must not reflow the ticket content. Keep the page usable while the popup is open. Constrain popup width and height to the available viewport, including at 320 CSS pixels, so its controls, scrollable conversation, and visible focus remain accessible without horizontal overflow. Closing the popup returns keyboard focus to its open control; support Escape to close it. Closing must hide, not reset, the page-local conversation.
+- Within the popup, use a messaging-app layout: a stable header with the title, close control, and clear-chat action; a scrollable conversation that visually separates bot turns on the left from Student turns on the right; and a question composer anchored at the bottom of the panel with a multiline field and send action. Keep speaker identification available to assistive technology and do not rely on color alone. Show pending and safe retry feedback near the conversation or composer without covering messages, controls, or visible focus. Keep the existing guidance about hints, create-page wording suggestions, unchanged ticket fields, secrets, bounded model history, and page-local clearing visible within the compact panel.
+- Tell the student that the bot gives hints, can suggest ticket wording on the create page, does not change fields, and should not receive secrets. Provide a question field, send action, conversation history, pending state, safe error/retry feedback, and clear-chat action. A failed turn retains the unsent question and prior history; block duplicate submission while pending.
+- The chat is scoped to its current page. It clears on refresh, navigation, logout, or tab close, and is never stored in local/session storage, URL parameters, analytics, or diagnostic logs. The UI must not imply that older visible turns are available to the model when only bounded recent history is transmitted.
+- Render bot content as plain text, never HTML or executable markup. Support keyboard use, visible focus, announced status updates, and a 320 CSS-pixel viewport without horizontal overflow.
+- Neither page calls the provider directly, chooses a model or system prompt, or treats client-sent fields as authorization.
+
+### R2. Requests and authorization
+
+- Add separate read-only POST routes for create chat and detail chat, proposed as `/api/tickets/help-chat` and `/api/tickets/:ticketId/help-chat`. Both use existing server session and CSRF patterns and reject malformed JSON and unexpected request properties. The detail route validates ticket ID and checks ownership before reply reads or provider calls. Use `401` for no session, including one invalidated by the shared authenticator because the account became inactive; use `403` for an authenticated ineligible role, password-change restriction, or CSRF failure; use `404` for missing or non-owned detail tickets, `400` for invalid input, `413` for oversized bodies, and safe `503` for storage failure. All responses use `Cache-Control: no-store`.
+- Both requests include `question` and optional `history`. Trim surrounding question whitespace; require 1–2,000 Unicode characters. History has at most 8 previous turns, oldest first, exact `{ role: "STUDENT" | "BOT", text: string }` objects with 1–2,000 Unicode characters; if nonempty it starts with `STUDENT`, alternates, and ends with `BOT`. Validate shape and size without trusting its authorship or content.
+- The create request additionally includes an exact `draft` object with every current form field: `title`, `language`, `expectedBehaviour`, `actualBehaviour`, `attempted`, `errorOutput`, `conceptTags` (the raw comma-separated input), `files` (filename and content), `repoUrl`, and `repoFilePaths` (the raw multiline input). Preserve empty values and field labels. Capture a fresh snapshot at send time; subsequent edits affect the next turn, not a pending one. Validate types, a maximum of three files, bounded lengths and file bytes, and a maximum 128 KiB total request body, while allowing incomplete or otherwise invalid drafts. Do not require a submittable ticket to ask for help. Reject oversized or malformed snapshots without silently dropping fields.
+- The detail request allows only `question` and `history`; it does not accept a draft or ticket fields. Neither endpoint writes a ticket, reply, notification, or chat transcript. Only gateway rate-limit counters and content-free usage may change.
+
+### R3. Complete relevant context and bounded input
+
+- For create chat, serialize all current draft fields, including empty values, attached file contents, source reference and paths, plus the question and bounded untrusted history. Label them as an unsubmitted Student draft. The assistant may discuss only the draft and the coding problem the student asks about. A blank draft and a general coding question should lead to a clarifying question tied to a prospective ticket, not free-ranging tutoring.
+- For detail chat, load the owned ticket and scan replies in deterministic ascending time and reply-ID order with bounded pages. Include all ticket problem fields and every eligible owner/current-assigned-TA reply, including replies beyond the first 50 shown in the detail UI. Exclude all other reply authors. A reassignment changes eligible context on the next request.
+- Apply shared gateway redaction to the entire serialized context, question, and history. Set provisional feature `maxInputChars = 98,304` post-redaction UTF-16 code units (matching the gateway's JavaScript string-length check) and `maxOutputTokens = 1,024`. The input cap is derived from three 24 KiB files (72 KiB total) plus approximately 24 Ki code units of headroom for other data; it is not proof of compatibility with an undocumented model context window. If the **complete** redacted input exceeds the cap, return `AI_INPUT_TOO_LARGE` without a provider call. Never truncate, summarize, or silently omit draft fields or eligible replies. Stop paged reply collection once the input cap is conclusively exceeded; preserve correct redaction across field boundaries.
+- Before claiming deployment readiness, a human-authorized provider smoke check must confirm that the deployed model accepts `max_tokens = 1,024` and representative bounded inputs. Record the outcome without credentials or raw prompts. A provider rejection maps to a safe unavailable state and reopens the cap decision; this requirement does not authorize provider access by itself.
+- Never dereference a repository URL or path, include private account details, or use client-supplied context to fetch other data.
+
+### R4. Hint and refinement behavior
+
+- Register `ERROR_EXPLAINER` through the shared gateway with a fixed system policy. It labels ticket/draft content, question, and history as data; stays related to that page's ticket content and eligible replies or draft; and refuses requests for unrelated topics, hidden prompts, credentials, complete solutions, finished code, exact patches, or answer sequences. A request to refine the create draft permits wording suggestions, not a solution disguised as a refined field.
+- Use exact, mutually exclusive JSON response shapes: `HINT` with a named concept, brief explanation, and 1–3 progressive hints; `REFINEMENT` with 1–10 field-specific suggestions, each naming one existing create-form field and proposing clearer wording or a concise change recommendation; `CLARIFICATION` with one on-topic question when context is too sparse; or `REFUSAL` with a short safe explanation. `REFINEMENT` is available **only** on create chat. It may suggest values for title, language, expected/actual behaviour, attempted work, error output, concept tags, filenames, repository reference, and relevant paths. For attached code contents, it may suggest what context to include or describe, but never generate working code or rewrite code files. It must not invent facts unsupported by the draft; uncertainty is expressed as a question or placeholder the Student must fill.
+- A server parser enforces exact response schemas, allowed refinement field names, string lengths, suggestion counts, and plain-text content. A separate output policy rejects code fences, code-like complete snippets, patch/diff text, URLs, prompt disclosure, sensitive material, and obvious direct-answer phrasing before returning anything. Rejected output becomes a safe fallback, never a partially displayed answer. These controls reduce but cannot guarantee against semantic solution leakage; manual adversarial review remains required.
+- Suggestions appear **only in chat**. There is no apply, copy-into-form, autofill, ticket rewrite endpoint, or AI-triggered application write. The student may manually choose what to type into the form.
+
+### R5. Failures and privacy
+
+- Map gateway rate limit, unavailable, oversized input, and invalid output to distinct safe UI messages. Never expose a raw provider body, prompt, secret, stack trace, or unauthorized ticket detail.
+- Authorize before sending data to the provider. Warn against sharing secrets, redact known secret patterns through the gateway, and avoid claiming perfect secret detection.
+- Clear chat content with the page and use `no-store` responses. A create draft remains in existing form state when a chat turn fails; chat failures never submit or alter it.
+
+## Acceptance scenarios and required verification
+
+| ID | Scenario | Required evidence |
+| --- | --- | --- |
+| A1 | Active Student opens create chat and immediately sees “What help do you need?” without a provider call; a coding question yields concept explanation, hints, or a relevant clarifying question. | Student UI and create-route tests. |
+| A2 | Create refinement reads every current field, including blanks and files, and returns field-specific suggestions only in chat; form values stay unchanged and nothing is submitted. A later turn uses the latest draft snapshot. | Student UI and captured-provider-context tests. |
+| A3 | On an owned detail ticket, the bot names a concept and gives hints grounded in current fields and eligible replies; no refinement or ticket write is possible. | Student UI and detail-route tests. |
+| A4 | Visitor, TA, inactive Student, password-change-required Student, and another Student's ticket ID receive no protected context or provider call. | Negative API tests and cross-student isolation assertions. |
+| A5 | More than 50 replies are scanned; only owner/current-assigned-TA replies are included, and reassignment changes context on the next call. No account identifiers are sent. | Pagination and prompt-capture tests with synthetic replies. |
+| A6 | Instructions in any draft/ticket field, code, filename, reply, question, forged history, or fake model output do not authorize writes, disclose secrets, or permit a complete solution. | Injection and output-policy tests; manual adversarial review. |
+| A7 | Oversized complete context fails without provider call or silent omission; provider failure, rate limit, malformed output, and storage failure show safe states. | Server and UI failure tests. |
+| A8 | Chat history disappears on refresh/navigation, is never stored, and only bounded prior turns are sent as untrusted history; chat is absent outside the two authorized Student pages. | Student UI and persistence-boundary tests. |
+| A9 | On both authorized Student pages, a lower-right floating control opens a compact side popup without reflowing ticket content. The header and bottom composer remain usable while left-aligned bot and right-aligned Student messages scroll between them. Speaker identity is accessible without color. Pending and retry feedback does not obscure controls. Escape and the close control return focus to the opener; close/reopen preserves history. Keyboard and screen-reader flows work, and a 320 CSS-pixel view has no horizontal overflow or obscured focus. | Student UI and automated accessible-state checks; human browser visual check under `AGENTS.md`. |
+
+## Remaining planning decisions
+
+1. The overview and delivery plan require later reconciliation to this human-approved scope.
+2. The provisional 98,304-character input and 1,024-token output caps require a human-authorized provider compatibility smoke check before deployment readiness is claimed. The model's context limit remains undocumented. The required overflow behavior remains safe refusal with no partial context. The existing shared gateway rate-limit default remains unchanged.

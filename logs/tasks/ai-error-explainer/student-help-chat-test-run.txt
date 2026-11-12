@@ -1,0 +1,1200 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx test/student-help-chat.api.test.js --verbose
+
+(node:5080) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/StudentTicketHelpChat.test.tsx (9.169 s)
+  Student ticket help chat public UI contract
+    × create chat opens with its local prompt and does not call the provider or submit the ticket (1116 ms)
+    × create chat sends the current complete draft snapshot and keeps suggestions out of form values (1029 ms)
+    × detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes (1131 ms)
+    × chat stays page-local and exposes focusable, announced controls (1028 ms)
+    × create chat errors are safe and preserve the question and draft (1031 ms)
+
+  ● Student ticket help chat public UI contract › create chat opens with its local prompt and does not call the provider or submit the ticket
+
+    Unable to find role="button" and name `/ticket help bot/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-create-page"
+        >
+          <section
+            aria-labelledby="ticket-create-title"
+            class="ticket-create-card"
+          >
+            <a
+              class="ticket-back-link"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <h1
+              id="ticket-create-title"
+            >
+              Create Ticket
+            </h1>
+            <p>
+              Share what you’re working on so we can help.
+            </p>
+            <form
+              novalidate=""
+            >
+              <label
+                for="ticket-title"
+              >
+                Title
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-title"
+                maxlength="510"
+                value=""
+              />
+              <label
+                for="ticket-language"
+              >
+                Language
+              </label>
+              <select
+                aria-invalid="false"
+                id="ticket-language"
+              >
+                <option
+                  disabled=""
+                  value=""
+                >
+                  Select a language
+                </option>
+                <option
+                  value="Python"
+                >
+                  Python
+                </option>
+                <option
+                  value="Java"
+                >
+                  Java
+                </option>
+                <option
+                  value="JavaScript"
+                >
+                  JavaScript
+                </option>
+                <option
+                  value="TypeScript"
+                >
+                  TypeScript
+                </option>
+                <option
+                  value="C"
+                >
+                  C
+                </option>
+                <option
+                  value="C++"
+                >
+                  C++
+                </option>
+                <option
+                  value="Other"
+                >
+                  Other
+                </option>
+              </select>
+              <small
+                class="ticket-help"
+              >
+                If you choose Other, name the language in your title or another ticket detail.
+              </small>
+              <label
+                for="ticket-expected"
+              >
+                Expected behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-expected"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-actual"
+              >
+                Actual behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-actual"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-attempted"
+              >
+                Attempted
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-attempted"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-error-output"
+              >
+                Error output 
+                <span>
+                  (optional)
+                </span>
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-error-output"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-tags"
+              >
+                Concept tags 
+                <span>
+                  (optional, comma separated)
+                </span>
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-tags"
+                value=""
+              />
+              <fieldset
+                class="ticket-source"
+              >
+                <legend>
+                  Source context 
+                  <span>
+                    (optional, choose one method)
+                  </span>
+                </legend>
+                <button
+                  class="ticket-secondary-button"
+                  type="button"
+                >
+                  Add code file
+                </button>
+                <label
+                  for="ticket-repo-url"
+                >
+                  Public GitHub URL
+                </label>
+                <input
+                  id="ticket-repo-url"
+                  maxlength="510"
+                  type="url"
+                  value=""
+                />
+                <label
+                  for="ticket-repo-paths"
+                >
+                  Relevant file paths 
+                  <span>
+                    (one per line)
+                  </span>
+                </label>
+                <textarea
+                  id="ticket-repo-paths"
+                />
+              </fieldset>
+              <button
+                class="submit-button ticket-submit"
+                type="submit"
+              >
+                Submit Ticket
+              </button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      29 |     render(<TicketCreatePage />);
+      30 |
+    > 31 |     const open = await screen.findByRole('button', { name: /ticket help bot/i });
+         |                               ^
+      32 |     fireEvent.click(open);
+      33 |     expect(screen.getByText('What help do you need?')).toBeInTheDocument();
+      34 |     expect(fetchMock).not.toHaveBeenCalled();
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:31:31)
+
+  ● Student ticket help chat public UI contract › create chat sends the current complete draft snapshot and keeps suggestions out of form values
+
+    Unable to find role="button" and name `/ticket help bot/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-create-page"
+        >
+          <section
+            aria-labelledby="ticket-create-title"
+            class="ticket-create-card"
+          >
+            <a
+              class="ticket-back-link"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <h1
+              id="ticket-create-title"
+            >
+              Create Ticket
+            </h1>
+            <p>
+              Share what you’re working on so we can help.
+            </p>
+            <form
+              novalidate=""
+            >
+              <label
+                for="ticket-title"
+              >
+                Title
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-title"
+                maxlength="510"
+                value=""
+              />
+              <label
+                for="ticket-language"
+              >
+                Language
+              </label>
+              <select
+                aria-invalid="false"
+                id="ticket-language"
+              >
+                <option
+                  disabled=""
+                  value=""
+                >
+                  Select a language
+                </option>
+                <option
+                  value="Python"
+                >
+                  Python
+                </option>
+                <option
+                  value="Java"
+                >
+                  Java
+                </option>
+                <option
+                  value="JavaScript"
+                >
+                  JavaScript
+                </option>
+                <option
+                  value="TypeScript"
+                >
+                  TypeScript
+                </option>
+                <option
+                  value="C"
+                >
+                  C
+                </option>
+                <option
+                  value="C++"
+                >
+                  C++
+                </option>
+                <option
+                  value="Other"
+                >
+                  Other
+                </option>
+              </select>
+              <small
+                class="ticket-help"
+              >
+                If you choose Other, name the language in your title or another ticket detail.
+              </small>
+              <label
+                for="ticket-expected"
+              >
+                Expected behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-expected"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-actual"
+              >
+                Actual behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-actual"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-attempted"
+              >
+                Attempted
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-attempted"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-error-output"
+              >
+                Error output 
+                <span>
+                  (optional)
+                </span>
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-error-output"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-tags"
+              >
+                Concept tags 
+                <span>
+                  (optional, comma separated)
+                </span>
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-tags"
+                value=""
+              />
+              <fieldset
+                class="ticket-source"
+              >
+                <legend>
+                  Source context 
+                  <span>
+                    (optional, choose one method)
+                  </span>
+                </legend>
+                <button
+                  class="ticket-secondary-button"
+                  type="button"
+                >
+                  Add code file
+                </button>
+                <label
+                  for="ticket-repo-url"
+                >
+                  Public GitHub URL
+                </label>
+                <input
+                  id="ticket-repo-url"
+                  maxlength="510"
+                  type="url"
+                  value=""
+                />
+                <label
+                  for="ticket-repo-paths"
+                >
+                  Relevant file paths 
+                  <span>
+                    (one per line)
+                  </span>
+                </label>
+                <textarea
+                  id="ticket-repo-paths"
+                />
+              </fieldset>
+              <button
+                class="submit-button ticket-submit"
+                type="submit"
+              >
+                Submit Ticket
+              </button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      45 |     render(<TicketCreatePage />);
+      46 |
+    > 47 |     fireEvent.click(await screen.findByRole('button', { name: /ticket help bot/i }));
+         |                                  ^
+      48 |     const title = screen.getByRole('textbox', { name: /^title$/i });
+      49 |     fireEvent.change(title, { target: { value: 'Map fails' } });
+      50 |     fireEvent.change(screen.getByRole('textbox', { name: /expected behaviour/i }), { target: { value: '' } });
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:47:34)
+
+  ● Student ticket help chat public UI contract › detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes
+
+    Unable to find role="button" and name `/ticket help bot/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-detail-page"
+        >
+          <article
+            aria-labelledby="ticket-detail-title"
+            class="ticket-detail-card"
+          >
+            <a
+              class="ticket-detail-back"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <div
+              class="ticket-detail-title-row"
+            >
+              <div>
+                <p
+                  class="ticket-detail-eyebrow"
+                >
+                  Ticket details
+                </p>
+                <h1
+                  id="ticket-detail-title"
+                >
+                  Map lookup
+                </h1>
+              </div>
+              <span
+                class="ticket-status ticket-status--open"
+              >
+                OPEN
+              </span>
+            </div>
+            <dl
+              class="ticket-detail-meta"
+            >
+              <div>
+                <dt>
+                  Language
+                </dt>
+                <dd>
+                  Python
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Concept tags
+                </dt>
+                <dd>
+                  No concept tags
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Created
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Last updated
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+            </dl>
+            <section
+              aria-label="Ticket description"
+              class="ticket-description"
+            >
+              <h2>
+                Expected behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                Find entry
+              </p>
+              <h2>
+                Actual behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                KeyError
+              </p>
+              <h2>
+                What I tried
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                Used dict lookup
+              </p>
+            </section>
+            <section
+              aria-labelledby="ticket-thread-title"
+              class="ticket-thread"
+            >
+              <h2
+                id="ticket-thread-title"
+              >
+                Conversation
+              </h2>
+              <ol
+                class="ticket-thread-list"
+              >
+                <li
+                  class="ticket-reply ticket-reply--student"
+                >
+                  <div
+                    class="ticket-reply-heading"
+                  >
+                    <strong>
+                      Student
+                    </strong>
+                    <span>
+                      Student
+                    </span>
+                    <time>
+                      1 Jan 2026, 8:00 am
+                    </time>
+                  </div>
+                  <p
+                    class="ticket-detail-preserve"
+                  >
+                    Indexing raises KeyError.
+                  </p>
+                </li>
+              </ol>
+            </section>
+            <section
+              aria-labelledby="ticket-reply-title"
+              class="ticket-reply-form"
+            >
+              <h2
+                id="ticket-reply-title"
+              >
+                Add a reply
+              </h2>
+              <form
+                novalidate=""
+              >
+                <label
+                  for="ticket-reply-message"
+                >
+                  Reply
+                </label>
+                <textarea
+                  aria-invalid="false"
+                  id="ticket-reply-message"
+                  maxlength="10000"
+                />
+                <button
+                  type="submit"
+                >
+                  Send reply
+                </button>
+              </form>
+            </section>
+            <section
+              class="ticket-close-section"
+            >
+              <h2>
+                Close ticket
+              </h2>
+              <p>
+                This closes the ticket without marking it as resolved.
+              </p>
+              <button
+                class="ticket-close-button"
+                type="button"
+              >
+                Close Ticket
+              </button>
+            </section>
+          </article>
+        </main>
+      </div>
+    </body>
+
+      93 |
+      94 |     expect(await screen.findByRole('heading', { name: 'Map lookup' })).toBeInTheDocument();
+    > 95 |     fireEvent.click(await screen.findByRole('button', { name: /ticket help bot/i }));
+         |                                  ^
+      96 |     fireEvent.change(screen.getByRole('textbox', { name: /your question|ask a question/i }), { target: { value: 'What should I inspect?' } });
+      97 |     fireEvent.click(screen.getByRole('button', { name: /send/i }));
+      98 |     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:95:34)
+
+  ● Student ticket help chat public UI contract › chat stays page-local and exposes focusable, announced controls
+
+    Unable to find role="button" and name `/ticket help bot/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-create-page"
+        >
+          <section
+            aria-labelledby="ticket-create-title"
+            class="ticket-create-card"
+          >
+            <a
+              class="ticket-back-link"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <h1
+              id="ticket-create-title"
+            >
+              Create Ticket
+            </h1>
+            <p>
+              Share what you’re working on so we can help.
+            </p>
+            <form
+              novalidate=""
+            >
+              <label
+                for="ticket-title"
+              >
+                Title
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-title"
+                maxlength="510"
+                value=""
+              />
+              <label
+                for="ticket-language"
+              >
+                Language
+              </label>
+              <select
+                aria-invalid="false"
+                id="ticket-language"
+              >
+                <option
+                  disabled=""
+                  value=""
+                >
+                  Select a language
+                </option>
+                <option
+                  value="Python"
+                >
+                  Python
+                </option>
+                <option
+                  value="Java"
+                >
+                  Java
+                </option>
+                <option
+                  value="JavaScript"
+                >
+                  JavaScript
+                </option>
+                <option
+                  value="TypeScript"
+                >
+                  TypeScript
+                </option>
+                <option
+                  value="C"
+                >
+                  C
+                </option>
+                <option
+                  value="C++"
+                >
+                  C++
+                </option>
+                <option
+                  value="Other"
+                >
+                  Other
+                </option>
+              </select>
+              <small
+                class="ticket-help"
+              >
+                If you choose Other, name the language in your title or another ticket detail.
+              </small>
+              <label
+                for="ticket-expected"
+              >
+                Expected behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-expected"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-actual"
+              >
+                Actual behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-actual"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-attempted"
+              >
+                Attempted
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-attempted"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-error-output"
+              >
+                Error output 
+                <span>
+                  (optional)
+                </span>
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-error-output"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-tags"
+              >
+                Concept tags 
+                <span>
+                  (optional, comma separated)
+                </span>
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-tags"
+                value=""
+              />
+              <fieldset
+                class="ticket-source"
+              >
+                <legend>
+                  Source context 
+                  <span>
+                    (optional, choose one method)
+                  </span>
+                </legend>
+                <button
+                  class="ticket-secondary-button"
+                  type="button"
+                >
+                  Add code file
+                </button>
+                <label
+                  for="ticket-repo-url"
+                >
+                  Public GitHub URL
+                </label>
+                <input
+                  id="ticket-repo-url"
+                  maxlength="510"
+                  type="url"
+                  value=""
+                />
+                <label
+                  for="ticket-repo-paths"
+                >
+                  Relevant file paths 
+                  <span>
+                    (one per line)
+                  </span>
+                </label>
+                <textarea
+                  id="ticket-repo-paths"
+                />
+              </fieldset>
+              <button
+                class="submit-button ticket-submit"
+                type="submit"
+              >
+                Submit Ticket
+              </button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      107 |     global.fetch = jest.fn().mockResolvedValue(jsonResponse(200, { reply: { type: 'CLARIFICATION', question: 'What did you expect?' } })) as typeof fetch;
+      108 |     const { unmount } = render(<TicketCreatePage />);
+    > 109 |     const toggle = await screen.findByRole('button', { name: /ticket help bot/i });
+          |                                 ^
+      110 |     toggle.focus();
+      111 |     expect(toggle).toHaveFocus();
+      112 |     fireEvent.click(toggle);
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:109:33)
+
+  ● Student ticket help chat public UI contract › create chat errors are safe and preserve the question and draft
+
+    Unable to find role="button" and name `/ticket help bot/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-create-page"
+        >
+          <section
+            aria-labelledby="ticket-create-title"
+            class="ticket-create-card"
+          >
+            <a
+              class="ticket-back-link"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <h1
+              id="ticket-create-title"
+            >
+              Create Ticket
+            </h1>
+            <p>
+              Share what you’re working on so we can help.
+            </p>
+            <form
+              novalidate=""
+            >
+              <label
+                for="ticket-title"
+              >
+                Title
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-title"
+                maxlength="510"
+                value=""
+              />
+              <label
+                for="ticket-language"
+              >
+                Language
+              </label>
+              <select
+                aria-invalid="false"
+                id="ticket-language"
+              >
+                <option
+                  disabled=""
+                  value=""
+                >
+                  Select a language
+                </option>
+                <option
+                  value="Python"
+                >
+                  Python
+                </option>
+                <option
+                  value="Java"
+                >
+                  Java
+                </option>
+                <option
+                  value="JavaScript"
+                >
+                  JavaScript
+                </option>
+                <option
+                  value="TypeScript"
+                >
+                  TypeScript
+                </option>
+                <option
+                  value="C"
+                >
+                  C
+                </option>
+                <option
+                  value="C++"
+                >
+                  C++
+                </option>
+                <option
+                  value="Other"
+                >
+                  Other
+                </option>
+              </select>
+              <small
+                class="ticket-help"
+              >
+                If you choose Other, name the language in your title or another ticket detail.
+              </small>
+              <label
+                for="ticket-expected"
+              >
+                Expected behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-expected"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-actual"
+              >
+                Actual behaviour
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-actual"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-attempted"
+              >
+                Attempted
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-attempted"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-error-output"
+              >
+                Error output 
+                <span>
+                  (optional)
+                </span>
+              </label>
+              <textarea
+                aria-invalid="false"
+                id="ticket-error-output"
+                maxlength="10000"
+              />
+              <label
+                for="ticket-tags"
+              >
+                Concept tags 
+                <span>
+                  (optional, comma separated)
+                </span>
+              </label>
+              <input
+                aria-invalid="false"
+                id="ticket-tags"
+                value=""
+              />
+              <fieldset
+                class="ticket-source"
+              >
+                <legend>
+                  Source context 
+                  <span>
+                    (optional, choose one method)
+                  </span>
+                </legend>
+                <button
+                  class="ticket-secondary-button"
+                  type="button"
+                >
+                  Add code file
+                </button>
+                <label
+                  for="ticket-repo-url"
+                >
+                  Public GitHub URL
+                </label>
+                <input
+                  id="ticket-repo-url"
+                  maxlength="510"
+                  type="url"
+                  value=""
+                />
+                <label
+                  for="ticket-repo-paths"
+                >
+                  Relevant file paths 
+                  <span>
+                    (one per line)
+                  </span>
+                </label>
+                <textarea
+                  id="ticket-repo-paths"
+                />
+              </fieldset>
+              <button
+                class="submit-button ticket-submit"
+                type="submit"
+              >
+                Submit Ticket
+              </button>
+            </form>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      125 |     global.fetch = fetchMock as typeof fetch;
+      126 |     render(<TicketCreatePage />);
+    > 127 |     fireEvent.click(await screen.findByRole('button', { name: /ticket help bot/i }));
+          |                                  ^
+      128 |     const title = screen.getByRole('textbox', { name: /^title$/i });
+      129 |     fireEvent.change(title, { target: { value: 'Keep this draft' } });
+      130 |     const question = screen.getByRole('textbox', { name: /your question|ask a question/i });
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:127:34)
+
+FAIL test/student-help-chat.api.test.js
+  Student help chat route authorization boundary
+    × /api/tickets/help-chat rejects a visitor without cacheable response or protected work (66 ms)
+    × /api/tickets/ticket-1/help-chat rejects a visitor without cacheable response or protected work (13 ms)
+    × blocks a non-eligible account before reading ticket context (10 ms)
+    × blocks a non-eligible account before reading ticket context (9 ms)
+    × blocks a non-eligible account before reading ticket context (11 ms)
+    × rejects a detail request carrying create-only draft data before reading or provider work (10 ms)
+
+  ● Student help chat route authorization boundary › /api/tickets/help-chat rejects a visitor without cacheable response or protected work
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      36 |     const system = fixture({ store: { getOwned: jest.fn(), listReplies: jest.fn() } });
+      37 |     const response = await request(system.app).post(path).send(body);
+    > 38 |     expect(response.status).toBe(401);
+         |                             ^
+      39 |     expect(response.headers['cache-control']).toBe('no-store');
+      40 |     expect(system.repository.getUserById).not.toHaveBeenCalled();
+      41 |     expect(system.store.getOwned).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:38:29
+
+  ● Student help chat route authorization boundary › /api/tickets/ticket-1/help-chat rejects a visitor without cacheable response or protected work
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      36 |     const system = fixture({ store: { getOwned: jest.fn(), listReplies: jest.fn() } });
+      37 |     const response = await request(system.app).post(path).send(body);
+    > 38 |     expect(response.status).toBe(401);
+         |                             ^
+      39 |     expect(response.headers['cache-control']).toBe('no-store');
+      40 |     expect(system.repository.getUserById).not.toHaveBeenCalled();
+      41 |     expect(system.store.getOwned).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:38:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      53 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      54 |       .send({ question: 'Help', history: [] });
+    > 55 |     expect(response.status).toBe(expectedStatus);
+         |                             ^
+      56 |     expect(response.headers['cache-control']).toBe('no-store');
+      57 |     expect(store.getOwned).not.toHaveBeenCalled();
+      58 |     expect(store.listReplies).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:55:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      53 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      54 |       .send({ question: 'Help', history: [] });
+    > 55 |     expect(response.status).toBe(expectedStatus);
+         |                             ^
+      56 |     expect(response.headers['cache-control']).toBe('no-store');
+      57 |     expect(store.getOwned).not.toHaveBeenCalled();
+      58 |     expect(store.listReplies).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:55:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      53 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      54 |       .send({ question: 'Help', history: [] });
+    > 55 |     expect(response.status).toBe(expectedStatus);
+         |                             ^
+      56 |     expect(response.headers['cache-control']).toBe('no-store');
+      57 |     expect(store.getOwned).not.toHaveBeenCalled();
+      58 |     expect(store.listReplies).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:55:29
+
+  ● Student help chat route authorization boundary › rejects a detail request carrying create-only draft data before reading or provider work
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      65 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      66 |       .send({ question: 'Help', draft: { title: 'forged' } });
+    > 67 |     expect(response.status).toBe(400);
+         |                             ^
+      68 |     expect(response.headers['cache-control']).toBe('no-store');
+      69 |     expect(store.getOwned).not.toHaveBeenCalled();
+      70 |     expect(store.listReplies).not.toHaveBeenCalled();
+
+      at Object.<anonymous> (test/student-help-chat.api.test.js:67:29)
+
+Test Suites: 2 failed, 2 total
+Tests:       11 failed, 11 total
+Snapshots:   0 total
+Time:        15.108 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx", "test/student-help-chat.api.test.js".
+
+Process exit code: 1

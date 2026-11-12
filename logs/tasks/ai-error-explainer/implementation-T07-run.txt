@@ -1,0 +1,640 @@
+T07 factual command log
+
+Focused detail UI tests
+- npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx --testNamePattern="detail chat" — initial result FAIL, 2 tests failed / 1 passed. The `/send/i` query selected both the chat Send control and existing Send reply button; full output is in this log.
+- After changing the test selectors to the exact chat button name, the same command passed, 1 suite / 3 detail tests; five create tests filtered.
+
+Combined Student UI and component tests
+- npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx — PASS, 2 suites / 12 tests.
+
+Diff check
+- git diff --check -- src/codeclinic/src/tickets/TicketDetailPage.tsx src/codeclinic/src/tickets/TicketDetailPage.css src/codeclinic/test/StudentTicketHelpChat.test.tsx — PASS.
+
+No provider/network/credential access or TA files/tests.
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx --testNamePattern=detail chat
+
+(node:33580) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/StudentTicketHelpChat.test.tsx
+  Student ticket help chat public UI contract
+    × detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes (445 ms)
+    √ detail chat is absent when the ticket is unavailable or not owned (57 ms)
+    × detail chat history clears when the ticket ID changes (165 ms)
+    ○ skipped create chat opens with its local prompt and does not call the provider or submit the ticket
+    ○ skipped create chat sends the current complete draft snapshot and keeps suggestions out of form values
+    ○ skipped captures the draft before the CSRF wait so edits apply only to the next turn
+    ○ skipped chat stays page-local and exposes focusable, announced controls
+    ○ skipped create chat errors are safe and preserve the question and draft
+
+  ● Student ticket help chat public UI contract › detail chat is available after owned ticket load, sends no draft, and does not submit ticket changes
+
+    TestingLibraryElementError: Found multiple elements with the role "button" and name `/send/i`
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    <button
+      type="submit"
+    >
+      Send
+    </button>
+
+    Ignored nodes: comments, script, style
+    <button
+      type="submit"
+    >
+      Send reply
+    </button>
+
+    (If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-detail-page"
+        >
+          <article
+            aria-labelledby="ticket-detail-title"
+            class="ticket-detail-card"
+          >
+            <a
+              class="ticket-detail-back"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <div
+              class="ticket-detail-title-row"
+            >
+              <div>
+                <p
+                  class="ticket-detail-eyebrow"
+                >
+                  Ticket details
+                </p>
+                <h1
+                  id="ticket-detail-title"
+                >
+                  Map lookup
+                </h1>
+              </div>
+              <span
+                class="ticket-status ticket-status--open"
+              >
+                OPEN
+              </span>
+            </div>
+            <section
+              aria-label="Ticket help bot"
+              class="ticket-detail-help-bot"
+            >
+              <button
+                aria-expanded="true"
+                type="button"
+              >
+                Close Ticket help bot
+              </button>
+              <div>
+                <section
+                  aria-labelledby="student-help-chat-title"
+                  class="student-help-chat"
+                >
+                  <h2
+                    id="student-help-chat-title"
+                  >
+                    Ticket help bot
+                  </h2>
+                  <p
+                    class="student-help-chat__notice"
+                  >
+                    I offer hints and explain concepts
+                    . I do not change your ticket. Please do not share secrets. Only the most recent 4 exchanges are sent with a question. Chat is cleared when you leave this page.
+                  </p>
+                  <div
+                    aria-label="Ticket help conversation"
+                    aria-live="polite"
+                    aria-relevant="additions"
+                    class="student-help-chat__messages"
+                    role="log"
+                  >
+                    <p
+                      class="student-help-chat__message student-help-chat__message--bot"
+                    >
+                      I can help you understand this ticket's coding concepts and work through progressive hints.
+                    </p>
+                  </div>
+                  <form>
+                    <label
+                      for="student-help-chat-question"
+                    >
+                      Your question
+                    </label>
+                    <textarea
+                      id="student-help-chat-question"
+                      maxlength="2000"
+                      rows="3"
+                    >
+                      What should I inspect?
+                    </textarea>
+                    <div
+                      class="student-help-chat__actions"
+                    >
+                      <button
+                        type="submit"
+                      >
+                        Send
+                      </button>
+                      <button
+                        type="button"
+                      >
+                        Clear chat
+                      </button>
+                    </div>
+                    <p
+                      aria-live="polite"
+                      class="student-help-chat__status"
+                      role="status"
+                    />
+                  </form>
+                </section>
+              </div>
+            </section>
+            <dl
+              class="ticket-detail-meta"
+            >
+              <div>
+                <dt>
+                  Language
+                </dt>
+                <dd>
+                  Python
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Concept tags
+                </dt>
+                <dd>
+                  No concept tags
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Created
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Last updated
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+            </dl>
+            <section
+              aria-label="Ticket description"
+              class="ticket-description"
+            >
+              <h2>
+                Expected behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                Find entry
+              </p>
+              <h2>
+                Actual behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                KeyError
+              </p>
+              <h2>
+                What I tried
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                Used dict lookup
+              </p>
+            </section>
+            <section
+              aria-labelledby="ticket-thread-title"
+              class="ticket-thread"
+            >
+              <h2
+                id="ticket-thread-title"
+              >
+                Conversation
+              </h2>
+              <ol
+                class="ticket-thread-list"
+              >
+                <li
+                  class="ticket-reply ticket-reply--student"
+                >
+                  <div
+                    class="ticket-reply-heading"
+                  >
+                    <strong>
+                      Student
+                    </strong>
+                    <span>
+                      Student
+                    </span>
+                    <time>
+                      1 Jan 2026, 8:00 am
+                    </time>
+                  </div>
+                  <p
+                    class="ticket-detail-preserve"
+                  >
+                    Indexing raises KeyError.
+                  </p>
+                </li>
+              </ol>
+            </section>
+            <section
+              aria-labelledby="ticket-reply-title"
+              class="ticket-reply-form"
+            >
+              <h2
+                id="ticket-reply-title"
+              >
+                Add a reply
+              </h2>
+              <form
+                novalidate=""
+              >
+                <label
+                  for="ticket-reply-message"
+                >
+                  Reply
+                </label>
+                <textarea
+                  aria-invalid="false"
+                  id="ticket-reply-message"
+                  maxlength="10000"
+                />
+                <button
+                  type="submit"
+                >
+                  Send reply
+                </button>
+              </form>
+            </section>
+            <section
+              class="ticket-close-section"
+            >
+              <h2>
+                Close ticket
+              </h2>
+              <p>
+                This closes the ticket without marking it as resolved.
+              </p>
+              <button
+                class="ticket-close-button"
+                type="button"
+              >
+                Close Ticket
+              </button>
+            </section>
+          </article>
+        </main>
+      </div>
+    </body>
+
+      130 |     fireEvent.click(await screen.findByRole('button', { name: /ticket help bot/i }));
+      131 |     fireEvent.change(screen.getByRole('textbox', { name: /your question|ask a question/i }), { target: { value: 'What should I inspect?' } });
+    > 132 |     fireEvent.click(screen.getByRole('button', { name: /send/i }));
+          |                            ^
+      133 |     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
+      134 |     expect(fetchMock.mock.calls[2][0]).toBe('/api/tickets/ticket-1/help-chat');
+      135 |     expect(JSON.parse(String(fetchMock.mock.calls[2][1]?.body))).toEqual({ question: 'What should I inspect?' });
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError (node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError (node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at getByRole (node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:132:28)
+
+  ● Student ticket help chat public UI contract › detail chat history clears when the ticket ID changes
+
+    TestingLibraryElementError: Found multiple elements with the role "button" and name `/send/i`
+
+    Here are the matching elements:
+
+    Ignored nodes: comments, script, style
+    <button
+      type="submit"
+    >
+      Send
+    </button>
+
+    Ignored nodes: comments, script, style
+    <button
+      type="submit"
+    >
+      Send reply
+    </button>
+
+    (If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <main
+          class="ticket-detail-page"
+        >
+          <article
+            aria-labelledby="ticket-detail-title"
+            class="ticket-detail-card"
+          >
+            <a
+              class="ticket-detail-back"
+              href="/student/dashboard"
+            >
+              Back to dashboard
+            </a>
+            <div
+              class="ticket-detail-title-row"
+            >
+              <div>
+                <p
+                  class="ticket-detail-eyebrow"
+                >
+                  Ticket details
+                </p>
+                <h1
+                  id="ticket-detail-title"
+                >
+                  First ticket
+                </h1>
+              </div>
+              <span
+                class="ticket-status ticket-status--open"
+              >
+                OPEN
+              </span>
+            </div>
+            <section
+              aria-label="Ticket help bot"
+              class="ticket-detail-help-bot"
+            >
+              <button
+                aria-expanded="true"
+                type="button"
+              >
+                Close Ticket help bot
+              </button>
+              <div>
+                <section
+                  aria-labelledby="student-help-chat-title"
+                  class="student-help-chat"
+                >
+                  <h2
+                    id="student-help-chat-title"
+                  >
+                    Ticket help bot
+                  </h2>
+                  <p
+                    class="student-help-chat__notice"
+                  >
+                    I offer hints and explain concepts
+                    . I do not change your ticket. Please do not share secrets. Only the most recent 4 exchanges are sent with a question. Chat is cleared when you leave this page.
+                  </p>
+                  <div
+                    aria-label="Ticket help conversation"
+                    aria-live="polite"
+                    aria-relevant="additions"
+                    class="student-help-chat__messages"
+                    role="log"
+                  >
+                    <p
+                      class="student-help-chat__message student-help-chat__message--bot"
+                    >
+                      I can help you understand this ticket's coding concepts and work through progressive hints.
+                    </p>
+                  </div>
+                  <form>
+                    <label
+                      for="student-help-chat-question"
+                    >
+                      Your question
+                    </label>
+                    <textarea
+                      id="student-help-chat-question"
+                      maxlength="2000"
+                      rows="3"
+                    >
+                      First ticket question
+                    </textarea>
+                    <div
+                      class="student-help-chat__actions"
+                    >
+                      <button
+                        type="submit"
+                      >
+                        Send
+                      </button>
+                      <button
+                        type="button"
+                      >
+                        Clear chat
+                      </button>
+                    </div>
+                    <p
+                      aria-live="polite"
+                      class="student-help-chat__status"
+                      role="status"
+                    />
+                  </form>
+                </section>
+              </div>
+            </section>
+            <dl
+              class="ticket-detail-meta"
+            >
+              <div>
+                <dt>
+                  Language
+                </dt>
+                <dd>
+                  Python
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Concept tags
+                </dt>
+                <dd>
+                  No concept tags
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Created
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+              <div>
+                <dt>
+                  Last updated
+                </dt>
+                <dd>
+                  Date unavailable
+                </dd>
+              </div>
+            </dl>
+            <section
+              aria-label="Ticket description"
+              class="ticket-description"
+            >
+              <h2>
+                Expected behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                No details provided.
+              </p>
+              <h2>
+                Actual behaviour
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                No details provided.
+              </p>
+              <h2>
+                What I tried
+              </h2>
+              <p
+                class="ticket-detail-preserve"
+              >
+                No details provided.
+              </p>
+            </section>
+            <section
+              aria-labelledby="ticket-thread-title"
+              class="ticket-thread"
+            >
+              <h2
+                id="ticket-thread-title"
+              >
+                Conversation
+              </h2>
+              <p>
+                No replies yet.
+              </p>
+            </section>
+            <section
+              aria-labelledby="ticket-reply-title"
+              class="ticket-reply-form"
+            >
+              <h2
+                id="ticket-reply-title"
+              >
+                Add a reply
+              </h2>
+              <form
+                novalidate=""
+              >
+                <label
+                  for="ticket-reply-message"
+                >
+                  Reply
+                </label>
+                <textarea
+                  aria-invalid="false"
+                  id="ticket-reply-message"
+                  maxlength="10000"
+                />
+                <button
+                  type="submit"
+                >
+                  Send reply
+                </button>
+              </form>
+            </section>
+            <section
+              class="ticket-close-section"
+            >
+              <h2>
+                Close ticket
+              </h2>
+              <p>
+                This closes the ticket without marking it as resolved.
+              </p>
+              <button
+                class="ticket-close-button"
+                type="button"
+              >
+                Close Ticket
+              </button>
+            </section>
+          </article>
+        </main>
+      </div>
+    </body>
+
+      163 |     fireEvent.click(await screen.findByRole('button', { name: /ticket help bot/i }));
+      164 |     fireEvent.change(screen.getByRole('textbox', { name: /your question|ask a question/i }), { target: { value: 'First ticket question' } });
+    > 165 |     fireEvent.click(screen.getByRole('button', { name: /send/i }));
+          |                            ^
+      166 |     await screen.findByText(/which part is confusing/i);
+      167 |
+      168 |     view.rerender(<TicketDetailPage ticketId="ticket-2" />);
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at getElementError (node_modules/@testing-library/dom/dist/query-helpers.js:20:35)
+      at getMultipleElementsFoundError (node_modules/@testing-library/dom/dist/query-helpers.js:23:10)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+      at getByRole (node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.<anonymous> (test/StudentTicketHelpChat.test.tsx:165:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 5 skipped, 1 passed, 8 total
+Snapshots:   0 total
+Time:        7.754 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx".
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx
+
+(node:34428) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx
+PASS test/StudentHelpChat.test.tsx
+
+Test Suites: 2 passed, 2 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        9.516 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx", "test/StudentHelpChat.test.tsx".
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx
+
+(node:42832) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx (6.882 s)
+PASS test/StudentHelpChat.test.tsx
+
+Test Suites: 2 passed, 2 total
+Tests:       12 passed, 12 total
+Snapshots:   0 total
+Time:        11.557 s
+Ran all test suites within paths "test/StudentTicketHelpChat.test.tsx", "test/StudentHelpChat.test.tsx".

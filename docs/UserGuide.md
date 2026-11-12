@@ -1,13 +1,15 @@
 # User Guide
 
 CodeClinic is a help desk for programming courses. Students submit coding
-problems as tickets, and TAs claim, answer, and resolve them. Student AI coaching
-is planned; current AI assistance helps TAs without doing the work for them.
+problems as tickets, and TAs claim, answer, and resolve them. Optional AI help
+offers Students hints and ticket-wording suggestions and assists TAs; its
+suggestions do not act on tickets by themselves.
 
 The current build provides registration, sign-in, account updates, account
 support, a notifications inbox, Student ticket creation and activity, the full
-My Tickets list, TA ticket workflows, and TA AI features. Ticket
-editing is not available yet; [Planned features](#planned-features) lists it.
+My Tickets list, Student ticket help chat, TA ticket workflows, and TA AI
+features. Ticket editing is not available yet;
+[Planned features](#planned-features) lists it.
 
 ## Accessing the app
 
@@ -100,6 +102,36 @@ before sending.
 Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
 you to the Student dashboard and shows a confirmation. If a check or request
 fails, the form stays open with your entries so you can correct them or retry.
+
+### Ticket help bot
+
+On **Create Ticket** (`/student/tickets/new`), select **Open Ticket help bot**
+at the lower right. The side popup starts with **What help do you need?** Ask
+about the programming problem or ask it to improve ticket
+wording, even while the draft is incomplete. It can offer hints, explain a
+concept, ask for more context, or suggest clearer text for specific fields.
+Suggestions appear in the conversation only: the bot never fills the form or
+submits a ticket. The current draft, including attached source content, is
+sent with each question, so review it before selecting **Send**.
+
+On a ticket you own (`/student/tickets/:ticketId`), the same button appears
+after the ticket loads. This chat uses that ticket and its relevant replies to
+offer hints; it does not rewrite the ticket or post a reply. The bot is not
+available on the dashboard, ticket list, or TA pages.
+
+The popup shows bot messages on the left and yours on the right. Type in the
+**Your question** field and select **Send**. **Clear chat** removes the local conversation;
+the close button or Escape hides the popup, and reopening it keeps the
+conversation while you stay on that page. Refreshing, navigating away, or
+signing out clears it. Only the most recent four exchanges are sent with a new
+question. A failed request keeps your question for another try and does not
+change the ticket or its draft. If the bot is busy, unavailable, or cannot
+prepare a safe reply, wait and retry or continue without it.
+
+The bot cannot guarantee a correct or complete answer. Do not enter passwords,
+API keys, tokens, or other secrets in the chat or ticket draft; automatic
+redaction can miss them. Review any wording suggestion yourself before typing
+it into the ticket.
 
 ## Viewing, replying to, and closing a ticket
 
@@ -231,9 +263,7 @@ These CodeClinic features are planned and **not available in the current build**
 | Role | Planned feature |
 | --- | --- |
 | Student | Edit a ticket after creation |
-| Student | AI Error Explainer: explains an error and gives hints without a full solution |
 | Student | Bug FAQ: search anonymised resolved tickets |
-| TA | AI Fix Note Drafter and AI Queue Insights |
 | Optional | Live session requests and approvals |
 
 This guide will be updated as each feature is released.

@@ -1,0 +1,18 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/StudentHelpChat.test.tsx
+
+(node:41192) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentHelpChat.test.tsx (5.337 s)
+  StudentHelpChat page-local component
+    √ sends only the supplied endpoint, renders response as text, and keeps history in component memory (282 ms)
+    √ retains failed question and prior turns, maps raw errors safely, and permits retry (207 ms)
+    √ sends no more than eight prior turns and clear removes visible history (311 ms)
+    √ disables duplicate submission while pending and exposes an announced status (155 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       4 passed, 4 total
+Snapshots:   0 total
+Time:        8.292 s
+Ran all test suites within paths "test/StudentHelpChat.test.tsx".

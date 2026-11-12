@@ -1,0 +1,67 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/student-help-chat.api.test.js test/student-ticket-help.feature.test.js test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx test/ai-gateway.test.js
+
+(node:20216) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx (6.887 s)
+FAIL test/student-help-chat.api.test.js (8.366 s)
+  ● Student help chat route authorization boundary › rejects detail chat without CSRF before ticket or reply reads
+
+    expect(jest.fn()).toHaveBeenCalledTimes(expected)
+
+    Expected number of calls: 1
+    Received number of calls: 2
+
+      203 |     expect(response.body).toEqual({ error: { code: 'FORBIDDEN' } });
+      204 |     expect(response.headers['cache-control']).toBe('no-store');
+    > 205 |     expect(system.repository.getUserById).toHaveBeenCalledTimes(1);
+          |                                           ^
+      206 |     expect(store.getOwned).not.toHaveBeenCalled();
+      207 |     expect(system.gateway.run).not.toHaveBeenCalled();
+      208 |   });
+
+      at Object.<anonymous> (test/student-help-chat.api.test.js:205:43)
+
+PASS test/StudentHelpChat.test.tsx
+FAIL test/student-ticket-help.feature.test.js
+  ● Student ticket help feature policy › redacts the complete create draft and detail reply context before fake-provider transport
+
+    TypeError: Cannot read properties of undefined (reading 'split')
+
+      82 |     });
+      83 |     expect(createResult.ok).toBe(true);
+    > 84 |     const createContent = JSON.parse(create.transport.send.mock.calls[0][0].messages[1].content.split('<<<UNTRUSTED_CONTENT_START>>>')[1].split('<<<UNTRUSTED_CONTENT_END>>>')[0]);
+         |                                                                                                                                          ^
+      85 |     expect(createContent.draft).toMatchObject({ title: 'Lookup timeout', language: 'JavaScript', repoFilePaths: 'src/lookup.js' });
+      86 |     for (const secret of secretCases) expect(create.transport.send.mock.calls[0][0].messages[1].content).not.toContain(secret);
+      87 |     expect(create.transport.send.mock.calls[0][0].messages[1].content.match(/\[REDACTED\]/g).length).toBeGreaterThanOrEqual(5);
+
+      at Object.<anonymous> (test/student-ticket-help.feature.test.js:84:138)
+
+PASS test/ai-gateway.test.js
+
+Test Suites: 2 failed, 3 passed, 5 total
+Tests:       2 failed, 125 passed, 127 total
+Snapshots:   0 total
+Time:        24.278 s
+Ran all test suites within paths "test/student-help-chat.api.test.js", "test/student-ticket-help.feature.test.js", "test/StudentTicketHelpChat.test.tsx", "test/StudentHelpChat.test.tsx", "test/ai-gateway.test.js".
+
+=== Corrected rerun ===
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand --runTestsByPath test/student-help-chat.api.test.js test/student-ticket-help.feature.test.js test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx test/ai-gateway.test.js
+
+(node:35092) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/student-help-chat.api.test.js (9.292 s)
+PASS test/student-ticket-help.feature.test.js
+PASS test/StudentTicketHelpChat.test.tsx (6.218 s)
+PASS test/StudentHelpChat.test.tsx
+PASS test/ai-gateway.test.js
+
+Test Suites: 5 passed, 5 total
+Tests:       127 passed, 127 total
+Snapshots:   0 total
+Time:        23.551 s
+Ran all test suites within paths "test/student-help-chat.api.test.js", "test/student-ticket-help.feature.test.js", "test/StudentTicketHelpChat.test.tsx", "test/StudentHelpChat.test.tsx", "test/ai-gateway.test.js".

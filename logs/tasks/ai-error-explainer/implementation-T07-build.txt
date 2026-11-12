@@ -1,0 +1,30 @@
+
+> codeclinic@0.1.0 build
+> react-scripts build
+
+(node:5092) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  91.09 kB (+1.42 kB)  build\static\js\main.053254e0.js
+  6.6 kB (+354 B)      build\static\css\main.d04e8b4c.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+Command: npm run build
+Result: PASS, optimized production build compiled successfully. See complete build output above.

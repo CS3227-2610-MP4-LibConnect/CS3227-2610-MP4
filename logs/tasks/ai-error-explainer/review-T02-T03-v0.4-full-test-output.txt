@@ -1,0 +1,117 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watchAll=false --runInBand student-ticket-help.feature.test.js ai-gateway.test.js student-help-chat.api.test.js
+
+(node:38020) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/student-help-chat.api.test.js
+  ● Student help chat route authorization boundary › /api/tickets/ticket-1/help-chat rejects a visitor without cacheable response or protected work
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      145 |     const system = fixture({ store: { getOwned: jest.fn() } });
+      146 |     const response = await request(system.app).post(path).send(body);
+    > 147 |     expect(response.status).toBe(401);
+          |                             ^
+      148 |     expect(response.headers['cache-control']).toBe('no-store');
+      149 |     expect(system.repository.getUserById).not.toHaveBeenCalled();
+      150 |     expect(system.store.getOwned).not.toHaveBeenCalled();
+
+      at test/student-help-chat.api.test.js:147:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      161 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      162 |       .send({ question: 'Help', history: [] });
+    > 163 |     expect(response.status).toBe(expectedStatus);
+          |                             ^
+      164 |     expect(response.headers['cache-control']).toBe('no-store');
+      165 |     expect(store.getOwned).not.toHaveBeenCalled();
+      166 |   });
+
+      at test/student-help-chat.api.test.js:163:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      161 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      162 |       .send({ question: 'Help', history: [] });
+    > 163 |     expect(response.status).toBe(expectedStatus);
+          |                             ^
+      164 |     expect(response.headers['cache-control']).toBe('no-store');
+      165 |     expect(store.getOwned).not.toHaveBeenCalled();
+      166 |   });
+
+      at test/student-help-chat.api.test.js:163:29
+
+  ● Student help chat route authorization boundary › blocks a non-eligible account before reading ticket context
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      161 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      162 |       .send({ question: 'Help', history: [] });
+    > 163 |     expect(response.status).toBe(expectedStatus);
+          |                             ^
+      164 |     expect(response.headers['cache-control']).toBe('no-store');
+      165 |     expect(store.getOwned).not.toHaveBeenCalled();
+      166 |   });
+
+      at test/student-help-chat.api.test.js:163:29
+
+  ● Student help chat route authorization boundary › rejects a detail request carrying create-only draft data before reading or provider work
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      172 |       .set('Cookie', system.cookie).set('X-CSRF-Token', system.csrfToken)
+      173 |       .send({ question: 'Help', draft: { title: 'forged' } });
+    > 174 |     expect(response.status).toBe(400);
+          |                             ^
+      175 |     expect(response.headers['cache-control']).toBe('no-store');
+      176 |     expect(store.getOwned).not.toHaveBeenCalled();
+      177 |   });
+
+      at Object.<anonymous> (test/student-help-chat.api.test.js:174:29)
+
+  ● Student help chat route authorization boundary › hides another Student’s ticket and does not expose its identifier
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "no-store"
+    Received: undefined
+
+      184 |       .send({ question: 'Help' });
+      185 |     expect(response.status).toBe(404);
+    > 186 |     expect(response.headers['cache-control']).toBe('no-store');
+          |                                               ^
+      187 |     expect(JSON.stringify(response.body)).not.toContain('another-students-ticket');
+      188 |     expect(store.getOwned).toHaveBeenCalledWith('student-1', 'another-students-ticket', expect.anything());
+      189 |   });
+
+      at Object.<anonymous> (test/student-help-chat.api.test.js:186:47)
+
+PASS test/student-ticket-help.feature.test.js
+PASS test/ai-gateway.test.js
+
+Test Suites: 1 failed, 2 passed, 3 total
+Tests:       6 failed, 86 passed, 92 total
+Snapshots:   0 total
+Time:        8.061 s, estimated 13 s
+Ran all test suites matching /student-ticket-help.feature.test.js|ai-gateway.test.js|student-help-chat.api.test.js/i.

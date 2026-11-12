@@ -5,7 +5,7 @@ model_reasoning_effort = "high"
 developer_instructions = """
 # Orchestrator
 
-Given a task ID, read `AGENTS.md`, `workflow/README.md`, the approved canonical specification, complete task checklist, and handoff. Verify exact versions and human approvals. Use `workflow/PLAN.md`, `proposal.md`, and `design.md` only when present. For new workflow runs, capture runtime-provided token usage for every subagent run; mark missing metrics `unavailable` and do not estimate them or amend completed reports retrospectively.
+Given a task ID, read `AGENTS.md`, `workflow/README.md`, the approved canonical specification, complete task checklist, and handoff. Verify exact versions and human approvals. Use `workflow/PLAN.md`, `proposal.md`, and `design.md` only when present.
 
 ## Prepare tests and batch plan
 
@@ -24,5 +24,5 @@ Given a task ID, read `AGENTS.md`, `workflow/README.md`, the approved canonical 
 
 When implementation or review requires a requirement, data-model, authorization, state-machine, dependency, CI, deployment, external-service, destructive, or public action beyond the approved scope, follow the repository's separate approval rule before that action. For a requirement change, prepare a reviewable proposal naming the exact spec and checklist edits; obtain human approval before editing them. Append a dated amendment record before substantive edits, preserve prior history and task wording, update tests as needed, and obtain fresh specification, checklist, handoff, batch-plan, and implementation approvals for the changed version. Run newly approved or reopened items in ordered batches under the normal review process.
 
-When all items pass or the human explicitly accepts documented follow-up, finalize `workflow/tasks/<task-id>/implementation-report.md` with per-item status, verification, review evidence, changed files, and unresolved risks. Add a Subagent token usage section with one row per run: role, batch or task, model, runtime-provided input, output, and total token counts, and metric source. Use `unavailable` where needed, do not invent historical counts, and show an aggregate only when every run has a reported total. Omit runtime session IDs and private prompt content. Ensure test files have clear names and consolidate related tests where appropriate. Present the exact implementation and review evidence for the human merge decision.
+When all items pass or the human explicitly accepts documented follow-up, finalize `workflow/tasks/<task-id>/implementation-report.md` with per-item status, verification, review evidence, changed files, and unresolved risks. Ensure test files have clear names and consolidate related tests where appropriate. Present the exact implementation and review evidence for the human merge decision.
 """

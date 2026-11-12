@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 2,
+  "taskId": "ai-error-explainer",
+  "batch": 5,
+  "items": ["T09"],
+  "splitReason": "New side-popup UI and focus behavior require independent correction review before T08 combined verification.",
+  "artifacts": {
+    "spec": { "path": "workflow/specs/ai-error-explainer.md", "version": "0.5" },
+    "checklist": { "path": "workflow/tasks/ai-error-explainer/tasks.md", "version": "0.5" },
+    "handoff": { "path": "workflow/tasks/ai-error-explainer/handoff.md", "version": "0.5" }
+  },
+  "approvalEvidence": "workflow/tasks/ai-error-explainer/batch-5-popup-dispatch-proposal.md",
+  "implementer": {
+    "agentId": "/root/batch5_popup_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/tickets/TicketCreatePage.tsx",
+      "src/codeclinic/src/tickets/TicketCreatePage.css",
+      "src/codeclinic/src/tickets/TicketDetailPage.tsx",
+      "src/codeclinic/src/tickets/TicketDetailPage.css",
+      "src/codeclinic/src/tickets/StudentHelpChat.tsx",
+      "src/codeclinic/src/tickets/StudentHelpChat.css",
+      "src/codeclinic/test/StudentTicketHelpChat.test.tsx",
+      "src/codeclinic/test/StudentHelpChat.test.tsx",
+      "workflow/tasks/ai-error-explainer/implementation-T09.md",
+      "logs/tasks/ai-error-explainer/implementation-T09.md",
+      "logs/tasks/ai-error-explainer/implementation-T09-test.txt",
+      "logs/tasks/ai-error-explainer/implementation-T09-build.txt"
+    ]
+  },
+  "reviewer": {
+    "agentId": "/root/batch5_popup_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Repository .git is read-only in the supplied workspace. A different reviewer will inspect the exact uncommitted Student-only T09 diff, run focused safe checks, and retain an independent report and log before T08.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/ai-error-explainer/review-T09.md",
+      "logs/tasks/ai-error-explainer/review-T09.md",
+      "logs/tasks/ai-error-explainer/review-T09-test.txt",
+      "logs/tasks/ai-error-explainer/review-T09-build.txt"
+    ]
+  },
+  "itemEvidence": {
+    "T09": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T09.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T09.md",
+      "checks": [
+        { "command": "CI=true npm test -- --watch=false --runInBand StudentHelpChat.test.tsx StudentTicketHelpChat.test.tsx", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T09.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T09.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}
