@@ -20,7 +20,10 @@ and the former application path `src/libconnect-mp4`.
 - [Student My Tickets](#student-my-tickets)
 - [Student Bug FAQ](#student-bug-faq)
 - [Student ticket help chat](#student-ticket-help-chat)
+- [Account management](#account-management)
+- [Notifications](#notifications)
 - [TA ticket queue](#ta-ticket-queue)
+- [Shared AI gateway](#shared-ai-gateway)
 - [TA AI assist](#ta-ai-assist)
 - [Running the production server](#running-the-production-server)
 - [Design of shared components](#design-of-shared-components)
@@ -129,9 +132,9 @@ sequenceDiagram
 
 The login form posts email, password, and the selected Student or TA type to `POST /api/auth/login`. Express trims and lowercases the email for lookup, reads the email-key and user records, verifies the Argon2id hash, and requires an `ACTIVE` account whose stored type matches the selected type. A denied login returns a generic `401`. Login attempts are limited to five per canonical email and 30 per direct source address in a 15-minute window; storage errors return `503`.
 
-On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. Express serves the frontend for only these two dashboard paths; the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
+On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. Express also serves the frontend shell for the protected ticket, account, support, queue, and notification routes listed below; the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
 
-Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; any future protected API must enforce its own server-side authorization on every request.
+Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; each protected account, notification, ticket, and AI API independently enforces server-side authorization.
 
 ## Student ticket creation
 
@@ -339,7 +342,10 @@ rejects malformed or unsafe output. A rejected reply maps to a safe
 `AI_INVALID_OUTPUT` 503; the client retains the question for retry. No model
 output can authorize a write. The provisional limits have not been confirmed
 against the deployed model, and the reported Create Ticket wording 503 has no
-observed live-provider retry result.
+observed live-provider retry result. The later T11/T12 correction clarified
+the fixed Student prompt's prohibited output categories and its grounded
+concept-hint path. Fake-provider tests and independent review passed; the
+change did not establish the cause of the live `AI_INVALID_OUTPUT` response.
 
 Focused verification uses injected fake providers and synthetic ticket data.
 From `src/codeclinic`, run:
@@ -414,13 +420,19 @@ The four `/api/notifications` endpoints list the caller's notifications, count
 unread items (maximum 99), mark one read, and mark all read. Mutations require
 CSRF; another user's item ID returns the same `404` as a missing item. Messages
 are plain text. `NotificationBell` appears in both dashboard navbars and
-`/notifications` renders the session-checked inbox. A future role feature may
-supply `NotificationInbox.ticketHref`; no ticket route is invented here.
+`/notifications` renders the session-checked inbox. `NotificationsRoute`
+supplies a TA ticket link to `NotificationInbox` for TA viewers; Student
+notifications remain text with a mark-read action. The TA ticket routes call
+`notify` after successful claim, reply, and resolve commits, sending the
+Student `TICKET_CLAIMED`, `TICKET_REPLY`, or `TICKET_RESOLVED`; unclaim sends
+none. A notification failure does not roll back the ticket action.
 
 The list query needs a Firestore composite index on `recipientUserId` ascending
-and `createdAt` descending. That production prerequisite remains with the
-Firebase/deployment owner; the local emulator does not enforce index creation.
-The current task does not configure or deploy cloud indexes.
+and `createdAt` descending. The index is defined in `firestore.indexes.json`,
+and `.github/workflows/deploy-prod.yml` can deploy it after the production
+environment and identity setup. Its live deployment and readiness have not
+been verified in these guide updates; the local emulator does not enforce
+index creation.
 
 ## TA ticket queue
 
@@ -502,9 +514,10 @@ refusal, and a 1 MiB response cap. Output must pass JSON and feature-schema
 validation. Logs and `aiUsage` store metadata and numeric token counts only.
 
 Redaction can miss secrets: users must never paste credentials. Model output
-is advisory and cannot authorize writes or invoke tools. Real model selection
-and `max_tokens` support still require a human smoke check; no live provider
-call was made during automated verification.
+is advisory and cannot authorize writes or invoke tools. Student chat's
+deployed-model response and `max_tokens` compatibility still require a
+separately authorized smoke check. Local automated tests use fakes; the TA AI
+task separately records a human-run live SoCLaaS test.
 
 ## TA AI assist
 
@@ -600,7 +613,7 @@ provider-side outage for that model, not a code fault. Try another model from
 
 ## Running the production server
 
-The Express server in `src/codeclinic/server/index.js` serves the built React app and handles registration, login, sessions, and rate counters. Deploy it on Cloud Run with a service account that has the Firestore permissions the app needs. Set these runtime environment variables to the **actual production Firebase project ID**:
+The Express server in `src/codeclinic/server/index.js` serves the built React app and the auth, account, notification, ticket, and AI APIs. Firebase App Hosting runs it on Cloud Run using `apphosting.yaml`. The current production project configured there is `libconnect-mp4`; its runtime Firestore settings are:
 
 ```text
 CODECLINIC_FIRESTORE_MODE=production
@@ -615,9 +628,9 @@ npm run build
 node server/index.js
 ```
 
-Cloud Run supplies `PORT` and `K_SERVICE`. Use its service account identity for credentials; do not set `FIRESTORE_EMULATOR_HOST` or `GOOGLE_APPLICATION_CREDENTIALS` in production. The server rejects a local gcloud Application Default Credentials file and checks that the Cloud Run metadata project matches `CODECLINIC_FIRESTORE_PROJECT_ID` before it starts accepting requests. Missing or inconsistent configuration stops startup rather than switching Firestore targets.
+App Hosting supplies `PORT` and `K_SERVICE`. Use its service account identity for credentials; do not set `FIRESTORE_EMULATOR_HOST` or `GOOGLE_APPLICATION_CREDENTIALS` in production. The server rejects a local gcloud Application Default Credentials file and checks that the Cloud Run metadata project matches `CODECLINIC_FIRESTORE_PROJECT_ID` before it starts accepting requests. Missing or inconsistent configuration stops startup rather than switching Firestore targets. `apphosting.yaml` references the SoCLaaS key and base URL as runtime Secret Manager secrets; the AI gateway stays unavailable if its configuration is missing or invalid.
 
-Production deployment, service account permissions, and a live Firestore connection still need to be configured and verified. The repository contains no credentials. Production mode is designed to fail on a developer laptop.
+The production URL recorded in deployment evidence is `https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/`. This guide update does not verify its present availability, current release, Firestore indexes, or live feature behavior. The repository contains no credentials. Production mode is designed to fail on a developer laptop.
 
 ## Design of shared components
 
@@ -666,9 +679,9 @@ Current state:
 | Environment | Firestore target | Status |
 | --- | --- | --- |
 | Local development | Firestore emulator, project `demo-codeclinic` | Working |
-| Production | `apphosting.yaml` configures Firebase App Hosting in `production` mode for project `libconnect-mp4` | Not verified |
+| Production | Firebase App Hosting for project `libconnect-mp4` | Deployment reported; current rollout and index readiness not verified here |
 
-The `.firebaserc` `default` alias is the emulator-only `demo-codeclinic`, and its `prod` alias is `libconnect-mp4`. There is no separate deployed development environment. The repository has no GitHub Actions workflow yet. The planned environments and deployment pipeline are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+The `.firebaserc` `default` alias is the emulator-only `demo-codeclinic`, and its `prod` alias is `libconnect-mp4`. There is no separate deployed development environment. `.github/workflows/ci.yml` runs tests, a build, a production-dependency audit, and a secret scan for pull requests and pushes to `main`. `.github/workflows/deploy-prod.yml` is configured to wait for production-environment approval, deploy Firestore indexes after successful main-branch CI or a manual trigger, and smoke-check the app shell and session endpoint. Its one-time identity and environment setup is documented in [`deploy-prod-setup.md`](../workflow/tasks/environments-and-deployment/deploy-prod-setup.md). App Hosting still rolls out the app automatically; this workflow does not deploy the app itself. Whether the one-time setup and production index deployment have completed is unverified here.
 
 ## Multi-agent development workflow
 

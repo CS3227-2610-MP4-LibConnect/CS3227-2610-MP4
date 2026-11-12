@@ -13,8 +13,9 @@ ticket workflows, and TA AI features. Ticket editing is not available yet;
 
 ## Accessing the app
 
-- **Deployed app:** not yet available. The production URL will be added here
-  once deployment is set up.
+- **Production app:** [Open CodeClinic](https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/).
+  This is the App Hosting URL recorded in deployment evidence. Its current
+  availability and the rollout of every feature have not been rechecked here.
 - **Local copy:** follow
   [Running the development server](DeveloperGuide.md#running-the-development-server)
   in the Developer Guide, then open `http://localhost:3001/`.
@@ -256,9 +257,12 @@ unread items. The inbox shows each message as plain text with its type and
 relative time. Select **Mark as read** for an item or **Mark all as read** to
 clear the unread items. Failed actions offer **Retry**.
 
-The inbox infrastructure is ready. Ticket features will create notifications
-and supply related-ticket links when those features are integrated; they are
-not part of the current shared-work build.
+When a TA claims, replies to, or resolves your ticket, CodeClinic adds a
+notification after the ticket action succeeds. Unclaiming does not notify you.
+The Student inbox shows these updates as text; open the ticket from **My
+Tickets** to see the latest conversation. The inbox loads 20 items at a time,
+with **Load more** for older updates. Notification delivery is best effort, so
+a ticket action can succeed even if its notification fails.
 
 ## Bug FAQ
 
