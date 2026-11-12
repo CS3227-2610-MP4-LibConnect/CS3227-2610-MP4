@@ -133,3 +133,57 @@ test('serves the built frontend and the login API from one origin', async () => 
     fs.rmSync(buildDirectory, { recursive: true, force: true });
   }
 });
+
+test('does not let browsers keep a stale app shell across releases built with a fixed file time', async () => {
+  const buildDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'codeclinic-cache-'));
+  const indexPath = path.join(buildDirectory, 'index.html');
+  const fixedBuildTime = new Date('1980-01-01T00:00:01Z');
+  const writeRelease = (bundleHash) => {
+    fs.writeFileSync(indexPath, `<!doctype html><script src="/static/js/main.${bundleHash}.js"></script>`);
+    fs.utimesSync(indexPath, fixedBuildTime, fixedBuildTime);
+  };
+  try {
+    fs.mkdirSync(path.join(buildDirectory, 'static', 'js'), { recursive: true });
+    fs.writeFileSync(path.join(buildDirectory, 'static', 'js', 'main.bbbbbbbb.js'), 'void 0;');
+    fs.writeFileSync(path.join(buildDirectory, 'favicon.ico'), 'icon');
+    writeRelease('aaaaaaaa');
+    const db = {
+      async runTransaction() { throw new Error('Firestore is not exercised by this static asset test.'); },
+      collection: () => ({ doc: () => ({ get: async () => ({ exists: false }) }) }),
+    };
+    const unusedAuthMethods = ['reserveRateSlot', 'releaseRateSlot', 'createSession', 'getSession', 'touchSession',
+      'rotateCsrfToken', 'deleteSession', 'deleteSessionIfCsrfMatches', 'deleteSessionsForUser'];
+    const authStore = Object.fromEntries(unusedAuthMethods.map((name) => [name, async () => {
+      throw new Error('Authentication is not exercised by this static asset test.');
+    }]));
+    const registrationPersistence = { async createAccount() { throw new Error('Registration is not exercised by this static asset test.'); } };
+    const app = createServerApp(db, buildDirectory, authStore, registrationPersistence);
+
+    const firstVisit = await request(app).get('/');
+
+    expect(firstVisit.text).toContain('main.aaaaaaaa.js');
+    expect(firstVisit.headers['cache-control']).toBe('no-cache');
+    const unchanged = await request(app).get('/').set('If-None-Match', firstVisit.headers.etag);
+    expect(unchanged.status).toBe(304);
+    writeRelease('bbbbbbbb');
+
+    for (const shellPath of ['/', '/index.html', '/ta/queue', '/student/dashboard']) {
+      const revisit = await request(app).get(shellPath)
+        .set('If-None-Match', firstVisit.headers.etag)
+        .set('If-Modified-Since', fixedBuildTime.toUTCString());
+      expect(revisit.status).toBe(200);
+      expect(revisit.headers['cache-control']).toBe('no-cache');
+      expect(revisit.headers['last-modified']).toBeUndefined();
+      expect(revisit.text).toContain('main.bbbbbbbb.js');
+    }
+
+    const bundle = await request(app).get('/static/js/main.bbbbbbbb.js');
+    expect(bundle.status).toBe(200);
+    expect(bundle.headers['cache-control']).toBe('public, max-age=31536000, immutable');
+
+    const favicon = await request(app).get('/favicon.ico');
+    expect(favicon.headers['cache-control']).toBe('no-cache');
+  } finally {
+    fs.rmSync(buildDirectory, { recursive: true, force: true });
+  }
+});

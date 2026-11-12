@@ -1,0 +1,13 @@
+# Gitleaks allowlist: exact fingerprints (commit:file:rule:line) of reviewed false positives.
+# Reviewed 2026-11-12 (workflow/tasks/fix-stale-index-cache/implementation-report.md). Each value is
+# synthetic test or documentation data. Any new finding, including a real secret, still fails CI.
+#
+# Mocked temporary-password response in a frontend test.
+9a33dc507477622005729fa23af1a9b0f57e32e8:src/codeclinic/test/AccountPages.test.tsx:generic-api-key:34
+
+# Redaction tests: inputs built to look like a private key block and a bearer token.
+0566d2cdfb9d23de74ae3176908a2fbfa8f23bb0:src/codeclinic/test/ai-redact.test.js:curl-auth-header:192
+0566d2cdfb9d23de74ae3176908a2fbfa8f23bb0:src/codeclinic/test/ai-redact.test.js:private-key:45
+
+# Example App Check debug token in an upstream Firebase skill doc (removed in the 2026-11-08 skill pruning).
+405482a16073016821d684eb2cd36e8c03aee660:.agents/skills/firebase-ai-logic-basics/SKILL.md:generic-api-key:232

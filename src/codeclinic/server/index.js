@@ -17,6 +17,18 @@ const { createTicketsRouter } = require('./tickets/route');
 const { createTaTicketsRouter } = require('./tickets/ta-routes');
 const { notify } = require('./notifications/notify');
 
+// Production builds stamp every file with the same 1980 modification time, so the default
+// size-and-mtime ETag stays identical across releases. A browser would then revalidate a stale
+// index.html, keep it, and request bundle names the new release no longer serves. The app shell
+// is therefore revalidated by content on each load, while content-hashed bundles are cached long term.
+const APP_SHELL_CACHE_CONTROL = 'no-cache';
+const HASHED_ASSET_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
+function setStaticCacheHeaders(response, relativePath) {
+  const isHashedAsset = relativePath.split(path.sep)[0] === 'static';
+  response.set('Cache-Control', isHashedAsset ? HASHED_ASSET_CACHE_CONTROL : APP_SHELL_CACHE_CONTROL);
+}
+
 // The Firestore ticket store loads `firebase-admin/firestore` when built, so build it on first
 // use; this keeps `createServerApp` constructible with the fake databases used by unit tests.
 function createLazyTicketStore(db) {
@@ -71,17 +83,26 @@ function createServerApp(db, buildDirectory = path.join(__dirname, '..', 'build'
     notify,
   }));
   if (fs.existsSync(path.join(buildDirectory, 'index.html'))) {
-    app.use(express.static(buildDirectory));
-    app.get('/register', (_request, response) => {
-      response.sendFile(path.join(buildDirectory, 'index.html'));
-    });
-    app.get(['/student/dashboard', '/ta/dashboard', '/student/tickets', '/student/tickets/new', /^\/student\/tickets\/[^/]+$/], (_request, response) => {
-      response.sendFile(path.join(buildDirectory, 'index.html'));
-    });
+    // `res.send` derives the ETag from the content, so it changes whenever a release changes
+    // index.html; `res.sendFile` would reuse the size-and-mtime ETag described above.
+    const sendAppShell = async (_request, response, next) => {
+      try {
+        const appShell = await fs.promises.readFile(path.join(buildDirectory, 'index.html'), 'utf8');
+        response.set('Cache-Control', APP_SHELL_CACHE_CONTROL).type('html').send(appShell);
+      } catch (error) {
+        next(error);
+      }
+    };
+    app.use(express.static(buildDirectory, {
+      index: false,
+      etag: false,
+      lastModified: false,
+      setHeaders: (response, filePath) => setStaticCacheHeaders(response, path.relative(buildDirectory, filePath)),
+    }));
+    app.get(['/', '/register'], sendAppShell);
+    app.get(['/student/dashboard', '/ta/dashboard', '/student/tickets', '/student/tickets/new', /^\/student\/tickets\/[^/]+$/], sendAppShell);
     app.get(['/student/account', '/ta/account', '/ta/students', '/ta/tas', '/ta/queue', '/ta/tickets/:ticketId',
-      '/account/password-change', '/notifications'], (_request, response) => {
-      response.sendFile(path.join(buildDirectory, 'index.html'));
-    });
+      '/account/password-change', '/notifications'], sendAppShell);
   }
   return app;
 }
