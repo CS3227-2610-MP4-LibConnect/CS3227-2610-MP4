@@ -29,13 +29,14 @@ emulatorTest('student ticket activity query, ownership, paging, writes, and clos
       const otherRawCookie = crypto.randomBytes(36).toString('base64url');
       const sessionHashes = [sha256(rawCookie), sha256(otherRawCookie)];
       const ticketIds = Array.from({ length: 9 }, (_, index) => 'activity-' + suffix + '-' + String(index).padStart(2, '0'));
+      const listTicketIds = Array.from({ length: 48 }, (_, index) => 'list-' + suffix + '-' + String(index).padStart(2, '0'));
       const replyTicketId = ticketIds[0];
       const racingTicketId = ticketIds[2];
       const fixedTime = Timestamp.fromMillis(Date.now() - 60000);
       const app = createServerApp(db);
       const store = createFirestoreTicketStore(db);
       const cleanup = async () => {
-        for (const id of ticketIds) {
+        for (const id of [...ticketIds, ...listTicketIds]) {
           const replies = await db.collection('tickets').doc(id).collection('replies').get();
           for (const reply of replies.docs) await reply.ref.delete();
           await db.collection('tickets').doc(id).delete();
@@ -72,6 +73,14 @@ emulatorTest('student ticket activity query, ownership, paging, writes, and clos
         await db.collection('tickets').doc(ticketIds[6]).set({ ticketId: ticketIds[6], studentId, status: 'CLOSED', updatedAt: fixedTime });
         await db.collection('tickets').doc(ticketIds[7]).set({ ticketId: ticketIds[7], studentId, status: 'RESOLVED', updatedAt: fixedTime });
         await db.collection('tickets').doc(ticketIds[8]).set({ ticketId: ticketIds[8], studentId: otherStudentId, status: 'OPEN', updatedAt: fixedTime });
+        for (let index = 0; index < listTicketIds.length; index += 1) {
+          const status = index < 12 ? 'OPEN' : index < 24 ? 'CLAIMED' : index < 36 ? 'CLOSED' : 'RESOLVED';
+          await db.collection('tickets').doc(listTicketIds[index]).set({
+            ticketId: listTicketIds[index], studentId, title: 'Synthetic list ' + index,
+            language: 'TypeScript', conceptTags: [], status, updatedAt: fixedTime,
+            createdAt: fixedTime, expectedBehaviour: 'Expected', actualBehaviour: 'Actual', attempted: 'Tried',
+          });
+        }
         for (let index = 0; index < 51; index += 1) {
           const replyId = 'reply-' + String(index).padStart(3, '0');
           await db.collection('tickets').doc(replyTicketId).collection('replies').doc(replyId).set({
@@ -99,6 +108,30 @@ emulatorTest('student ticket activity query, ownership, paging, writes, and clos
         const otherActive = await request(app).get('/api/tickets/active').set('Cookie', otherCookie);
         assert.equal(otherActive.status, 200);
         assert.deepEqual(otherActive.body.tickets.map((ticket) => ticket.ticketId), [ticketIds[8]]);
+
+        step = 'all-status owner-scoped list pagination at tied timestamps';
+        const expectedOpen = [...ticketIds.slice(0, 6), ...listTicketIds.slice(0, 24)];
+        const openPageOne = await request(app).get('/api/tickets?view=open').set('Cookie', studentCookie);
+        assert.equal(openPageOne.status, 200);
+        assert.match(openPageOne.headers['cache-control'] || '', /no-store/);
+        assert.deepEqual(openPageOne.body.tickets.map((ticket) => ticket.ticketId), expectedOpen.slice(0, 20));
+        assert.equal(typeof openPageOne.body.nextCursor, 'string');
+        const openPageTwo = await request(app).get('/api/tickets?view=open&cursor=' + encodeURIComponent(openPageOne.body.nextCursor)).set('Cookie', studentCookie);
+        assert.equal(openPageTwo.status, 200);
+        assert.deepEqual(openPageTwo.body.tickets.map((ticket) => ticket.ticketId), expectedOpen.slice(20));
+        assert.equal(openPageTwo.body.nextCursor, undefined);
+        const expectedClosed = [ticketIds[6], ticketIds[7], ...listTicketIds.slice(24)];
+        const closedPageOne = await request(app).get('/api/tickets?view=closed').set('Cookie', studentCookie);
+        assert.equal(closedPageOne.status, 200);
+        assert.deepEqual(closedPageOne.body.tickets.map((ticket) => ticket.ticketId), expectedClosed.slice(0, 20));
+        assert.equal(typeof closedPageOne.body.nextCursor, 'string');
+        const closedPageTwo = await request(app).get('/api/tickets?view=closed&cursor=' + encodeURIComponent(closedPageOne.body.nextCursor)).set('Cookie', studentCookie);
+        assert.equal(closedPageTwo.status, 200);
+        assert.deepEqual(closedPageTwo.body.tickets.map((ticket) => ticket.ticketId), expectedClosed.slice(20));
+        assert.equal(closedPageTwo.body.nextCursor, undefined);
+        const otherList = await request(app).get('/api/tickets?view=open').set('Cookie', otherCookie);
+        assert.equal(otherList.status, 200);
+        assert.deepEqual(otherList.body.tickets.map((ticket) => ticket.ticketId), [ticketIds[8]]);
 
         step = 'reply write and dashboard refresh';
         const csrf = await request(app).get('/api/auth/csrf').set('Cookie', studentCookie);

@@ -22,7 +22,10 @@ describe('AI output parsing', () => {
       ok: true,
       data: { explanation: 'off by one' },
     });
-    expect(featureParse).toHaveBeenCalledWith({ explanation: 'off by one' });
+    expect(featureParse).toHaveBeenCalledWith(
+      { explanation: 'off by one' },
+      { rawContent: '{"explanation":"off by one"}', requestContext: undefined }
+    );
   });
 
   test('accepts surrounding whitespace', () => {

@@ -1,5 +1,6 @@
 import React, { FormEvent, useCallback, useEffect, useState } from 'react';
 import './TicketDetailPage.css';
+import StudentHelpChat from './StudentHelpChat';
 
 type Reply = { replyId: string; author: { name: string; role: 'STUDENT' | 'TA' }; message: string; createdAt: unknown };
 type Ticket = {
@@ -141,33 +142,35 @@ export default function TicketDetailPage({ ticketId }: { ticketId: string }) {
     finally { setClosePending(false); }
   };
 
-  if (loading) return <main className="ticket-detail-page" aria-busy="true"><p role="status">Loading ticket…</p></main>;
-  if (error && !ticket) return <main className="ticket-detail-page"><p role="alert">{error}</p><button type="button" onClick={refresh}>Retry</button></main>;
-  if (!ticket) return <main className="ticket-detail-page"><p role="alert">This ticket is unavailable.</p><a href="/student/dashboard">Back to dashboard</a></main>;
-  const terminal = ticket.status === 'CLOSED' || ticket.status === 'RESOLVED';
+  const currentTicket = ticket?.ticketId === ticketId ? ticket : null;
+  if (!currentTicket && loading) return <main className="ticket-detail-page" aria-busy="true"><p role="status">Loading ticket…</p></main>;
+  if (error && !currentTicket) return <main className="ticket-detail-page"><p role="alert">{error}</p><button type="button" onClick={refresh}>Retry</button></main>;
+  if (!currentTicket && !error) return <main className="ticket-detail-page" aria-busy="true"><p role="status">Loading ticket…</p></main>;
+  if (!currentTicket) return <main className="ticket-detail-page"><p role="alert">This ticket is unavailable.</p><a href="/student/dashboard">Back to dashboard</a></main>;
+  const terminal = currentTicket.status === 'CLOSED' || currentTicket.status === 'RESOLVED';
   return <main className="ticket-detail-page">
     <article className="ticket-detail-card" aria-labelledby="ticket-detail-title">
       <a className="ticket-detail-back" href="/student/dashboard">Back to dashboard</a>
-      <div className="ticket-detail-title-row"><div><p className="ticket-detail-eyebrow">Ticket details</p><h1 id="ticket-detail-title">{ticket.title}</h1></div><span className={`ticket-status ticket-status--${ticket.status.toLowerCase()}`}>{ticket.status}</span></div>
+      <div className="ticket-detail-title-row"><div><p className="ticket-detail-eyebrow">Ticket details</p><h1 id="ticket-detail-title">{currentTicket.title}</h1></div><span className={`ticket-status ticket-status--${currentTicket.status.toLowerCase()}`}>{currentTicket.status}</span></div>
       {error && <p role="alert">{error} <button type="button" onClick={() => nextCursor ? void load(nextCursor) : void refresh()}>Retry</button></p>}
       <dl className="ticket-detail-meta">
         <>
-        <div><dt>Language</dt><dd>{ticket.language}</dd></div><div><dt>Concept tags</dt><dd>{ticket.conceptTags.length ? ticket.conceptTags.join(', ') : 'No concept tags'}</dd></div>
-        <div><dt>Created</dt><dd>{dateTime(ticket.createdAt)}</dd></div><div><dt>Last updated</dt><dd>{dateTime(ticket.updatedAt)}</dd></div>
-        {ticket.status === 'CLAIMED' && <div><dt>Claim</dt><dd>Claimed by a teaching assistant</dd></div>}
-        {ticket.fixNote && <div><dt>Resolution note</dt><dd className="ticket-detail-preserve">{ticket.fixNote}</dd></div>}
-        {ticket.resolvedAt && <div><dt>Resolved</dt><dd>{dateTime(ticket.resolvedAt)}</dd></div>}
+        <div><dt>Language</dt><dd>{currentTicket.language}</dd></div><div><dt>Concept tags</dt><dd>{currentTicket.conceptTags.length ? currentTicket.conceptTags.join(', ') : 'No concept tags'}</dd></div>
+        <div><dt>Created</dt><dd>{dateTime(currentTicket.createdAt)}</dd></div><div><dt>Last updated</dt><dd>{dateTime(currentTicket.updatedAt)}</dd></div>
+        {currentTicket.status === 'CLAIMED' && <div><dt>Claim</dt><dd>Claimed by a teaching assistant</dd></div>}
+        {currentTicket.fixNote && <div><dt>Resolution note</dt><dd className="ticket-detail-preserve">{currentTicket.fixNote}</dd></div>}
+        {currentTicket.resolvedAt && <div><dt>Resolved</dt><dd>{dateTime(currentTicket.resolvedAt)}</dd></div>}
         </>
       </dl>
       <section className="ticket-description" aria-label="Ticket description">
-        <h2>Expected behaviour</h2><p className="ticket-detail-preserve">{ticket.expectedBehaviour || 'No details provided.'}</p>
-        <h2>Actual behaviour</h2><p className="ticket-detail-preserve">{ticket.actualBehaviour || 'No details provided.'}</p>
-        <h2>What I tried</h2><p className="ticket-detail-preserve">{ticket.attempted || 'No details provided.'}</p>
-        {ticket.errorOutput && <><h2>Error output</h2><pre className="ticket-detail-preserve">{ticket.errorOutput}</pre></>}
+        <h2>Expected behaviour</h2><p className="ticket-detail-preserve">{currentTicket.expectedBehaviour || 'No details provided.'}</p>
+        <h2>Actual behaviour</h2><p className="ticket-detail-preserve">{currentTicket.actualBehaviour || 'No details provided.'}</p>
+        <h2>What I tried</h2><p className="ticket-detail-preserve">{currentTicket.attempted || 'No details provided.'}</p>
+        {currentTicket.errorOutput && <><h2>Error output</h2><pre className="ticket-detail-preserve">{currentTicket.errorOutput}</pre></>}
       </section>
-      {(ticket.files?.length || ticket.repoUrl) ? <section className="ticket-sources"><h2>Attached source context</h2>
-        {ticket.files?.map((file, index) => <details key={`${file.filename}-${index}`}><summary>{file.filename}</summary><pre className="ticket-detail-preserve">{file.content}</pre></details>)}
-        {ticket.repoUrl && <div><p>Repository reference</p><p className="ticket-detail-preserve">{ticket.repoUrl}</p><ul>{ticket.repoFilePaths?.map((item) => <li key={item}>{item}</li>)}</ul></div>}
+      {(currentTicket.files?.length || currentTicket.repoUrl) ? <section className="ticket-sources"><h2>Attached source context</h2>
+        {currentTicket.files?.map((file, index) => <details key={`${file.filename}-${index}`}><summary>{file.filename}</summary><pre className="ticket-detail-preserve">{file.content}</pre></details>)}
+        {currentTicket.repoUrl && <div><p>Repository reference</p><p className="ticket-detail-preserve">{currentTicket.repoUrl}</p><ul>{currentTicket.repoFilePaths?.map((item) => <li key={item}>{item}</li>)}</ul></div>}
       </section> : null}
       <section className="ticket-thread" aria-labelledby="ticket-thread-title">
         <h2 id="ticket-thread-title">Conversation</h2>
@@ -183,7 +186,7 @@ export default function TicketDetailPage({ ticketId }: { ticketId: string }) {
           {replyError && <p id="ticket-reply-error" role="alert">{replyError}</p>}<button type="submit" disabled={replyPending}>{replyPending ? 'Sending…' : 'Send reply'}</button>
         </form>
       </section>}
-      {ticket.status !== 'RESOLVED' && <section className="ticket-close-section"><h2>Close ticket</h2><p>This closes the ticket without marking it as resolved.</p><button type="button" className="ticket-close-button" disabled={ticket.status === 'CLOSED' || closePending || needsCloseRefresh} onClick={() => void closeTicket()}>{closePending ? 'Closing…' : ticket.status === 'CLOSED' ? 'Ticket closed' : 'Close Ticket'}</button></section>}
+      {currentTicket.status !== 'RESOLVED' && <section className="ticket-close-section"><h2>Close ticket</h2><p>This closes the ticket without marking it as resolved.</p><button type="button" className="ticket-close-button" disabled={currentTicket.status === 'CLOSED' || closePending || needsCloseRefresh} onClick={() => void closeTicket()}>{closePending ? 'Closing…' : currentTicket.status === 'CLOSED' ? 'Ticket closed' : 'Close Ticket'}</button></section>}
       {needsCloseRefresh && <button type="button" className="ticket-secondary" onClick={async () => {
         const refreshed = await refresh();
         if (refreshed) {
@@ -195,5 +198,6 @@ export default function TicketDetailPage({ ticketId }: { ticketId: string }) {
       }}>Refresh ticket status</button>}
       {feedback && <p className="ticket-feedback" role="status" aria-live="polite">{feedback}</p>}
     </article>
+    <StudentHelpChat key={ticketId} endpoint={`/api/tickets/${encodeURIComponent(ticketId)}/help-chat`} introduction="I can help you understand this ticket's coding concepts and work through progressive hints." />
   </main>;
 }

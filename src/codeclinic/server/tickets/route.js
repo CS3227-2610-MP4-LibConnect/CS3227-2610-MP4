@@ -1,8 +1,10 @@
 const crypto = require('crypto');
 const express = require('express');
 const { createSessionAuthenticator, hashSubmittedCsrf } = require('../auth/login');
-const { validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor } = require('./validation');
+const { validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor, validateTicketListQuery } = require('./validation');
+const { decodeListCursor, encodeListCursor } = require('./list-cursor');
 const { Timestamp } = require('@google-cloud/firestore');
+const { createStudentHelpChatRouter } = require('./student-help-chat');
 
 const MAX_BODY_BYTES = 128 * 1024;
 const RETRY_MESSAGE = 'Ticket service is temporarily unavailable. Please try again.';
@@ -51,6 +53,36 @@ function createTicketsRouter({ repository, authStore, store, now = Date.now } = 
   }
   const authenticateRequest = createSessionAuthenticator(repository, authStore, now);
   const router = express.Router();
+  router.use(createStudentHelpChatRouter({ authenticateRequest, repository, store, csrfMatches }));
+
+  router.get('/', async (req, res) => {
+    res.set('Cache-Control', 'no-store');
+    try {
+      const input = validateTicketListQuery(req.query);
+      if (!input) return res.status(400).json({ message: 'Invalid ticket request.' });
+      const cursor = input.cursor === undefined ? undefined : decodeListCursor(input.cursor, input.view, Timestamp);
+      if (input.cursor !== undefined && !cursor) return res.status(400).json({ message: 'Invalid ticket request.' });
+      const auth = await authenticateRequest(req, res);
+      if (!auth) return res.status(401).json({ message: AUTH_REQUIRED });
+      if (auth.accountType !== 'STUDENT') return res.status(403).json({ message: FORBIDDEN });
+      const account = await repository.getUserById(auth.session.userId);
+      if (!account || account.userId !== auth.session.userId || account.accountStatus !== 'ACTIVE' ||
+          account.accountType !== 'STUDENT') return res.status(401).json({ message: AUTH_REQUIRED });
+      if (account.mustChangePassword === true) {
+        return res.status(403).json({ code: 'PASSWORD_CHANGE_REQUIRED', message: 'Change your temporary password to continue.' });
+      }
+      const result = await store.listPage(auth.session.userId, input.view, cursor);
+      const response = { tickets: result.tickets };
+      if (result.nextCursor) {
+        const nextCursor = encodeListCursor(input.view, result.nextCursor);
+        if (!nextCursor) throw new Error('Invalid ticket page boundary.');
+        response.nextCursor = nextCursor;
+      }
+      return res.status(200).json(response);
+    } catch (error) {
+      return res.status(503).json({ message: RETRY_MESSAGE });
+    }
+  });
 
   router.get('/active', async (req, res) => {
     res.set('Cache-Control', 'no-store');

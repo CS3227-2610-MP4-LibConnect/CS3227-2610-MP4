@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-my-tickets",
+  "batch": 2,
+  "items": ["T03", "T04"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-my-tickets.md", "version": "0.1" },
+    "checklist": { "path": "workflow/tasks/student-my-tickets/tasks.md", "version": "0.1" },
+    "handoff": { "path": "workflow/tasks/student-my-tickets/handoff.md", "version": "0.1" }
+  },
+  "approvalEvidence": "workflow/tasks/student-my-tickets/approval-batch-plan-v0.1.md",
+  "implementer": {
+    "agentId": "ticket_implement_batch2",
+    "worktree": "shared workspace; preserves user's existing dashboard wording and reviewed Batch 1 changes",
+    "allowedFiles": [
+      "src/codeclinic/src/tickets/MyTicketsPage.tsx",
+      "src/codeclinic/src/tickets/MyTicketsPage.css",
+      "src/codeclinic/src/tickets/StudentTicketCard.tsx",
+      "src/codeclinic/src/tickets/StudentTicketCard.css",
+      "src/codeclinic/src/DashboardViews.css",
+      "src/codeclinic/test",
+      "docs/UserGuide.md",
+      "docs/DeveloperGuide.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "ticket_review_batch2",
+    "worktree": "C:/Users/Junho/AppData/Local/Temp/student-my-tickets-batch2-checkout (clean local clone with exact approved task files overlaid)",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T03": {
+      "implementationReport": "workflow/tasks/student-my-tickets/implementation-T03.md",
+      "implementationLog": "logs/tasks/student-my-tickets/implementation-T03.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentMyTickets.test.tsx test/StudentTicketActivity.test.tsx test/StudentTicketCard.test.tsx test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js", "result": "pass" },
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/review-initial-retry.test.tsx (review-only test in separate clone before correction)", "result": "fail" },
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentMyTickets.test.tsx test/StudentTicketActivity.test.tsx test/StudentTicketCard.test.tsx test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js (after approved correction)", "result": "pass" },
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentMyTickets.test.tsx test/StudentTicketActivity.test.tsx test/StudentTicketCard.test.tsx test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js test/review-initial-retry.test.tsx (independent clean clone re-review)", "result": "pass" },
+        { "command": "npm run build (after approved correction and independent re-review)", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-my-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-my-tickets/review-batch-2.md",
+      "reviewVerdict": "pass"
+    },
+    "T04": {
+      "implementationReport": "workflow/tasks/student-my-tickets/implementation-T04.md",
+      "implementationLog": "logs/tasks/student-my-tickets/implementation-T04.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/StudentMyTickets.test.tsx test/StudentTicketActivity.test.tsx test/StudentTicketCard.test.tsx test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js test/student-ticket-activity.emulator.test.js (local emulator)", "result": "pass" },
+        { "command": "npm run build", "result": "pass" },
+        { "command": "npm test -- --watchAll=false --runInBand (broad run before Student-only scope steering; unrelated TA index suite)", "result": "fail" },
+        { "command": "Human rendered check at /student/tickets, 320 x 800 CSS pixels (before report)", "result": "skipped" },
+        { "command": "Human rendered check at /student/tickets, 320 x 800 CSS pixels (verification-T04-human.md)", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-my-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-my-tickets/review-batch-2.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

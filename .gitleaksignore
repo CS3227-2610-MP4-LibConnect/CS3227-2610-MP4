@@ -11,3 +11,6 @@
 
 # Example App Check debug token in an upstream Firebase skill doc (removed in the 2026-11-08 skill pruning).
 405482a16073016821d684eb2cd36e8c03aee660:.agents/skills/firebase-ai-logic-basics/SKILL.md:generic-api-key:232
+
+# Synthetic token in the student ticket help redaction test.
+34604f8c90e00f95696a8b614a6ef566db0721a1:src/codeclinic/test/student-ticket-help.feature.test.js:generic-api-key:21

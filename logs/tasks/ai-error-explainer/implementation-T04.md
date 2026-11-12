@@ -1,0 +1,9 @@
+# T04 factual execution log
+
+- Preflight: read `AGENTS.md`, implementer profile, workflow adapter, approved v0.4 specification, v0.3 checklist/handoff, active design amendment, current-state index, approved dispatch proposal, and assignment manifest.
+- `node src/workflow/validate-assignment.mjs workflow/tasks/ai-error-explainer/assignment-batch-3.json plan` — passed.
+- `openspec status --change ai-error-explainer --json` — CLI returned `change_error`, “Change 'ai-error-explainer' not found. No changes exist.” Continued through the documented `workflow/specs/` canonical adapter, as the handoff/current-state record requires; no parallel spec tree was created.
+- Focused test command (from `src/codeclinic`): `npm test -- --watchAll=false --runInBand --runTestsByPath test/student-help-chat.api.test.js test/student-ticket-help.feature.test.js` — **PASS**, 2 suites, 78 tests. Full final output: `implementation-T04-run.txt`.
+- The first focused attempt exposed that the test fixture supplied an owner ID inside ticket data. The route was narrowed to an explicit allowlist of problem fields and the final focused run passed. An intermediate test assertion also matched `reply-2` within `reply-20`; assertion now checks exact reply objects.
+- No provider/network/credential calls; no TA tests/files; no ticket/reply writes.
+- Orchestrator review identified a potential unbounded page scan and assignment race. T04 performs complete serialized redaction after each page and uses a 2,048-code-unit safety margin before early-stop, followed by an exact full-context check before provider invocation. The margin allows bounded redaction patterns to complete across a page boundary; shared open-ended private-key/assignment patterns already collapse to a marker on each prefix. Assignment changes during a multi-page scan fail closed. Focused cap-stop and assignment-change tests pass. Independent review should assess this reasoning.

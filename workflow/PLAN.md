@@ -1,7 +1,7 @@
 # CodeClinic Delivery Plan
 
-Version: 0.1 (2026-11-08)
-Approval evidence: human replied "approved" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state. The owner names remain to be confirmed by the team.
+Version: 0.2 (2026-11-12)
+Approval evidence: human replied "approved" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state. The v0.2 Student chatbot status and scope reconciliation was requested by the human on 2026-11-12. The owner names remain to be confirmed by the team.
 
 This plan orders the CodeClinic features by dependency and assigns ownership.
 Product scope is defined in `Overview.md`; acceptance criteria belong in each
@@ -20,11 +20,13 @@ Submission deadline: 13 Nov 2026, 2pm SGT.
 | 1 | `codeclinic-rename` | Implements the three role-rename specs, removes the retired Book catalog, renames all internal LibConnect names, moves the email helpers | — | Shared | Checklist and handoff v0.1 approved |
 | 2 | `environments-and-deployment` | Local development and one production Firebase project (`libconnect-mp4`), production secrets, GitHub Actions CI/CD | — | Shared | v0.3 approved; the repo has been deployed by a teammate (the human, 2026-11-09) |
 | 2 | `ai-gateway` | Shared SoC LLM client: rate limits, timeouts, schema validation, redaction, token caps, fallback, usage records | — | Shared | v0.1 approved; design input in `workflow/tasks/ai-gateway/design.md` |
-| 3 | `student-tickets` | Create, edit, close, view tickets; files; reply thread | `role-based-dashboards` | Student owner | Not drafted |
+| 3 | `student-tickets` | Create tickets with optional code files or repository reference; editing deferred to later work | `role-based-dashboards` | Student owner | v0.4 approved; creation implemented and independently reviewed |
 | 3 | `ta-ticket-queue` | Queue, filters, claim/unclaim, reply, resolve with fix note | `student-tickets` data model | TA owner | v0.1 approved; implemented, reviewed, and accepted 2026-11-09 |
-| 4 | `ai-error-explainer` | Student AI: error explanation, concept, hints only, ticket rewrite | `ai-gateway`, `student-tickets` | Student owner | Not drafted |
+| 4 | `student-ticket-activity` | Dashboard active-ticket cards; owned ticket detail and reply thread; Student reply and close | `student-tickets` data model and creation | Student owner | v0.3 approved; implemented, independently reviewed, and human-verified at 320 CSS pixels |
+| 4 | `ai-error-explainer` | Student ticket help chatbot on Create Ticket and owned ticket detail: concept explanations, progressive hints, and create-page wording suggestions shown only in chat | `ai-gateway`, `student-tickets`, `student-ticket-activity` | Student owner | v0.6 approved; implemented, independently reviewed, and human browser/screen-reader verified; committed locally 2026-11-12. Provider compatibility and human merge decision pending |
 | 4 | `ai-ta-assist` | TA AI: Fix Note Drafter and Queue Insights | `ai-gateway`, `ta-ticket-queue` | TA owner | v0.2 approved; implemented, reviewed, and accepted 2026-11-09 (live SoCLaaS test passed) |
 | 4 | `bug-faq` | Search anonymised resolved tickets; replaces retired `member-catalog-search` | `ta-ticket-queue` | Student owner | Not drafted |
+| 5 | `student-my-tickets` | Paginated owner-scoped Open/Closed ticket lists with status labels and shared dashboard cards | `student-tickets` data model, `student-ticket-activity` dashboard and routes | Student owner | v0.1 approved; implemented, independently reviewed, and committed locally 2026-11-10; Firestore index not deployed |
 | 5 | `notifications` | Inbox for claimed, reply, and resolved events | `ta-ticket-queue` | Shared | v0.1 approved |
 | 5 | `account-management` | Self-service profile updates; TA student support; Coordinator TA support | `role-based-dashboards` | Shared | v0.1 approved |
 | 6 | `session-requests` | *Optional:* student requests and TA approvals of live sessions | `ta-ticket-queue` | Student and TA owners | Not drafted |
@@ -77,8 +79,6 @@ Context and resource use:
 - Put the stable system prompt and fixed instructions first, and the user's
   input last, so the provider can reuse cached prompt prefixes.
 - Send only the minimum ticket fields each feature needs.
-- Use the token counts in `AIUsageRecord` data for analysis in
-  `docs/Reflections.md`.
 
 ### AI security controls
 
@@ -88,7 +88,8 @@ Required by `Overview.md`, to be specified and tested in `ai-gateway`,
 - Prompt-injection tests: ticket text, code, files, and replies are untrusted.
 - Cross-student isolation tests: a student's AI request never includes another
   student's tickets.
-- Hint-only tests: the Error Explainer must not return a full solution.
+- Hint-only tests: the Student ticket help chatbot must not return a full
+  solution, finished code, exact patch, or answer sequence.
 - Schema-validated AI output, with no data change until the authorized user
   confirms.
 - Secret redaction before LLM calls.
@@ -120,3 +121,4 @@ their own module.
 - 2026-11-08: Updated the environments notes for the approved local-development and single-production-project setup.
 - 2026-11-08: To finish faster, the human approved three schedule changes. First, `account-management` AM-G1 and `notifications` N-G1 start before `codeclinic-rename` is fully merged. Second, one independent review covers each wave instead of each group. Third, after Wave 1, one implementer per feature runs that feature's remaining groups back to back, with a single independent review at the end. Critical or High findings still go to the human.
 - 2026-11-09: Status update at the human's direction. `ta-ticket-queue` and `ai-ta-assist` are implemented, reviewed and accepted. The human said a teammate has deployed the repo, so `environments-and-deployment` is marked accordingly. The order, dependencies and ownership are unchanged.
+- 2026-11-12: At the human's direction, reconciled `ai-error-explainer` with its approved v0.6 Student ticket help chatbot specification and locally committed implementation. The chat is page-local and read-only with respect to tickets; create-page wording suggestions appear only in chat. Independent review and human browser/screen-reader checks passed. A separately authorized deployed-provider compatibility check and the human merge decision remain open. Removed the instruction to report gateway token counts in `docs/Reflections.md` in line with the human's earlier direction not to include runtime metrics in reports.

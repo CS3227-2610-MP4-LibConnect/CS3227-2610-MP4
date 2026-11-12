@@ -1,0 +1,74 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watch=false --runInBand --forceExit --runTestsByPath test/student-ticket-help.feature.test.js
+
+(node:17524) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/student-ticket-help.feature.test.js
+  Student ticket help feature policy
+    √ uses fixed, bounded gateway policy and serializes every draft field verbatim (4 ms)
+    √ accepts valid hint, clarification, refusal and create refinement shapes (6 ms)
+    √ rejects unsafe or inexact output
+    √ rejects unsafe or inexact output (1 ms)
+    √ rejects unsafe or inexact output
+    √ rejects unsafe or inexact output
+    √ rejects unsafe or inexact output
+    √ detail parser rejects create-only refinement
+    √ create wording request has exact schema guidance and accepts a grounded refinement (9 ms)
+    √ redacts the complete create draft and detail reply context before fake-provider transport (5 ms)
+    √ sparse create wording request accepts one clarifying question (1 ms)
+    √ create wording request rejects malformed JSON with a safe error (2 ms)
+    √ create wording request rejects fenced JSON with a safe error (1 ms)
+    √ create wording request rejects overlong suggestion with a safe error (1 ms)
+    √ create wording request rejects unsafe suggestion with a safe error (1 ms)
+    √ registered gateway rejects raw wrapped provider output (1 ms)
+    √ registered gateway rejects raw wrapped provider output (1 ms)
+    √ registered gateway uses trusted page context to reject detail refinements (1 ms)
+    √ registered gateway rejects JavaScript return syntax (1 ms)
+    √ registered gateway rejects JavaScript await call syntax
+    √ registered gateway rejects JavaScript declaration syntax
+    √ registered gateway rejects JavaScript import syntax (1 ms)
+    √ registered gateway rejects JavaScript control flow syntax (1 ms)
+    √ registered gateway rejects JavaScript exception syntax
+    √ registered gateway rejects JavaScript catch syntax (1 ms)
+    √ registered gateway rejects JavaScript call syntax (1 ms)
+    √ registered gateway rejects nested JavaScript call syntax
+    √ registered gateway rejects Python return syntax
+    √ registered gateway rejects Python exception syntax (1 ms)
+    √ registered gateway rejects Python break syntax (1 ms)
+    √ registered gateway rejects Python continue syntax
+    √ registered gateway rejects Python pass syntax (1 ms)
+    √ registered gateway rejects Python assert syntax (1 ms)
+    √ registered gateway rejects Python exception handler syntax
+    √ registered gateway rejects Python yield syntax
+    √ registered gateway rejects Python import syntax (1 ms)
+    √ registered gateway rejects Python definition syntax (1 ms)
+    √ registered gateway rejects Python loop syntax
+    √ registered gateway rejects Python lambda syntax (1 ms)
+    √ registered gateway rejects Python nested call syntax (1 ms)
+    √ registered gateway rejects assignment syntax (1 ms)
+    √ registered gateway rejects SQL select syntax
+    √ registered gateway rejects SQL select and filter syntax (1 ms)
+    √ registered gateway rejects SQL delete syntax (1 ms)
+    √ registered gateway rejects SQL insert syntax
+    √ registered gateway accepts function notation prose: Use f(x) to describe the mapping. (1 ms)
+    √ registered gateway accepts complexity notation prose: The runtime is O(n).
+    √ registered gateway accepts lambda explanation prose: A lambda expression is an anonymous function. (1 ms)
+    √ registered gateway accepts return explanation prose: The return value describes the result. (1 ms)
+    √ registered gateway accepts throw explanation prose: A throw statement transfers control to an error handler.
+    √ registered gateway accepts raise explanation prose: Raising an exception signals a failure.
+    √ registered gateway accepts throwing explanation prose: Throwing an exception transfers control to an error handler. (1 ms)
+    √ registered gateway accepts raising explanation prose: Raising errors helps signal invalid input. (1 ms)
+    √ registered gateway accepts break explanation prose: The break statement exits the nearest loop. (5 ms)
+    √ registered gateway accepts pass explanation prose: Pass can mark an intentionally empty block. (1 ms)
+    √ registered gateway accepts await explanation prose: Awaiting a response can take time. (1 ms)
+    √ registered gateway accepts import explanation prose: An import brings a module into scope. (1 ms)
+    √ registered gateway accepts select instruction prose: Select the value from the array, then compare it. (1 ms)
+    √ gateway refuses complete context overflow before transport (3 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       59 passed, 59 total
+Snapshots:   0 total
+Time:        3.682 s
+Ran all test suites within paths "test/student-ticket-help.feature.test.js".
+Force exiting Jest: Have you considered using `--detectOpenHandles` to detect async operations that kept running after all tests finished?

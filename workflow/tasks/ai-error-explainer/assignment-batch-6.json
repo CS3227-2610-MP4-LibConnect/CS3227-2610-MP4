@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 2,
+  "taskId": "ai-error-explainer",
+  "batch": 6,
+  "items": ["T10"],
+  "splitReason": "Messaging-style UI and accessibility behavior require independent review before T08 combined verification.",
+  "artifacts": {
+    "spec": { "path": "workflow/specs/ai-error-explainer.md", "version": "0.6" },
+    "checklist": { "path": "workflow/tasks/ai-error-explainer/tasks.md", "version": "0.6" },
+    "handoff": { "path": "workflow/tasks/ai-error-explainer/handoff.md", "version": "0.6" }
+  },
+  "approvalEvidence": "workflow/tasks/ai-error-explainer/batch-6-dispatch-proposal.md",
+  "implementer": {
+    "agentId": "/root/batch6_messaging_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/tickets/StudentHelpChat.tsx",
+      "src/codeclinic/src/tickets/StudentHelpChat.css",
+      "src/codeclinic/test/StudentHelpChat.test.tsx",
+      "src/codeclinic/test/StudentTicketHelpChat.test.tsx",
+      "workflow/tasks/ai-error-explainer/implementation-T10.md",
+      "logs/tasks/ai-error-explainer/implementation-T10.md",
+      "logs/tasks/ai-error-explainer/implementation-T10-test.txt",
+      "logs/tasks/ai-error-explainer/implementation-T10-build.txt"
+    ]
+  },
+  "reviewer": {
+    "agentId": "/root/batch6_messaging_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Repository .git is read-only in the supplied workspace. A different reviewer will inspect the exact Student-only T10 component/style/test change, run focused checks, and retain an independent report before T08 dispatch.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/ai-error-explainer/review-T10.md",
+      "logs/tasks/ai-error-explainer/review-T10.md",
+      "logs/tasks/ai-error-explainer/review-T10-test.txt",
+      "logs/tasks/ai-error-explainer/review-T10-build.txt"
+    ]
+  },
+  "itemEvidence": {
+    "T10": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T10.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T10.md",
+      "checks": [
+        { "command": "CI=true npm test -- --watch=false --runInBand StudentHelpChat.test.tsx StudentTicketHelpChat.test.tsx", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T10.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T10.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

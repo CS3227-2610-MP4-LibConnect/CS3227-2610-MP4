@@ -171,15 +171,6 @@ validator checks file presence, not the truth of an approval, test result, or
 verdict. A failed or skipped check and a review finding remain visible in the
 manifest and require the normal decision path.
 
-For workflow runs started after this requirement, the orchestrator adds a
-**Subagent token usage** section to the final `implementation-report.md`. Do
-not amend completed reports retrospectively. Record one row per subagent run:
-role, assigned batch or task, model, runtime-provided input, output, and total
-token counts, and metric source. Use `unavailable` for a field the runtime does
-not expose; do not estimate counts. State when no subagents ran. Report an
-aggregate only if every included run has a reported total. Do not include
-runtime session IDs or private prompt content.
-
 ## Handoff rules
 
 Every handoff identifies the exact specification and task versions or commits,

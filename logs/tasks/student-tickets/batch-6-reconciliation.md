@@ -1,0 +1,7 @@
+# Batch 6 reconciliation (2026-11-12)
+
+- Reviewed specification v0.5, checklist v0.4, handoff v0.4, Batch 6 assignment, implementation T06/T07 reports, reviewer report, and the human's browser-check reply in this conversation.
+- Human-reported `/student/tickets/new` check at 320 × 640 CSS pixels passed for picker metadata/removal, oversized-file error, keyboard focus, overflow, chat popup, and Submit usability. This check preceded the small source-error focus correction; the reviewer judged a repeat unnecessary and verified the corrected focus path with a regression test.
+- Implementer: focused T06 tests passed (2 suites, 28 tests); T07 integration tests passed (4 suites, 96 tests); production build passed. Reviewer: integration run passed (4 suites, 96 tests), and after the focus correction a targeted suite passed (20 tests). Full command output and non-failing warnings remain in the implementation and review logs.
+- Initial `node src/workflow/validate-assignment.mjs workflow/tasks/student-tickets/assignment-batch-6.json complete` failed because two `checks[].result` values contained counts rather than the schema's required `pass` value. The manifest was corrected without changing the test evidence. Rerun exited 0: `Assignment batch 6 complete checks passed. Human approval and evidence review remain separate.`
+- After reviewing the evidence and successful manifest validation, the orchestrator checked T06 and T07 in `tasks.md` and updated `current-state.md`. No commit, merge, push, or deployment was performed.

@@ -1,0 +1,14 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --watch=false --runInBand StudentHelpChat.test.tsx StudentTicketHelpChat.test.tsx
+
+(node:39244) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS test/StudentTicketHelpChat.test.tsx (7.181 s)
+PASS test/StudentHelpChat.test.tsx
+
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        15.543 s
+Ran all test suites matching /StudentHelpChat.test.tsx|StudentTicketHelpChat.test.tsx/i.

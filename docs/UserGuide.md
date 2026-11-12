@@ -1,14 +1,15 @@
 # User Guide
 
 CodeClinic is a help desk for programming courses. Students submit coding
-problems as tickets, and TAs claim, answer, and resolve them. AI coaches students
-with hints and helps TAs, without doing the work for them.
+problems as tickets, and TAs claim, answer, and resolve them. Optional AI help
+offers Students hints and ticket-wording suggestions and assists TAs; its
+suggestions do not act on tickets by themselves.
 
 The current build provides registration, sign-in, account updates, account
-support, a notifications inbox, Student ticket creation and activity, and a
-My Tickets placeholder. Ticket editing, a full My Tickets list, TA ticket
-workflows, and role-specific AI features are not available yet; [Planned
-features](#planned-features) lists them.
+support, a notifications inbox, Student ticket creation and activity, the full
+My Tickets list, Student ticket help chat, TA ticket workflows, and TA AI
+features. Ticket editing is not available yet;
+[Planned features](#planned-features) lists it.
 
 ## Accessing the app
 
@@ -63,14 +64,29 @@ or eight hours after signing in.
 The Student dashboard is a landing page headed **Student Dashboard**. It shows
 **Welcome back** followed by your registered name. Select **CodeClinic** at the
 top left to return to the dashboard, or **Log out** at the top right to sign
-out. The navigation also includes **Account** and **Notifications**.
+out. The navigation includes **Create Ticket**, **My Tickets** immediately to
+its right, **Account**, and **Notifications**.
 
 The **Active tickets** section shows up to five of your most recently updated
 open or claimed tickets. Select a ticket card to see its details and
 conversation. A loading message appears while tickets are fetched; if there
-are none, the section says so. If loading fails, use **Retry**. **Load all**
-opens the protected My Tickets page, which explains that the full list is
-coming later and links back to the dashboard.
+are none, the section says so. If loading fails, use **Retry**. Select **View
+all tickets** or **My Tickets** in the header to open your protected ticket
+list.
+
+## My Tickets
+
+My Tickets opens at `/student/tickets` with **Open** selected and shows your
+`OPEN` and `CLAIMED` tickets. Select **Closed** to see both `CLOSED` and
+`RESOLVED` tickets, or select **Open** to return. Each card uses the dashboard
+layout: title, language and readable status (**Open**, **Claimed**, **Closed**,
+or **Resolved**), then concept tags or **No concept tags**. Closed-view cards
+are slightly greyed out. Select a card to open its details.
+
+The page loads 20 tickets at a time. Select **Load more** to continue through
+the selected view. If there are no tickets in that view, the page says so. If
+a request fails, use **Retry**; tickets already loaded remain visible when
+loading a later page fails.
 
 ## Creating a ticket
 
@@ -79,13 +95,49 @@ the header. Enter a title, language, expected behaviour, actual behaviour, and
 what you have tried. **Other** is available in the language list; put the
 specific language name in the title or another detail. Error output, up to five
 concept tags, and source context are optional. For source context, attach up to
-three small code files or provide a public GitHub repository URL and relevant
-file paths. Choose one source method. The form checks the size and format limits
-before sending.
+three local UTF-8 text code files (up to 24 KiB each) or provide a public
+GitHub repository URL and relevant file paths. The form lists selected file
+names and sizes and lets you remove a file. Choose one source method. The form
+checks the file count, size, filename, text encoding, and request-size limits
+before sending; a rejected selection leaves previously accepted files in the
+form.
 
 Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
 you to the Student dashboard and shows a confirmation. If a check or request
 fails, the form stays open with your entries so you can correct them or retry.
+
+### Ticket help bot
+
+On **Create Ticket** (`/student/tickets/new`), select **Open Ticket help bot**
+at the lower right. The side popup starts with **What help do you need?** Ask
+about the programming problem or ask it to improve ticket
+wording, even while the draft is incomplete. It can offer hints, explain a
+concept, ask for more context, or suggest clearer text for specific fields.
+Suggestions appear in the conversation only: the bot never fills the form or
+submits a ticket. The current draft, including attached source content, is
+sent with each question, so review it before selecting **Send**. Chat and ticket
+submission wait until selected files finish reading.
+
+On a ticket you own (`/student/tickets/:ticketId`), the same button appears
+after the ticket loads. This chat uses that ticket and its relevant replies to
+offer hints; it does not rewrite the ticket or post a reply. The bot is not
+available on the dashboard, ticket list, or TA pages.
+
+The popup shows bot messages on the left and yours on the right. Type in the
+**Your question** field and select **Send**. **Clear chat** removes the local conversation;
+the close button or Escape hides the popup, and reopening it keeps the
+conversation while you stay on that page. Refreshing, navigating away, or
+signing out clears it. Only the most recent four exchanges are sent with a new
+question. A failed request keeps your question for another try and does not
+change the ticket or its draft. If the bot is busy, unavailable, or cannot
+prepare a safe reply, wait and retry or continue without it.
+
+The bot cannot guarantee a correct or complete answer. Do not enter passwords,
+API keys, tokens, or other secrets in the chat or ticket draft; automatic
+redaction can miss them. Review any wording suggestion yourself before typing
+it into the ticket.
+
+## Viewing, replying to, and closing a ticket
 
 On a ticket detail page, review its status, language, tags, description, source
 context, and timestamps. The conversation shows each reply's author, role, and
@@ -128,8 +180,7 @@ If another action changed the ticket first, you see "This ticket changed. The
 latest version is shown." Review it and try again. The student is notified when
 you claim, reply to, or resolve their ticket.
 
-Tickets are created by students, which is not available yet, so the queue is
-empty until that feature is released.
+Student-created tickets appear in the queue after they are submitted.
 
 ### AI help for TAs
 
@@ -215,11 +266,8 @@ These CodeClinic features are planned and **not available in the current build**
 
 | Role | Planned feature |
 | --- | --- |
-| Student | View, edit, and close tickets |
-| Student | Reply in a ticket's thread |
-| Student | AI Error Explainer: explains an error and gives hints without a full solution |
+| Student | Edit a ticket after creation |
 | Student | Bug FAQ: search anonymised resolved tickets |
-| TA | AI Fix Note Drafter and AI Queue Insights |
 | Optional | Live session requests and approvals |
 
 This guide will be updated as each feature is released.

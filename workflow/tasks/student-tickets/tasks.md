@@ -1,9 +1,9 @@
 # Implementation checklist: student-tickets
 
-Version: 0.3 (2026-11-09 UI follow-up directed in conversation)
+Version: 0.4 (2026-11-12 file-picker amendment; human-approved in conversation)
 Task ID: `student-tickets`
-Specification: `workflow/specs/student-tickets.md` v0.4, UI follow-up directed 2026-11-09 in the conversation
-Approval state: T01–T04 were approved, implemented, and independently reviewed under the earlier artifact versions. The human directed execution of the scoped T05 follow-up and preservation of the current navbar button order. Commit and merge remain separate decisions.
+Specification: `workflow/specs/student-tickets.md` v0.5, human-approved 2026-11-12
+Approval state: T01–T07 are complete after independent review. The human separately approved specification v0.5, checklist v0.4, handoff v0.4, batch plan v0.3, and Batch 6 dispatch on 2026-11-12. Commit and merge remain separate decisions.
 
 This checklist covers ticket creation only. The human approved the shared-contract reconciliation proposal v0.3 and specification v0.3. Checkboxes are updated by the orchestrator only after independent review. Original task wording from approved v0.1 is retained below; additional v0.2 criteria follow each affected item.
 
@@ -23,11 +23,21 @@ This checklist covers ticket creation only. The human approved the shared-contra
 
 - [x] **T05 — Member header and language placeholder follow-up.** Show the shared authenticated header on the verified Student create-ticket page without changing header action order. Keep authenticated navigation hidden during session checking and denial. Start the language selector on a disabled empty placeholder, then prevent reselecting it. Add focused route/form tests, run focused tests and build, and obtain independent review. (Spec v0.4 R3, R6.)
 
+- [x] **T06 — Select local code files on Create Ticket.** Replace manual filename/content fields with an accessible file picker, accepted-file list and removal controls. Read only valid UTF-8 text after checking filename, 24 KiB bytes, and three-file cap; preserve existing files on rejected selection. Block ticket and create-page help-chat submission while a read is pending. Keep the current JSON `files` shape, 128 KiB serialized-body check, repository-source exclusivity, page-only state, and independent server validation unchanged. Add focused UI tests for valid selection, removal, rejected files, pending reads, source conflict, and request payloads. (Spec v0.5 R3–R4; scenarios 16–19.) Depends on T02 and the reviewed Student help-chat integration.
+
+- [x] **T07 — Verify attachment flow and update guides.** Run focused Create Ticket, help-chat, and ticket API tests plus the production build. Independently review the T06 change and verify that direct API calls still enforce the old limits and authorization contract. Update the User Guide and Developer Guide for the file picker; record spec version, changed files, commands, results, and unresolved risks. Request the human's browser check at `/student/tickets/new` at 320 × 640 CSS pixels for file selection/removal, accessible errors/focus, no horizontal overflow, and unchanged ticket/help-chat behavior. (Spec v0.5 verification matrix and scenarios 16–19.) Depends on T06.
+
 ## Approval boundaries
 
 Specification v0.3, this checklist v0.2, and `handoff.md` v0.2 are human-approved in separate conversation turns. Obtain approval of a revised batch plan and implementation dispatch before production changes. Each batch receives independent review before the next starts. Commit and merge decisions remain human gates.
 
+For v0.5, the human separately approved the specification and this checklist on 2026-11-12. Handoff v0.4 requires its own approval before a new batch plan or dispatch. The checked T01–T05 evidence remains historical and is not reopened.
+
 ## Amendments
+
+- 2026-11-12: T06–T07 completed in approved Batch 6. The human reported the 320 × 640 browser check passed. Focused integration tests passed (4 suites, 96 tests), the production build passed, and independent review passed after a source-error focus correction. The Batch 6 completion manifest validated before these items were checked. Commit and merge remain separate human decisions.
+
+- 2026-11-12: The human approved v0.4 against the separately approved file-picker specification v0.5. Added T06–T07 without changing completed T01–T05 or the server ticket contract. This approval does not approve the handoff or dispatch.
 
 - 2026-11-09: T05 focused suite passed 14/14 tests, production build passed,
   and independent review passed with a shared-workspace provenance limitation.

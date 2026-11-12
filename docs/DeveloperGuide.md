@@ -17,6 +17,8 @@ and the former application path `src/libconnect-mp4`.
 - [Login, sessions, and dashboard access](#login-sessions-and-dashboard-access)
 - [Student ticket creation](#student-ticket-creation)
 - [Student ticket activity](#student-ticket-activity)
+- [Student My Tickets](#student-my-tickets)
+- [Student ticket help chat](#student-ticket-help-chat)
 - [TA ticket queue](#ta-ticket-queue)
 - [TA AI assist](#ta-ai-assist)
 - [Running the production server](#running-the-production-server)
@@ -30,7 +32,7 @@ and the former application path `src/libconnect-mp4`.
 
 ## Current application layout
 
-`src/codeclinic` contains the React and TypeScript frontend (`src/`), the Express API (`server/`), and the tests (`test/`). Under `server/`, `auth/` holds registration, login, sessions, and the Firestore-backed authentication store; `shared/` holds the Firestore rate counter; and `ai/` holds the AI gateway's configuration, feature registry, prompt construction, secret redaction, rate limits, and usage store. The TA AI features in `tickets/` use the gateway (see [TA AI assist](#ta-ai-assist)). Express serves the built frontend on the same origin as `/api/auth/*`. During development, the React server provides hot reload and proxies API calls to Express. Authentication runs through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
+`src/codeclinic` contains the React and TypeScript frontend (`src/`), the Express API (`server/`), and the tests (`test/`). Under `server/`, `auth/` holds registration, login, sessions, and the Firestore-backed authentication store; `shared/` holds the Firestore rate counter; and `ai/` holds the AI gateway's configuration, feature registry, prompt construction, secret redaction, rate limits, and usage store. Student ticket help and TA AI features use the gateway (see [Student ticket help chat](#student-ticket-help-chat) and [TA AI assist](#ta-ai-assist)). Express serves the built frontend on the same origin as `/api/auth/*`. During development, the React server provides hot reload and proxies API calls to Express. Authentication runs through Express with Firebase Admin and Firestore; the browser does not connect to Firestore directly.
 
 ```mermaid
 flowchart LR
@@ -137,16 +139,26 @@ Every dashboard load calls `GET /api/auth/session` before rendering the dashboar
 header link navigate to that route. The form validates
 required text, the seven fixed language choices, up to five trimmed lowercase
 unique tags, optional source context, and the approved text and byte limits.
-Source context is either up to three inline code files or a public GitHub URL
-with relative file paths. The browser requests a CSRF token and submits the
-allowlisted fields to `POST /api/tickets`; it never reads or writes the ticket
-collection directly.
+Source context is either up to three local UTF-8 text files (24 KiB each) or a
+public GitHub URL with relative file paths. `TicketCreatePage` checks each
+selected file's basename and byte size before reading it, strictly decodes the
+bytes as UTF-8, and keeps accepted content in page memory. It displays filename
+and size metadata and supports removal; it does not offer filename/content
+paste controls or use browser storage. A rejected selection preserves earlier
+accepted files. Ticket submission and create-page help-chat sends are blocked
+while a file read is pending. Before the browser requests a CSRF token, it also
+checks the serialized JSON body against 128 KiB and source-method exclusivity.
+The browser submits the existing `files: [{ filename, content }]` shape to
+`POST /api/tickets`; file-size display metadata is not sent. It never reads or
+writes the ticket collection directly.
 
 The ticket router independently checks the cookie-backed session, reloads the
 active Student account, checks CSRF, parses at most 128 KiB, and validates the
-request. `createFirestoreTicketStore` generates the Firestore document ID and
-writes one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains
-the server-derived owner, Firestore `Timestamp` values, null initial claim and
+request, including the three-file and 24 KiB per-file text limits and source
+exclusivity. Client checks are early feedback only.
+`createFirestoreTicketStore` generates the Firestore document ID and writes
+one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains the
+server-derived owner, Firestore `Timestamp` values, null initial claim and
 resolution fields, and empty arrays/null values for absent optional fields.
 Repository URLs are stored as references and are not fetched. Creation does
 not create a persisted notification. A successful `201` lets the client return
@@ -187,7 +199,8 @@ The local Firestore collections used by these flows are `users`, `emailKeys`, `l
 `DashboardRouteGuard` protects `/student/tickets` and
 `/student/tickets/:ticketId` on direct entry and refresh. Express serves the
 SPA shell for the detail path; the browser guard checks the cookie-backed
-session before the ticket page renders. The full My Tickets list is deferred.
+session before either ticket page renders. My Tickets loads the list only
+after the guard succeeds and requests each page from the server.
 
 `GET /api/tickets/active` derives the owner from the verified current Student
 account, queries only `OPEN` and `CLAIMED` records, orders by descending
@@ -210,6 +223,35 @@ Close transitions only active owned tickets to `CLOSED`, clears claim and
 resolution fields, and re-reads state transactionally. The client reports
 success only after server confirmation and reloads state after a conflict.
 
+## Student My Tickets
+
+The protected `/student/tickets` page replaces the former placeholder. The
+Student header places **My Tickets** immediately after **Create Ticket**; the
+dashboard keeps the **View all tickets** link. `MyTicketsPage` defaults to the
+Open view (`OPEN` and `CLAIMED`) and switches to Closed (`CLOSED` and
+`RESOLVED`) with buttons that expose their selected state through
+`aria-pressed`. Both views use `StudentTicketCard`, the same card component as
+the dashboard. Closed-view cards use its muted style while keeping readable
+status labels and visible keyboard focus. Each card opens the existing owned
+ticket detail route.
+
+`GET /api/tickets?view=open|closed&cursor=...` rechecks the active Student
+account and derives the owner from the session on every request. It returns
+only ticket ID, title, language, concept tags, status, and update time. Each
+bounded page returns up to 20 summaries, ordered by descending `updatedAt`
+then ascending `ticketId`; an opaque cursor is bound to the selected view.
+Switching views discards the previous results and cursor. Initial and
+additional-page errors offer Retry, while a failed additional page keeps
+already loaded cards visible. The list query requires the composite index on
+`studentId`, `status`, `updatedAt`, and `ticketId` in
+`firestore.indexes.json`. Production index deployment is separate from
+application code and must precede production use of this query.
+
+Focused My Tickets checks are in `test/StudentMyTickets.test.tsx`,
+`test/StudentTicketCard.test.tsx`, and
+`test/student-my-tickets.contract.test.js`. The synthetic emulator integration
+below covers both views, all four statuses, pagination, and owner isolation.
+
 Run the synthetic Firestore Emulator integration from `src/codeclinic` with the
 emulator at `127.0.0.1:8080` and these variables set in the test shell:
 
@@ -223,9 +265,63 @@ npm test -- --watchAll=false --runInBand --runTestsByPath test/student-ticket-ac
 
 The integration creates synthetic local users, sessions, tickets, and replies,
 then deletes those records. It covers ownership isolation, the indexed five
-ticket query, a 50+1 reply boundary with equal timestamps, a reply and dashboard
-refresh, close field semantics, and concurrent close attempts. It does not
-access a live project or deploy index configuration.
+ticket query, both My Tickets views with all four statuses, tied-time page
+boundaries across 20-item pages for two Students, a 50+1 reply boundary, a
+reply and dashboard refresh, close field semantics, and concurrent close
+attempts. It does not access a live project or deploy index configuration.
+
+## Student ticket help chat
+
+Spec: [`workflow/specs/ai-error-explainer.md`](../workflow/specs/ai-error-explainer.md)
+v0.6. `src/tickets/StudentHelpChat.tsx` and its stylesheet render a small
+lower-right opener and messaging-style side popup on `/student/tickets/new`
+and an owned `/student/tickets/:ticketId` after its authorized load. The popup
+has a stable header, left bot/right Student messages, a scrollable conversation,
+and a bottom composer. The component keeps at most four prior exchanges in
+React memory, clears on page unmount or refresh, and does not use browser
+storage. It renders replies as text. Create-page suggestions never populate
+form fields; no chat action submits or updates a ticket.
+
+`server/index.js` registers `ERROR_EXPLAINER` on the shared gateway and mounts
+the Student router through `server/tickets/route.js`. The two read-only POST
+endpoints are `/api/tickets/help-chat` for an unsubmitted create draft and
+`/api/tickets/:ticketId/help-chat` for an owned ticket. Both require a current
+Student session and CSRF; the detail route checks ownership before reading replies or calling the
+provider. Request bodies accept a question and up to eight alternating prior
+turns. The create route also requires a complete snapshot of every current
+draft field, including empty fields and attached file content; the detail
+route rejects a client-supplied draft. JSON bodies are capped at 128 KiB.
+
+The detail route pages through eligible replies from the owner and the
+currently assigned TA, rather than relying on the first 50 replies displayed
+in the UI. It checks the context cap and fails closed if assignment changes
+during the scan. `server/ai/student-ticket-help.js` fixes the prompt and exact
+`HINT`, create-only `REFINEMENT`, `CLARIFICATION`, and `REFUSAL` JSON shapes.
+The gateway redacts common secret patterns, caps the complete post-redaction
+input at 98,304 UTF-16 code units, requests at most 1,024 output tokens, and
+rejects malformed or unsafe output. A rejected reply maps to a safe
+`AI_INVALID_OUTPUT` 503; the client retains the question for retry. No model
+output can authorize a write. The provisional limits have not been confirmed
+against the deployed model, and the reported Create Ticket wording 503 has no
+observed live-provider retry result.
+
+Focused verification uses injected fake providers and synthetic ticket data.
+From `src/codeclinic`, run:
+
+```powershell
+$env:CI = 'true'
+npm test -- --watchAll=false --runInBand --runTestsByPath test/student-help-chat.api.test.js test/student-ticket-help.feature.test.js test/StudentTicketHelpChat.test.tsx test/StudentHelpChat.test.tsx test/ai-gateway.test.js
+npm run build
+```
+
+The Batch 7 implementation and independent review each passed these five
+suites (127 tests) and the build. The human also verified the popup on both
+Student pages at 320 × 640 CSS pixels and confirmed screen-reader message
+labels and status announcements. See
+[`implementation-report.md`](../workflow/tasks/ai-error-explainer/implementation-report.md)
+and [`security-review-T08.md`](../workflow/tasks/ai-error-explainer/security-review-T08.md)
+for evidence and remaining risks. Live provider calls require separate human
+authorization; local tests do not establish deployed-model compatibility.
 
 ## Account management
 
@@ -352,7 +448,9 @@ firebase emulators:exec --only firestore --project demo-codeclinic "npm test -- 
 `run({ feature, actor, input })`. The startup instance is available at
 `app.locals.aiGateway`. Calling features must first authenticate and authorize
 the actor and data in trusted server code. The gateway itself exposes no HTTP endpoint;
-the TA AI features register on it (see [TA AI assist](#ta-ai-assist)).
+the Student ticket help chat and TA AI features register on it (see
+[Student ticket help chat](#student-ticket-help-chat) and
+[TA AI assist](#ta-ai-assist)).
 
 Configuration is read once from the server environment. Missing or malformed
 `SOCLAAS_API_KEY`, `SOCLAAS_BASE_URL`, or `SOCLAAS_MODEL` disables the gateway
@@ -498,13 +596,13 @@ Shared server code is split by responsibility so each feature reuses one impleme
 | Firestore rate counter | `server/shared/firestore-rate-counter.js` | Fixed-window counters stored in Firestore | Auth store and AI gateway rate limits |
 | Shared theme | `src/theme.css` | Design tokens and reusable visual classes | Every page |
 | Dashboard logout | `src/DashboardLogout.tsx` | One logout flow with CSRF handling | Both dashboards |
-| AI gateway | `server/ai/` | Server-only configuration, redaction and caps, stable prompts, Firestore rate limits, bounded provider transport, schema validation, and safe usage records | Created at server startup; no real feature registered |
+| AI gateway | `server/ai/` | Server-only configuration, redaction and caps, stable prompts, Firestore rate limits, bounded provider transport, schema validation, and safe usage records | Student help chat and TA AI features |
 | Account support | `server/account/` | Own-profile/password updates and server-authorized support operations | Account and support pages |
 | Notifications | `server/notifications/`, `src/notifications/` | Shared writer, own-user inbox API, bell and plain-text inbox | Both dashboards |
 
 Known issue: `server/auth/login.js` still re-exports the email helpers from `server/auth/email.js` for one frontend test import. The re-export can be removed once that test imports `email.js` directly.
 
-The remaining planned shared components, including role-specific AI integrations, are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+The remaining planned shared components are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
 ## Security design
 
@@ -517,7 +615,13 @@ Implemented security controls:
 - Login and registration are rate limited, and failures use generic messages that do not reveal whether an account exists.
 - The browser never accesses Firestore directly.
 
-No role-specific AI feature is exposed yet. The shared AI gateway is created once at server startup, including when configuration is missing; a disabled gateway returns `AI_UNAVAILABLE` while the rest of the server continues. Planned AI security controls are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+The shared AI gateway is created once at server startup, including when
+configuration is missing; a disabled gateway returns `AI_UNAVAILABLE` while
+the rest of the server continues. Student chat routes enforce server-side
+session, Student role, CSRF, and owned-ticket checks before provider use. The
+model has no tools, and its output cannot create, update, or reply to a ticket.
+The finite output filter and pattern redaction reduce risk but cannot
+guarantee against semantic solution leakage or unknown secret formats.
 
 ## Environments and deployment
 
@@ -551,10 +655,11 @@ In the development process:
 - **Paths instead of pasted documents:** handoffs pass artifact paths and versions, so agents read only the sections they need (`workflow/README.md`, *Context and evidence budget*).
 - **One primary record per fact:** reports link to factual logs instead of copying them.
 - **Model choice by role:** the orchestrator and reviewer run at high reasoning effort; routine roles run at medium.
-- **Token usage records:** each subagent reports its token usage for the implementation report.
 - **Skill pruning:** on 8 Nov 2026, nine skills unrelated to the stack (mobile, analytics, Data Connect, and others) were removed from `.agents/skills/`. This cut the skill descriptions loaded into every agent session from 7,269 to 4,446 characters (−39%) and removed about 361 KB of reference files. See `logs/tasks/codeclinic-scope/skills-pruning.md`.
 
-In the app, no LLM calls exist yet. The planned prompt, caching, and token-budget approach is described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
+In the app, AI calls run only after a user requests a Student hint or a TA AI
+feature. Provider configuration is optional; without it, these features return
+safe unavailable states while the rest of the app remains usable.
 
 ## Repository and workflow files
 

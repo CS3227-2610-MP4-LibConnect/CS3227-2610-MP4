@@ -91,6 +91,36 @@ function createStudentFirestoreTicketStore(db, { timestampNow = () => Timestamp.
         };
       });
     },
+    async listPage(studentId, view, cursor) {
+      const statuses = view === 'open' ? ['OPEN', 'CLAIMED'] : ['CLOSED', 'RESOLVED'];
+      let query = db.collection('tickets')
+        .where('studentId', '==', studentId)
+        .where('status', 'in', statuses)
+        .orderBy('updatedAt', 'desc')
+        .orderBy('ticketId', 'asc');
+      if (cursor) query = query.startAfter(cursor.updatedAt, cursor.ticketId);
+      const snapshot = await query.limit(21).get();
+      const docs = snapshot.docs || [];
+      const hasMore = docs.length > 20;
+      const pageDocs = docs.slice(0, 20);
+      const tickets = pageDocs.map((doc) => {
+        const ticket = doc.data();
+        return {
+          ticketId: ticket.ticketId || doc.id,
+          title: ticket.title,
+          language: ticket.language,
+          conceptTags: ticket.conceptTags,
+          status: ticket.status,
+          updatedAt: ticket.updatedAt,
+        };
+      });
+      const last = hasMore ? pageDocs[pageDocs.length - 1] : null;
+      const lastTicket = last ? last.data() : null;
+      return {
+        tickets,
+        nextCursor: lastTicket ? { updatedAt: lastTicket.updatedAt, ticketId: lastTicket.ticketId || last.id } : null,
+      };
+    },
     async create(studentId, input) {
       const ticketRef = db.collection('tickets').doc();
       const timestamp = timestampNow();

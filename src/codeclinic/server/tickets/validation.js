@@ -6,6 +6,7 @@ const ALLOWED_FIELDS = new Set([
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
 const TICKET_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 const CURSOR_PATTERN = /^[A-Za-z0-9_-]{1,256}$/;
+const LIST_CURSOR_PATTERN = /^[A-Za-z0-9_-]{1,512}$/;
 
 function validateTicketId(value) {
   return typeof value === 'string' && TICKET_ID_PATTERN.test(value);
@@ -38,6 +39,15 @@ function encodeReplyCursor(cursor) {
       typeof cursor.replyId !== 'string' || !TICKET_ID_PATTERN.test(cursor.replyId)) return null;
   return Buffer.from(JSON.stringify({ seconds: timestamp.seconds, nanoseconds: timestamp.nanoseconds, replyId: cursor.replyId }))
     .toString('base64url');
+}
+
+function validateTicketListQuery(query) {
+  if (!query || typeof query !== 'object' || Array.isArray(query)) return null;
+  const viewValue = query.view;
+  const cursorValue = query.cursor;
+  if (viewValue !== undefined && (typeof viewValue !== 'string' || !['open', 'closed'].includes(viewValue))) return null;
+  if (cursorValue !== undefined && (typeof cursorValue !== 'string' || !LIST_CURSOR_PATTERN.test(cursorValue))) return null;
+  return { view: viewValue || 'open', cursor: cursorValue };
 }
 
 function characterLength(value) {
@@ -140,4 +150,4 @@ function validateTicketInput(body) {
   };
 }
 
-module.exports = { LANGUAGES, validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor };
+module.exports = { LANGUAGES, validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor, validateTicketListQuery };

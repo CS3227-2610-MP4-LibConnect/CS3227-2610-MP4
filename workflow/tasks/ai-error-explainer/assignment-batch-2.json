@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 2,
+  "taskId": "ai-error-explainer",
+  "batch": 2,
+  "items": ["T02", "T03"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/ai-error-explainer.md", "version": "0.4" },
+    "checklist": { "path": "workflow/tasks/ai-error-explainer/tasks.md", "version": "0.3" },
+    "handoff": { "path": "workflow/tasks/ai-error-explainer/handoff.md", "version": "0.3" }
+  },
+  "approvalEvidence": "workflow/tasks/ai-error-explainer/batch-2-correction-proposal.md",
+  "implementer": {
+    "agentId": "/root/batch2_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/ai/student-ticket-help.js",
+      "src/codeclinic/server/ai/parse.js",
+      "src/codeclinic/server/ai/gateway.js",
+      "src/codeclinic/server/tickets/student-help-chat.js",
+      "src/codeclinic/server/tickets/route.js",
+      "src/codeclinic/server/index.js",
+      "src/codeclinic/test/student-help-chat.api.test.js",
+      "src/codeclinic/test/student-ticket-help.feature.test.js",
+      "workflow/tasks/ai-error-explainer/implementation-T02.md",
+      "workflow/tasks/ai-error-explainer/implementation-T03.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-correction.md",
+      "workflow/tasks/ai-error-explainer/implementation-T03-correction.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-followup.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-followup-2.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-followup-3.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-followup-4.md",
+      "workflow/tasks/ai-error-explainer/implementation-T02-followup-5.md",
+      "logs/tasks/ai-error-explainer/implementation-T02.md",
+      "logs/tasks/ai-error-explainer/implementation-T03.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-correction.md",
+      "logs/tasks/ai-error-explainer/implementation-T03-correction.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-followup.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-followup-2.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-followup-3.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-followup-4.md",
+      "logs/tasks/ai-error-explainer/implementation-T02-followup-5.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "/root/batch2_correction_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Repository .git is read-only in the supplied workspace, so an isolated review checkout is unavailable. A different reviewer will inspect the exact uncommitted diff, verify T02 and T03 separately, run focused safe tests, and retain independent report and log artifacts before the next batch.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/ai-error-explainer/review-T02-T03-correction.md",
+      "logs/tasks/ai-error-explainer/review-T02-T03-correction.md",
+      "workflow/tasks/ai-error-explainer/review-T02-followup.md",
+      "logs/tasks/ai-error-explainer/review-T02-followup.md",
+      "workflow/tasks/ai-error-explainer/review-T02-followup-2.md",
+      "logs/tasks/ai-error-explainer/review-T02-followup-2.md",
+      "workflow/tasks/ai-error-explainer/review-T02-followup-3.md",
+      "logs/tasks/ai-error-explainer/review-T02-followup-3.md",
+      "workflow/tasks/ai-error-explainer/review-T02-followup-4.md",
+      "logs/tasks/ai-error-explainer/review-T02-followup-4.md",
+      "workflow/tasks/ai-error-explainer/review-T02-followup-5.md",
+      "logs/tasks/ai-error-explainer/review-T02-followup-5.md",
+      "workflow/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "logs/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "logs/tasks/ai-error-explainer/review-T02-T03-v0.4-full-test-output.txt"
+    ]
+  },
+  "itemEvidence": {
+    "T02": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T02-followup-5.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T02-followup-5.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand student-ticket-help.feature.test.js ai-gateway.test.js", "result": "pass" },
+        { "command": "npm test -- --watchAll=false --runInBand student-ticket-help.feature.test.js ai-gateway.test.js student-help-chat.api.test.js (86 pass; six T04 detail-route failures)", "result": "fail" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "reviewVerdict": "pass-with-follow-up"
+    },
+    "T03": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T03-correction.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T03-correction.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand student-help-chat.api.test.js (14 create tests pass; six T04 detail-route failures)", "result": "fail" },
+        { "command": "node src/workflow/validate-assignment.mjs workflow/tasks/ai-error-explainer/assignment-batch-2.json plan", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T02-T03-v0.4.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

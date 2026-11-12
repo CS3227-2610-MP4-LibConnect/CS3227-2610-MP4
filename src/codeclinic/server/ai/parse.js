@@ -33,7 +33,7 @@ function stripCodeFence(content) {
   return match ? match[1] : trimmed;
 }
 
-function parseModelOutput(response, featureParse) {
+function parseModelOutput(response, featureParse, requestContext) {
   if (typeof featureParse !== 'function') return INVALID;
   const content = extractContent(response);
   if (content === null) return INVALID;
@@ -47,7 +47,9 @@ function parseModelOutput(response, featureParse) {
 
   let result;
   try {
-    result = featureParse(value);
+    // Keep the original provider text and trusted caller context available to
+    // feature policies. Existing parsers may ignore the second argument.
+    result = featureParse(value, { rawContent: content, requestContext });
   } catch {
     return INVALID;
   }
