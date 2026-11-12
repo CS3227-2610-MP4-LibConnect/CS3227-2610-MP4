@@ -1,7 +1,9 @@
 # AI gateway specification
 
-Version: 0.1 (2026-11-08)
-Approval evidence: the human replied "approved both specs" to version 0.1 on 2026-11-08; recorded at the human's request; no agent-set approval state.
+Version: 0.2 (2026-11-12)
+Approval evidence: the human replied "approved v0.2" to version 0.2 (the R4 and R5 ordering clarification) on 2026-11-12; recorded at the human's request; no agent-set approval state. Earlier, the human replied "approved both specs" to version 0.1 on 2026-11-08; recorded at the human's request.
+
+Change in 0.2: user content is built, redacted and size-checked before any rate-limit capacity is reserved. A request that can never reach the provider no longer uses up a user's or the shared global quota.
 Task ID: `ai-gateway` (from approved `workflow/PLAN.md` v0.1)
 
 ## Purpose and scope
@@ -99,9 +101,9 @@ be rejected before any provider call.
 
 Each call MUST pass, in order, through:
 
-1. **Input validation:** feature registered, actor present, rate limits
-   available (R5), user content non-empty and within `maxInputChars` after
-   redaction (R6).
+1. **Input validation**, in this order: feature registered, actor present,
+   user content non-empty and within `maxInputChars` after redaction (R6),
+   then rate-limit capacity reserved (R5).
 2. **Prompt construction (R7).**
 3. **Provider call (R8).**
 4. **Output parsing (R9).**
@@ -123,8 +125,10 @@ existing counter pattern in `server/auth/firestore-store.js`):
 | Global | 40 calls per minute per environment (`AI_GLOBAL_LIMIT_PER_MINUTE`, at most 45) | All users and features in one environment |
 | Per user | 5 calls per minute and 50 per day | One `userId`, all features |
 
-When either limit is reached, the call returns `AI_RATE_LIMITED` without
-contacting the provider. A counter-store failure MUST fail closed with
+Capacity is reserved only after the feature, the actor and the user content
+pass validation, so a rejected request never uses up quota. When either limit
+is reached, the call returns `AI_RATE_LIMITED` without contacting the
+provider. A counter-store failure MUST fail closed with
 `AI_UNAVAILABLE`.
 
 ### R6. Input caps and redaction

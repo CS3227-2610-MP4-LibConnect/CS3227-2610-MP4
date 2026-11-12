@@ -50,6 +50,15 @@ function createAiGateway({
         outcome = 'DISABLED';
         return UNAVAILABLE;
       }
+      // Validate the content before reserving capacity (spec R4, R5), so a request that can
+      // never reach the provider does not use up the user's or the shared global quota.
+      const content = definition.buildUserContent(request.input);
+      if (typeof content !== 'string' || !content.trim()) return UNAVAILABLE;
+      const redacted = redactAndCap(content, definition.maxInputChars);
+      if (!redacted.ok) {
+        outcome = 'INPUT_TOO_LARGE';
+        return { ok: false, code: 'AI_INPUT_TOO_LARGE' };
+      }
       const reservation = await limiter.reserve(userId);
       if (!reservation || reservation.ok !== true) {
         if (reservation && reservation.code === 'AI_RATE_LIMITED') {
@@ -57,13 +66,6 @@ function createAiGateway({
           return { ok: false, code: 'AI_RATE_LIMITED' };
         }
         return UNAVAILABLE;
-      }
-      const content = definition.buildUserContent(request.input);
-      if (typeof content !== 'string' || !content.trim()) return UNAVAILABLE;
-      const redacted = redactAndCap(content, definition.maxInputChars);
-      if (!redacted.ok) {
-        outcome = 'INPUT_TOO_LARGE';
-        return { ok: false, code: 'AI_INPUT_TOO_LARGE' };
       }
       const messages = buildMessages({ systemPrompt: definition.systemPrompt, content: redacted.content });
       const reply = await provider.send({ messages, maxOutputTokens: definition.maxOutputTokens });
