@@ -13,13 +13,21 @@ features. Ticket editing is not available yet;
 
 ## Accessing the app
 
-- **Deployed app:** not yet available. The production URL will be added here
-  once deployment is set up.
+- **Deployed app:**
+  <https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/>. This is
+  the production environment. Every change merged to `main` is deployed to it.
 - **Local copy:** follow
   [Running the development server](DeveloperGuide.md#running-the-development-server)
   in the Developer Guide, then open `http://localhost:3001/`.
 
 Use only made-up test details. Do not enter a real password you use elsewhere.
+
+**Testing the TA role:** a new TA account cannot sign in until a TA Coordinator
+activates it. Ask the CodeClinic team for the shared test Coordinator account.
+Its sign-in details are shared privately, not in this guide. Sign in with it,
+open **TAs**, and select **Activate** on your TA test account. The test
+Coordinator can also activate, deactivate and reset other test accounts, so
+use it only on accounts you created.
 
 ## Creating an account
 
@@ -34,7 +42,9 @@ Rules:
 - Every field is required. The email must look like `name@example.com`.
 - The password must be at least 8 characters, and both password fields must
   match.
-- Each email address can register only one account.
+- Each email address can register only one account. Registering an email that
+  is already in use shows **An account with this email already exists. Sign in
+  instead, or use a different email.**
 
 After a successful registration, the page confirms it and returns to sign-in
 after five seconds. Select **Go to login now** to return immediately.
@@ -49,9 +59,16 @@ after five seconds. Select **Go to login now** to return immediately.
 2. Under **Sign in as**, choose the account type you registered with.
 3. Select **Sign in**.
 
-If any detail is wrong, including the account type, the page shows **Unable to
-sign in with those details.** It does not say which detail was wrong. After too
-many failed attempts, wait before trying again.
+If the email or password is wrong, the page shows **Incorrect email or
+password.** It does not say which one was wrong. Once the password is correct,
+the page explains the remaining problems:
+
+- **This account is not active. A TA Coordinator must activate it before you
+  can sign in.** A new TA account stays inactive until a Coordinator activates it.
+- **This is a TA account. Select TA to sign in.** (or the Student version): you
+  chose the wrong **Sign in as** option.
+- **Too many sign-in attempts. Please wait a few minutes and try again.**: wait
+  before trying again.
 
 After you sign in, the app opens your dashboard: `/student/dashboard` for a
 Student and `/ta/dashboard` for a TA. If you open the other role's dashboard,
@@ -152,8 +169,11 @@ ticket's close control is disabled.
 
 ## TA dashboard
 
-The TA dashboard is headed **TA Dashboard**. Its navigation includes **Account**,
-**Students**, and **Notifications**. A TA Coordinator also sees **TAs**.
+The TA dashboard is headed **TA Dashboard**. Its **TA workspace** panel has an
+**Open the ticket queue** link. The navigation includes **Queue**, **Students**,
+the **Notifications** bell, and **Account**. A TA Coordinator also sees **TAs**.
+Select **CodeClinic** at the top left to return to the dashboard, or **Log out**
+at the top right to sign out.
 
 ## Ticket queue (TAs)
 
@@ -165,8 +185,20 @@ dashboard. The **Ticket queue** page lists tickets oldest first. Use the
 claimed shows **Claimed by you** or **Claimed**. Select **Load more** to see the
 next 20 tickets, or **Retry** if the list fails to load.
 
-Select a ticket to open it. The page shows the student's name, the code,
-error output, and what the student tried, followed by the **Replies** thread.
+Select a ticket to open it. The page shows:
+
+- the ticket's **Student**, **Status**, **Language** and **Created** time,
+  and its concept tags;
+- **Claimed by**, once a TA has claimed it (your own claim is marked
+  **(you)**), and the **Resolved** time, once it is resolved;
+- the **Repository** and **Repository files**, or the **Code** files, that the
+  student supplied;
+- the **Error output**, **Expected behaviour**, **Actual behaviour** and
+  **What the student tried**;
+- the **Resolution** fix note, once it is resolved;
+- the **Replies** thread, which shows **No replies yet.** when empty.
+
+Select **Back to the queue** to return.
 
 - **Claim** an open ticket to take it. Only one TA can claim a ticket, and only
   that TA can **Unclaim** it.
@@ -202,7 +234,9 @@ what to re-teach and links to the tickets. Select **Generate insights** to run
 it; it is never generated automatically. It covers the oldest 60 active tickets
 ("Based on the oldest 60 active tickets" is shown when there are more). A result
 can be reused for 5 minutes by any TA if the queue has not changed, and is then
-marked "Cached result".
+marked "Cached result". Each group has a **Concept** or **Misconception** badge.
+If no groups are found, the panel shows "No common patterns found." With no
+active tickets, it shows "No insights: there are no active tickets to group."
 
 If an AI feature fails, the rest of CodeClinic still works. The messages mean:
 
@@ -231,20 +265,29 @@ Under **Password**, enter your current and new passwords, then select **Change
 password**. New passwords need at least 8 characters. A successful password
 change signs out your other sessions and keeps the current session.
 
+A successful save shows **Account details updated.** or **Password changed.** If
+something is wrong, the message appears in that form and points to the field to
+fix, for example **Your current password is incorrect. Please try again.** or
+**This email is unavailable. Use a different email address.** If your session
+has expired, the message includes a **Sign in** link.
+
 ## Supporting accounts
 
 TAs and Coordinators select **Students** to list student accounts. Coordinators
 can also select **TAs** to support other TA accounts. Use **Load more** for
-additional accounts. Coordinators cannot support their own account through this page.
+additional accounts. Your own row has no actions. It shows **Manage your own
+account on your Account page.** instead.
 
 - **Activate** enables sign-in. **Deactivate** asks for confirmation and signs
   the account out of all sessions.
 - **Reset password** asks for confirmation, signs out the target account, and
-  displays one temporary password. Select **Copy password**, share it with the
-  owner outside CodeClinic, and select **Hide password** when finished. The app
-  does not store or display that plain-text password again.
-- After signing in with a temporary password, the owner must complete **Change
-  your password** before accessing other features.
+  shows a **Temporary password for** panel with the password. Select **Copy
+  password** (it changes to **Copied ✓**), share the password with the owner
+  outside CodeClinic, and select **Done** to close the panel. The app does not
+  store or show that password again.
+- After signing in with a temporary password, the owner sees **Change your
+  password**. They enter the **Temporary password** and a **New password**, then
+  select **Set new password**. Other features stay unavailable until they do.
 
 The first Coordinator is provisioned by a human administrator using the
 [bootstrap procedure](DeveloperGuide.md#first-ta-coordinator), outside the web app.
@@ -254,11 +297,11 @@ The first Coordinator is provisioned by a human administrator using the
 Select **Notifications** (the bell) in the navigation. Its badge shows up to 99
 unread items. The inbox shows each message as plain text with its type and
 relative time. Select **Mark as read** for an item or **Mark all as read** to
-clear the unread items. Failed actions offer **Retry**.
+clear the unread items. Failed actions offer **Retry**. With no notifications,
+the inbox shows **You’re all caught up. New updates will appear here.**
 
-The inbox infrastructure is ready. Ticket features will create notifications
-and supply related-ticket links when those features are integrated; they are
-not part of the current shared-work build.
+For a TA, a notification about a ticket shows **Open related ticket**.
+Selecting it marks the notification as read and opens the ticket.
 
 ## Planned features
 
