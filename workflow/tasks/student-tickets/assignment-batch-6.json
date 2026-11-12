@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-tickets",
+  "batch": 6,
+  "items": ["T06", "T07"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-tickets.md", "version": "0.5" },
+    "checklist": { "path": "workflow/tasks/student-tickets/tasks.md", "version": "0.4" },
+    "handoff": { "path": "workflow/tasks/student-tickets/handoff.md", "version": "0.4" }
+  },
+  "approvalEvidence": "workflow/tasks/student-tickets/batch-6-dispatch-proposal.md",
+  "implementer": {
+    "agentId": "implementer-tickets-attachments-6",
+    "worktree": "shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/tickets/TicketCreatePage.tsx",
+      "src/codeclinic/src/tickets/TicketCreatePage.css",
+      "src/codeclinic/src/tickets/StudentHelpChat.tsx",
+      "src/codeclinic/src/tickets/StudentHelpChat.css",
+      "src/codeclinic/test/StudentTickets.test.tsx",
+      "src/codeclinic/test/StudentTicketHelpChat.test.tsx",
+      "src/codeclinic/test/StudentHelpChat.test.tsx",
+      "docs/UserGuide.md",
+      "docs/DeveloperGuide.md",
+      "workflow/tasks/student-tickets/implementation-T06.md",
+      "workflow/tasks/student-tickets/implementation-T07.md",
+      "logs/tasks/student-tickets/implementation-T06.md",
+      "logs/tasks/student-tickets/implementation-T07.md",
+      "logs/tasks/student-tickets/implementation-T06-test.txt",
+      "logs/tasks/student-tickets/implementation-T07-test.txt",
+      "logs/tasks/student-tickets/implementation-T07-build.txt"
+    ]
+  },
+  "reviewer": {
+    "agentId": "reviewer-tickets-attachments-6",
+    "worktree": "shared-workspace",
+    "separationException": "Batch 6 is uncommitted in the shared workspace. The different reviewer inspects the exact scoped diff and current files, runs independent checks, and records the provenance limit.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T06": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T06.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T06.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand StudentTickets.test.tsx StudentTicketHelpChat.test.tsx", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-tickets/review-batch-6.md",
+      "reviewVerdict": "pass"
+    },
+    "T07": {
+      "implementationReport": "workflow/tasks/student-tickets/implementation-T07.md",
+      "implementationLog": "logs/tasks/student-tickets/implementation-T07.md",
+      "checks": [
+        { "command": "npm test -- --watchAll=false --runInBand StudentTickets.test.tsx StudentTicketHelpChat.test.tsx StudentHelpChat.test.tsx student-tickets.api.test.js", "result": "pass" },
+        { "command": "npm run build", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-tickets/review-report.md",
+      "reviewLog": "logs/tasks/student-tickets/review-batch-6.md",
+      "reviewVerdict": "pass"
+    }
+  }
+}

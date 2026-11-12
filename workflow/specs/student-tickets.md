@@ -1,7 +1,11 @@
 # Student ticket creation specification
 
-Version: 0.4 (2026-11-09 member navigation and selector follow-up requested in conversation)
+Version: 0.5 (2026-11-12 file-picker amendment; human-approved in conversation)
 Task ID: `student-tickets`
+
+Version 0.4 remains the implemented baseline. The human approved the v0.5
+Create Ticket source-control amendment on 2026-11-12. Checklist, handoff,
+batch dispatch, and merge approvals remain separate gates.
 
 ## Purpose and scope
 
@@ -44,6 +48,10 @@ scope.
   URL with relevant paths) are optional. A public repository URL is stored as
   a reference only; the server never fetches it. Files and a repository
   reference cannot be submitted together.
+- For v0.5, "file attachments" means selecting local UTF-8 text code files
+  through a browser file picker. The existing JSON `files` contract stores
+  their text and filenames on the ticket; it does not introduce binary upload,
+  cloud object storage, or an additional upload endpoint.
 - `Overview.md` does not define size limits or a concept-tag input policy. The
   human approved policy recommendations for v0.2. The later shared ticket
   contract and its reconciliation proposal v0.3 were approved by the human
@@ -102,7 +110,7 @@ scope.
   whitespace before submission but does not silently alter internal text.
 - The form MUST expose optional controls for `errorOutput`, `conceptTags`,
   and source context. Source context follows the Overview model: up to three
-  small code files with filenames and text contents, or a public GitHub URL
+  small code files selected from the student's device, or a public GitHub URL
   with relevant paths. The form MUST allow at most one source method and
   enforce the R4 limits before submission. `language` MUST be selected from
   the fixed R4 list; manual language entry is not allowed. A short note below
@@ -114,6 +122,24 @@ scope.
   MUST be prevented and the pending state MUST be announced accessibly.
 - User-provided text MUST be treated as plain text. The form MUST NOT execute,
   preview as HTML, or otherwise interpret ticket content.
+- The Create Ticket page MUST provide a labeled file-picker control that can
+  select up to three local text code files. It MUST show each accepted file's
+  filename and size and let the Student remove it. It MUST NOT require or offer
+  filename/content copy-and-paste fields for attachments. The existing
+  repository-reference controls remain an alternative source method.
+- Before reading an attachment, the client MUST reject a file larger than
+  24 KiB (24,576 bytes), an invalid basename under R4, or a selection that
+  would exceed three files. It MUST reject files that cannot be decoded as
+  UTF-8 text, preserve previously accepted files on a rejected selection,
+  and show accessible source-field feedback. The client MUST not submit a
+  ticket or send a create-page help-chat turn while a selected file is still
+  being read. Accepted files remain in page memory only until ticket creation
+  uses the existing `files: [{ filename, content }]` JSON field; no separate
+  upload or local browser storage is introduced.
+- The client MUST still enforce the 128 KiB serialized JSON request limit
+  before submission. The server MUST continue independently enforcing its
+  existing per-file 24 KiB, three-file, source-exclusivity, and 128 KiB body
+  limits; client-side checks are only early feedback.
 
 ### R4. Server-side ticket creation
 
@@ -269,6 +295,22 @@ Reply documents, when a later task implements them, live at
 15. Given uppercase or padded concept tags, the client and server store
     lowercase trimmed tags, reject duplicates after normalization, and cap
     the array at five.
+16. Given a Student selects one to three valid UTF-8 code files, the create
+    page lists their names and sizes, lets the Student remove them, and sends
+    their names and decoded contents through the existing `files` request
+    field. The Student never has to paste file text into the form.
+17. Given a file exceeds 24 KiB, has an invalid basename, cannot be decoded
+    as UTF-8, or would exceed the three-file cap, the selection receives
+    accessible feedback before ticket or help-chat submission. Earlier
+    accepted files remain available.
+18. Given selected files and a repository reference together, or a complete
+    serialized request over 128 KiB, the page blocks submission and identifies
+    the source or request-size problem. Direct API calls remain subject to the
+    unchanged server limits.
+19. Given a file read is pending, the page sends neither ticket creation nor
+    create-page help-chat data. Removing a file removes it from the next
+    ticket or help-chat request, and no file content enters browser storage,
+    diagnostic logs, or a separate upload service.
 
 ## Verification matrix
 
@@ -276,15 +318,31 @@ Reply documents, when a later task implements them, live at
 | --- | --- |
 | Dashboard/header UI | Student-only entry points, route destination, shared styles, keyboard/focus behavior, TA absence |
 | Protected routes | Direct entry, refresh, unauthenticated redirect, TA denial, no form during session check |
-| Form | Fixed language selector and `Other` note; required/whitespace and approved limit validation; five-tag normalization; exclusive source methods; optional inputs; duplicate-submit prevention; accessible errors and pending state; preservation on failure |
+| Form | Fixed language selector and `Other` note; required/whitespace and approved limit validation; five-tag normalization; file-picker selection/removal and UTF-8/24 KiB/three-file checks; exclusive source methods; 128 KiB serialized-body check; duplicate-submit prevention; accessible errors and pending state; preservation on failure |
 | API | Student identity derived from session, TA/visitor denial, CSRF, exact create-field allowlist, fixed language and typed limits, malformed/oversized body rejection, safe status codes |
 | Persistence | One C1-shaped `OPEN` document at `tickets/{ticketId}`, correct owner, Firestore `Timestamp`s, null initial claim/resolution fields, empty optional representations, no client-controlled state, failure/no-write behavior |
-| Boundaries | No browser Firestore writes, no repository fetch, no persisted create notification, literal rendering of untrusted text |
+| Boundaries | Existing JSON `files` contract and server limits; no browser Firestore writes, binary upload, repository fetch, persisted create notification, or storage/logging of selected content; literal rendering of untrusted text |
 | Responsive | Keyboard-only and visual inspection at 320 CSS pixels using synthetic fixtures |
 
 All verification MUST use synthetic local data and the Firestore emulator when
 storage integration is needed. Production data, credentials, and external
 services are not needed or authorized.
+
+## v0.5 security analysis
+
+- A local file is untrusted input. Check its byte size and basename before
+  reading; decode as UTF-8 text and reject unreadable content. Display only
+  metadata in the form, as text. Never execute, parse as HTML, or log content.
+- The picker does not make a file safe. Keep the server's independent exact
+  JSON allowlist, UTF-8 content byte check, filename validation, three-file
+  cap, 128 KiB body limit, Student/CSRF checks, and source exclusivity.
+- The attached text remains in page memory for the existing create and
+  help-chat flows. The help-chat request still passes through its existing
+  Student authorization, input cap, redaction, and no-store AI boundary;
+  there is no direct browser-to-provider call or new persistence path.
+- Asynchronous file reads must not race with create or help-chat submission.
+  Rejecting a selected file must not silently discard earlier valid files or
+  allow an incomplete snapshot to be submitted.
 
 ## Policy decisions and shared-contract reconciliation
 
@@ -299,6 +357,10 @@ it on 2026-11-09.
 
 ## Amendments
 
+- 2026-11-12: The human approved v0.5 after requesting replacement of manual
+  filename/content entry with local file selection. The existing three-file,
+  24 KiB per-file, 128 KiB request, JSON API, and ticket storage contracts
+  remain in force. This approval does not dispatch implementation.
 - 2026-11-09: The human requested persistent member navigation on the create
   page and a one-time language placeholder, then directed execution while
   preserving their current navbar button order. This v0.4 follow-up is limited

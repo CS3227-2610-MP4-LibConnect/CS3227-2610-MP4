@@ -95,9 +95,12 @@ the header. Enter a title, language, expected behaviour, actual behaviour, and
 what you have tried. **Other** is available in the language list; put the
 specific language name in the title or another detail. Error output, up to five
 concept tags, and source context are optional. For source context, attach up to
-three small code files or provide a public GitHub repository URL and relevant
-file paths. Choose one source method. The form checks the size and format limits
-before sending.
+three local UTF-8 text code files (up to 24 KiB each) or provide a public
+GitHub repository URL and relevant file paths. The form lists selected file
+names and sizes and lets you remove a file. Choose one source method. The form
+checks the file count, size, filename, text encoding, and request-size limits
+before sending; a rejected selection leaves previously accepted files in the
+form.
 
 Select **Submit Ticket** to create the ticket. On success, CodeClinic returns
 you to the Student dashboard and shows a confirmation. If a check or request
@@ -112,7 +115,8 @@ wording, even while the draft is incomplete. It can offer hints, explain a
 concept, ask for more context, or suggest clearer text for specific fields.
 Suggestions appear in the conversation only: the bot never fills the form or
 submits a ticket. The current draft, including attached source content, is
-sent with each question, so review it before selecting **Send**.
+sent with each question, so review it before selecting **Send**. Chat and ticket
+submission wait until selected files finish reading.
 
 On a ticket you own (`/student/tickets/:ticketId`), the same button appears
 after the ticket loads. This chat uses that ticket and its relevant replies to

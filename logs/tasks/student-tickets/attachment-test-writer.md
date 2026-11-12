@@ -1,0 +1,12 @@
+# T06/T07 preimplementation test writer log
+
+- Task: `student-tickets`, file-picker amendment.
+- Approved inputs verified: specification v0.5, checklist v0.4, handoff v0.4; all identify human approval on 2026-11-12. `current-state.md` identifies revised preimplementation tests as the next action and says batch approval/dispatch remain open.
+- Scope: scenarios 16–19 and UI file-picker criteria only. No production files, specifications, checklist, handoff, or unrelated files were edited.
+- Net changed test file: `src/codeclinic/test/StudentTickets.test.tsx`. `StudentTicketHelpChat.test.tsx` has no net change.
+- Command: `npm test -- --watchAll=false --runInBand StudentTickets.test.tsx StudentTicketHelpChat.test.tsx` (run from `src/codeclinic`).
+- Initial exploratory run: 2 suites, 29 tests, 8 failed and 21 passed. It included pending-read tests coupled to `File.text()`. Those test-only cases were removed because the approved specification permits other reader implementations. The initial complete output was overwritten by the final run and is not retained.
+- Exact final result: exit code 1; 2 suites, 27 tests, 6 failed and 21 passed. `StudentTickets.test.tsx` failed its six new picker-dependent cases because the current v0.4 implementation has no accessible picker: adapting the 128 KiB case to picker files, valid selection/payload/removal, oversized file rejection, invalid basename rejection, invalid UTF-8 rejection, and fourth-file cap/source conflict. `StudentTicketHelpChat.test.tsx` passed all existing tests. Retained full output: [`attachment-test-writer-run.txt`](attachment-test-writer-run.txt).
+- Test output also contains pre-existing React `act(...)` console warnings during notification/dashboard updates; they are not test failures.
+- Assumptions: accepted file picker is exposed with an accessible label containing “code files”; accepted entries can be removed using a button named with “Remove” and the filename; invalid selections render accessible alert feedback. The `..` filename exercises R4's explicit forbidden-basename rule without depending on browser path sanitization. Pending-read ticket/chat suppression remains a coverage gap for implementation: the test writer could not add an architecture-independent deferred read without imposing a specific file decoding API or a production test seam.
+- No ambiguity requiring clarification was found. No implementation was dispatched or started.

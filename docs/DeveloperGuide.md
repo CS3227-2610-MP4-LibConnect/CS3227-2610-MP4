@@ -139,16 +139,26 @@ Every dashboard load calls `GET /api/auth/session` before rendering the dashboar
 header link navigate to that route. The form validates
 required text, the seven fixed language choices, up to five trimmed lowercase
 unique tags, optional source context, and the approved text and byte limits.
-Source context is either up to three inline code files or a public GitHub URL
-with relative file paths. The browser requests a CSRF token and submits the
-allowlisted fields to `POST /api/tickets`; it never reads or writes the ticket
-collection directly.
+Source context is either up to three local UTF-8 text files (24 KiB each) or a
+public GitHub URL with relative file paths. `TicketCreatePage` checks each
+selected file's basename and byte size before reading it, strictly decodes the
+bytes as UTF-8, and keeps accepted content in page memory. It displays filename
+and size metadata and supports removal; it does not offer filename/content
+paste controls or use browser storage. A rejected selection preserves earlier
+accepted files. Ticket submission and create-page help-chat sends are blocked
+while a file read is pending. Before the browser requests a CSRF token, it also
+checks the serialized JSON body against 128 KiB and source-method exclusivity.
+The browser submits the existing `files: [{ filename, content }]` shape to
+`POST /api/tickets`; file-size display metadata is not sent. It never reads or
+writes the ticket collection directly.
 
 The ticket router independently checks the cookie-backed session, reloads the
 active Student account, checks CSRF, parses at most 128 KiB, and validates the
-request. `createFirestoreTicketStore` generates the Firestore document ID and
-writes one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains
-the server-derived owner, Firestore `Timestamp` values, null initial claim and
+request, including the three-file and 24 KiB per-file text limits and source
+exclusivity. Client checks are early feedback only.
+`createFirestoreTicketStore` generates the Firestore document ID and writes
+one C1 `OPEN` document at `tickets/{ticketId}`. The stored record contains the
+server-derived owner, Firestore `Timestamp` values, null initial claim and
 resolution fields, and empty arrays/null values for absent optional fields.
 Repository URLs are stored as references and are not fetched. Creation does
 not create a persisted notification. A successful `201` lets the client return
