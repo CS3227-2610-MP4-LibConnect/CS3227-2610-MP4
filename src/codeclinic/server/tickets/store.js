@@ -1,9 +1,11 @@
 // Firebase Admin uses @google-cloud/firestore for its Timestamp values.
 const { Timestamp } = require('@google-cloud/firestore');
+const { createFaqStore } = require('./faq-store');
 const REPLY_PAGE_SIZE = 50;
 
 function createStudentFirestoreTicketStore(db, { timestampNow = () => Timestamp.now() } = {}) {
   if (!db || typeof db.collection !== 'function') throw new TypeError('A Firestore database is required.');
+  const faqStore = createFaqStore(db);
   async function ownedActiveTransaction(studentId, ticketId, write) {
     const ticketRef = db.collection('tickets').doc(ticketId);
     return db.runTransaction(async (transaction) => {
@@ -71,6 +73,8 @@ function createStudentFirestoreTicketStore(db, { timestampNow = () => Timestamp.
         ? { createdAt: lastReply.createdAt, replyId: lastReply.replyId }
         : null };
     },
+    searchFaq: (...args) => faqStore.searchFaq(...args),
+    getFaqDetail: (...args) => faqStore.getFaqDetail(...args),
     async listActive(studentId) {
       const snapshot = await db.collection('tickets')
         .where('studentId', '==', studentId)

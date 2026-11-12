@@ -1,0 +1,1407 @@
+
+> codeclinic@0.1.0 test
+> react-scripts test --roots test --testMatch "**/test/**/*.test.*" --runInBand --watchAll=false --runTestsByPath test/bug-faq.tokens.contract.test.js test/bug-faq.store.contract.test.js test/bug-faq.api.contract.test.js test/StudentBugFaq.test.tsx
+
+(node:27336) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL test/StudentBugFaq.test.tsx (7.104 s)
+  ● Student dashboard Bug FAQ (T03) › places the FAQ after Ask for Help and defaults to a labelled Title search
+
+    TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name `/bug faq/i`
+
+    Here are the accessible roles:
+
+      banner:
+
+      Name "":
+      <header
+        class="app-header"
+      />
+
+      --------------------------------------------------
+      link:
+
+      Name "CodeClinic":
+      <a
+        class="app-header__brand"
+        href="/student/dashboard"
+      />
+
+      Name "Create Ticket":
+      <a
+        href="/student/tickets/new"
+      />
+
+      Name "My Tickets":
+      <a
+        href="/student/tickets"
+      />
+
+      Name "Notifications":
+      <a
+        aria-label="Notifications"
+        class="notification-bell"
+        href="/notifications"
+      />
+
+      Name "Account":
+      <a
+        href="/student/account"
+      />
+
+      Name "View all tickets":
+      <a
+        class="student-load-all"
+        href="/student/tickets"
+      />
+
+      Name "Create Ticket":
+      <a
+        class="submit-button student-create-ticket"
+        href="/student/tickets/new"
+        style="display: inline-flex; align-items: center; text-decoration: none;"
+      />
+
+      --------------------------------------------------
+      navigation:
+
+      Name "Main navigation":
+      <nav
+        aria-label="Main navigation"
+        class="app-header__nav"
+      />
+
+      --------------------------------------------------
+      button:
+
+      Name "Log out":
+      <button
+        class="app-header__logout"
+        type="button"
+      />
+
+      --------------------------------------------------
+      main:
+
+      Name "":
+      <main
+        class="dashboard-page student-dashboard"
+      />
+
+      --------------------------------------------------
+      heading:
+
+      Name "Student Dashboard":
+      <h1 />
+
+      Name "Welcome back":
+      <h2
+        id="student-dashboard-intro"
+      />
+
+      Name "Active Tickets":
+      <h2
+        id="student-active-tickets-heading"
+      />
+
+      Name "Ask for Help":
+      <h2
+        id="student-ask-for-help"
+      />
+
+      --------------------------------------------------
+      region:
+
+      Name "Welcome back":
+      <section
+        aria-labelledby="student-dashboard-intro"
+        class="dashboard-panel"
+      />
+
+      Name "Active Tickets":
+      <section
+        aria-busy="true"
+        aria-labelledby="student-active-tickets-heading"
+        class="dashboard-panel student-active-tickets"
+      />
+
+      Name "Ask for Help":
+      <section
+        aria-labelledby="student-ask-for-help"
+        class="dashboard-panel"
+      />
+
+      --------------------------------------------------
+      status:
+
+      Name "":
+      <p
+        aria-live="polite"
+        role="status"
+      />
+
+      --------------------------------------------------
+      paragraph:
+
+      Name "":
+      <p />
+
+      --------------------------------------------------
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                href="/student/tickets"
+              >
+                My Tickets
+              </a>
+              <a
+                aria-label="Notifications"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-busy="true"
+            aria-labelledby="student-active-tickets-heading"
+            class="dashboard-panel student-active-tickets"
+          >
+            <div
+              class="student-active-tickets-heading"
+            >
+              <h2
+                id="student-active-tickets-heading"
+              >
+                Active Tickets
+              </h2>
+              <a
+                class="student-load-all"
+                href="/student/tickets"
+              >
+                View all tickets
+              </a>
+            </div>
+            <p
+              aria-live="polite"
+              role="status"
+            >
+              Loading active tickets…
+            </p>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      18 |
+      19 |     const help = await screen.findByRole('heading', { name: /ask for help/i });
+    > 20 |     const faqHeading = screen.getByRole('heading', { name: /bug faq/i });
+         |                               ^
+      21 |     expect(help.compareDocumentPosition(faqHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      22 |     const faqSection = faqHeading.closest('section');
+      23 |     expect(faqSection).not.toBeNull();
+
+      at Object.getElementError (node_modules/@testing-library/dom/dist/config.js:37:19)
+      at node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+      at node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+      at getByRole (node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+      at Object.<anonymous> (test/StudentBugFaq.test.tsx:20:31)
+
+  ● Student dashboard Bug FAQ (T03) › rejects empty input locally and searches selected Tags field
+
+    Unable to find role="heading" and name `/bug faq/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                href="/student/tickets"
+              >
+                My Tickets
+              </a>
+              <a
+                aria-label="Notifications"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-busy="false"
+            aria-labelledby="student-active-tickets-heading"
+            class="dashboard-panel student-active-tickets"
+          >
+            <div
+              class="student-active-tickets-heading"
+            >
+              <h2
+                id="student-active-tickets-heading"
+              >
+                Active Tickets
+              </h2>
+              <a
+                class="student-load-all"
+                href="/student/tickets"
+              >
+                View all tickets
+              </a>
+            </div>
+            <p>
+              No active tickets yet.
+            </p>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      39 |     render(<StudentDashboard onLogoutConfirmed={() => {}} />);
+      40 |
+    > 41 |     const faqHeading = await screen.findByRole('heading', { name: /bug faq/i });
+         |                                     ^
+      42 |     const section = faqHeading.closest('section') as HTMLElement;
+      43 |     const search = within(section).getByRole('textbox', { name: /search.*faq|faq.*search/i });
+      44 |     const field = within(section).getByRole('combobox', { name: /search field/i });
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentBugFaq.test.tsx:41:37)
+
+  ● Student dashboard Bug FAQ (T03) › renders only literal title and tags, with no ticket detail link, and continues scanning
+
+    Unable to find role="heading" and name `/bug faq/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                href="/student/tickets"
+              >
+                My Tickets
+              </a>
+              <a
+                aria-label="Notifications"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-busy="false"
+            aria-labelledby="student-active-tickets-heading"
+            class="dashboard-panel student-active-tickets"
+          >
+            <div
+              class="student-active-tickets-heading"
+            >
+              <h2
+                id="student-active-tickets-heading"
+              >
+                Active Tickets
+              </h2>
+              <a
+                class="student-load-all"
+                href="/student/tickets"
+              >
+                View all tickets
+              </a>
+            </div>
+            <p>
+              No active tickets yet.
+            </p>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      65 |     render(<StudentDashboard onLogoutConfirmed={() => {}} />);
+      66 |
+    > 67 |     const faqHeading = await screen.findByRole('heading', { name: /bug faq/i });
+         |                                     ^
+      68 |     const section = faqHeading.closest('section') as HTMLElement;
+      69 |     fireEvent.change(within(section).getByRole('textbox', { name: /search.*faq|faq.*search/i }), { target: { value: 'loop' } });
+      70 |     fireEvent.click(within(section).getByRole('button', { name: /^search$/i }));
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentBugFaq.test.tsx:67:37)
+
+  ● Student dashboard Bug FAQ (T03) › keeps the latest search results when an older request finishes late
+
+    Unable to find role="heading" and name `/bug faq/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                href="/student/tickets"
+              >
+                My Tickets
+              </a>
+              <a
+                aria-label="Notifications"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-busy="false"
+            aria-labelledby="student-active-tickets-heading"
+            class="dashboard-panel student-active-tickets"
+          >
+            <div
+              class="student-active-tickets-heading"
+            >
+              <h2
+                id="student-active-tickets-heading"
+              >
+                Active Tickets
+              </h2>
+              <a
+                class="student-load-all"
+                href="/student/tickets"
+              >
+                View all tickets
+              </a>
+            </div>
+            <p>
+              No active tickets yet.
+            </p>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      89 |     global.fetch = fetchMock as typeof fetch;
+      90 |     render(<StudentDashboard onLogoutConfirmed={() => {}} />);
+    > 91 |     const faqHeading = await screen.findByRole('heading', { name: /bug faq/i });
+         |                                     ^
+      92 |     const section = faqHeading.closest('section') as HTMLElement;
+      93 |     const search = within(section).getByRole('textbox', { name: /search.*faq|faq.*search/i });
+      94 |     const submit = within(section).getByRole('button', { name: /^search$/i });
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentBugFaq.test.tsx:91:37)
+
+  ● Student dashboard Bug FAQ (T03) › opens a read-only detail view with literal fix note and paginated Student/TA conversation
+
+    Unable to find role="heading" and name `/bug faq/i`
+
+    Ignored nodes: comments, script, style
+    <body>
+      <div>
+        <header
+          class="app-header"
+        >
+          <a
+            class="app-header__brand"
+            href="/student/dashboard"
+          >
+            CodeClinic
+          </a>
+          <div
+            class="app-header__actions"
+          >
+            <nav
+              aria-label="Main navigation"
+              class="app-header__nav"
+            >
+              <a
+                href="/student/tickets/new"
+              >
+                Create Ticket
+              </a>
+              <a
+                href="/student/tickets"
+              >
+                My Tickets
+              </a>
+              <a
+                aria-label="Notifications"
+                class="notification-bell"
+                href="/notifications"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"
+                  />
+                </svg>
+                <span>
+                  Notifications
+                </span>
+              </a>
+              <a
+                href="/student/account"
+              >
+                Account
+              </a>
+            </nav>
+            <button
+              class="app-header__logout"
+              type="button"
+            >
+              Log out
+            </button>
+          </div>
+        </header>
+        <main
+          class="dashboard-page student-dashboard"
+        >
+          <h1>
+            Student Dashboard
+          </h1>
+          <section
+            aria-labelledby="student-dashboard-intro"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-dashboard-intro"
+            >
+              Welcome back
+            </h2>
+          </section>
+          <section
+            aria-busy="false"
+            aria-labelledby="student-active-tickets-heading"
+            class="dashboard-panel student-active-tickets"
+          >
+            <div
+              class="student-active-tickets-heading"
+            >
+              <h2
+                id="student-active-tickets-heading"
+              >
+                Active Tickets
+              </h2>
+              <a
+                class="student-load-all"
+                href="/student/tickets"
+              >
+                View all tickets
+              </a>
+            </div>
+            <p>
+              No active tickets yet.
+            </p>
+          </section>
+          <section
+            aria-labelledby="student-ask-for-help"
+            class="dashboard-panel"
+          >
+            <h2
+              id="student-ask-for-help"
+            >
+              Ask for Help
+            </h2>
+            <p>
+              Need help with your work? Tell us what you’re working on.
+            </p>
+            <a
+              class="submit-button student-create-ticket"
+              href="/student/tickets/new"
+              style="display: inline-flex; align-items: center; text-decoration: none;"
+            >
+              Create Ticket
+            </a>
+          </section>
+        </main>
+      </div>
+    </body>
+
+      120 |     render(<StudentDashboard onLogoutConfirmed={() => {}} />);
+      121 |
+    > 122 |     const faqHeading = await screen.findByRole('heading', { name: /bug faq/i });
+          |                                     ^
+      123 |     const section = faqHeading.closest('section') as HTMLElement;
+      124 |     fireEvent.change(within(section).getByRole('textbox', { name: /search.*faq|faq.*search/i }), { target: { value: 'loop' } });
+      125 |     fireEvent.click(within(section).getByRole('button', { name: /^search$/i }));
+
+      at waitForWrapper (node_modules/@testing-library/dom/dist/wait-for.js:163:27)
+      at findByRole (node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
+      at Object.<anonymous> (test/StudentBugFaq.test.tsx:122:37)
+
+FAIL test/bug-faq.api.contract.test.js
+  ● GET /api/tickets/faq contract (T02) › requires q and field and returns a no-store title/tag-only response
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 503
+
+      36 |     const response = await faq(system, ' loop ', 'title').set('X-Session-Id-Hash', 'client-forged-id-hash');
+      37 |
+    > 38 |     expect(response.status).toBe(200);
+         |                             ^
+      39 |     expect(response.headers['cache-control']).toBe('no-store');
+      40 |     expect(response.body.tickets).toEqual([{ title: '<b>Loop</b>', conceptTags: ['arrays'], faqRef: 'opaque-ref-7' }]);
+      41 |     expect(response.body.tickets[0].faqRef.length).toBeGreaterThan(0);
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:38:29)
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=loop before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?field=title before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=%20%20&field=title before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=loop&field=body before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=loop&field=title&status=OPEN before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=loop&q=other&field=title before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=loop&field=title&field=tags before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › rejects malformed/unsupported query /api/tickets/faq?q=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&field=title before ticket reads
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 503
+
+      59 |     const system = fixture();
+      60 |     const response = await request(system.app).get(path).set('Cookie', system.cookie);
+    > 61 |     expect(response.status).toBe(status);
+         |                             ^
+      62 |     expect(response.headers['cache-control']).toBe('no-store');
+      63 |     expect(system.searchFaq).not.toHaveBeenCalled();
+      64 |   });
+
+      at test/bug-faq.api.contract.test.js:61:29
+
+  ● GET /api/tickets/faq contract (T02) › counts Unicode code points for the 100-character query limit
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 503
+
+      68 |     const oneHundred = '😀'.repeat(100);
+      69 |     const response = await faq(system, oneHundred);
+    > 70 |     expect(response.status).toBe(200);
+         |                             ^
+      71 |     expect(system.searchFaq).toHaveBeenCalledTimes(1);
+      72 |     const tooLong = await faq(system, `${oneHundred}😀`);
+      73 |     expect(tooLong.status).toBe(400);
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:70:29)
+
+  ● GET /api/tickets/faq contract (T02) › rejects invalid and cross-search cursors and ignores forged identity or status fields
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 503
+
+       95 |     const system = fixture({ searchFaq });
+       96 |     const first = await faq(system);
+    >  97 |     expect(first.status).toBe(200);
+          |                          ^
+       98 |     expect(first.body.nextCursor).toEqual(expect.any(String));
+       99 |     const crossSearch = await request(system.app).get('/api/tickets/faq').query({ q: 'other', field: 'title', cursor: first.body.nextCursor }).set('Cookie', system.cookie);
+      100 |     expect(crossSearch.status).toBe(400);
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:97:26)
+
+  ● GET /api/tickets/faq contract (T02) › returns the exact read-only detail projection with trusted speaker labels and literal message content
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      130 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+      131 |
+    > 132 |     expect(response.status).toBe(200);
+          |                             ^
+      133 |     expect(response.headers['cache-control']).toBe('no-store');
+      134 |     expect(Object.keys(response.body).sort()).toEqual(['conceptTags', 'fixNote', 'nextCursor', 'replies', 'title']);
+      135 |     expect(response.body).toEqual({
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:132:29)
+
+  ● GET /api/tickets/faq contract (T02) › validates reference and reply cursor before a ticket read and rejects cursor reuse across references
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 400
+    Received: 404
+
+      156 |     expect(getFaqDetail).not.toHaveBeenCalled();
+      157 |     const badCursor = await request(system.app).get('/api/tickets/faq/opaque-ref-one').query({ cursor: 'invalid-cursor' }).set('Cookie', system.cookie);
+    > 158 |     expect(badCursor.status).toBe(400);
+          |                              ^
+      159 |     const longCursor = await request(system.app).get('/api/tickets/faq/opaque-ref-one').query({ cursor: 'x'.repeat(4096) }).set('Cookie', system.cookie);
+      160 |     expect(longCursor.status).toBe(400);
+      161 |     expect(getFaqDetail).not.toHaveBeenCalled();
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:158:30)
+
+  ● GET /api/tickets/faq contract (T02) › denies protected detail for ineligible account %#
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      176 |     const system = fixture({ ...scenario, getFaqDetail });
+      177 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+    > 178 |     expect(response.status).toBe(scenario.expected);
+          |                             ^
+      179 |     expect(response.headers['cache-control']).toBe('no-store');
+      180 |     expect(getFaqDetail).not.toHaveBeenCalled();
+      181 |   });
+
+      at test/bug-faq.api.contract.test.js:178:29
+
+  ● GET /api/tickets/faq contract (T02) › denies protected detail for ineligible account %#
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      176 |     const system = fixture({ ...scenario, getFaqDetail });
+      177 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+    > 178 |     expect(response.status).toBe(scenario.expected);
+          |                             ^
+      179 |     expect(response.headers['cache-control']).toBe('no-store');
+      180 |     expect(getFaqDetail).not.toHaveBeenCalled();
+      181 |   });
+
+      at test/bug-faq.api.contract.test.js:178:29
+
+  ● GET /api/tickets/faq contract (T02) › denies protected detail for ineligible account %#
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 403
+    Received: 404
+
+      176 |     const system = fixture({ ...scenario, getFaqDetail });
+      177 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+    > 178 |     expect(response.status).toBe(scenario.expected);
+          |                             ^
+      179 |     expect(response.headers['cache-control']).toBe('no-store');
+      180 |     expect(getFaqDetail).not.toHaveBeenCalled();
+      181 |   });
+
+      at test/bug-faq.api.contract.test.js:178:29
+
+  ● GET /api/tickets/faq contract (T02) › requires a session for protected detail and bounds returned reply pages
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 401
+    Received: 404
+
+      193 |     const system = fixture({ getFaqDetail });
+      194 |     const visitor = await request(system.app).get('/api/tickets/faq/opaque-ref-7');
+    > 195 |     expect(visitor.status).toBe(401);
+          |                            ^
+      196 |     expect(getFaqDetail).not.toHaveBeenCalled();
+      197 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+      198 |     expect(response.status).toBe(200);
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:195:28)
+
+  ● GET /api/tickets/faq contract (T02) › continues a reply page with an opaque cursor bound to the same FAQ reference
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      212 |     const system = fixture({ getFaqDetail });
+      213 |     const first = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+    > 214 |     expect(first.status).toBe(200);
+          |                          ^
+      215 |     expect(first.body.replies).toHaveLength(50);
+      216 |     expect(first.body.nextCursor).toEqual(expect.any(String));
+      217 |     const second = await request(system.app).get('/api/tickets/faq/opaque-ref-7').query({ cursor: first.body.nextCursor }).set('Cookie', system.cookie);
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:214:26)
+
+  ● GET /api/tickets/faq contract (T02) › returns a generic no-store error for expired or no-longer-RESOLVED references
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "no-store"
+    Received: undefined
+
+      225 |     const response = await request(system.app).get('/api/tickets/faq/expired-reference').set('Cookie', system.cookie);
+      226 |     expect([400, 404]).toContain(response.status);
+    > 227 |     expect(response.headers['cache-control']).toBe('no-store');
+          |                                               ^
+      228 |     expect(JSON.stringify(response.body)).not.toMatch(/ticketId|studentId|private|not resolved/i);
+      229 |   });
+      230 |
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:227:47)
+
+  ● GET /api/tickets/faq contract (T02) › never returns a detail response for a ticket whose stored status is not RESOLVED
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: "no-store"
+    Received: undefined
+
+      235 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+      236 |     expect(response.status).toBe(404);
+    > 237 |     expect(response.headers['cache-control']).toBe('no-store');
+          |                                               ^
+      238 |     expect(JSON.stringify(response.body)).not.toContain('Closed only');
+      239 |   });
+      240 |
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:237:47)
+
+  ● GET /api/tickets/faq contract (T02) › binds an opaque FAQ reference to the exact session, including another session for the same Student
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 404
+
+      250 |       getFaqDetail,
+      251 |     });
+    > 252 |     expect((await request(owner.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', owner.cookie)).status).toBe(200);
+          |                                                                                                                ^
+      253 |     const denied = await request(otherSession.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', otherSession.cookie);
+      254 |     expect(denied.status).toBe(404);
+      255 |     expect(denied.headers['cache-control']).toBe('no-store');
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:252:112)
+
+  ● GET /api/tickets/faq contract (T02) › uses trusted idHash to redeem the same token across router instances and rejects it after logout
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 503
+
+      263 |     const firstInstance = fixture({ sessionToken, searchFaq });
+      264 |     const search = await faq(firstInstance).set('X-Session-Id-Hash', 'forged-session-hash');
+    > 265 |     expect(search.status).toBe(200);
+          |                           ^
+      266 |
+      267 |     const getFaqDetail = jest.fn(async (studentId, faqRef, { idHash }) => (
+      268 |       studentId === 'student-a' && faqRef === 'opaque-ref-7' && idHash === firstInstance.idHash
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:265:27)
+
+  ● GET /api/tickets/faq contract (T02) › returns a generic no-store 503 when detail storage fails
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 503
+    Received: 404
+
+      285 |     const system = fixture({ getFaqDetail: jest.fn().mockRejectedValue(new Error('synthetic private detail storage failure')) });
+      286 |     const response = await request(system.app).get('/api/tickets/faq/opaque-ref-7').set('Cookie', system.cookie);
+    > 287 |     expect(response.status).toBe(503);
+          |                             ^
+      288 |     expect(response.headers['cache-control']).toBe('no-store');
+      289 |     expect(JSON.stringify(response.body)).not.toContain('synthetic private detail storage failure');
+      290 |   });
+
+      at Object.<anonymous> (test/bug-faq.api.contract.test.js:287:29)
+
+FAIL test/bug-faq.tokens.contract.test.js
+  ● Bug FAQ session-bound authenticated-encryption tokens (T01/T02) › derives a 32-byte key with HKDF-SHA-256 from trusted idHash and fixed Bug FAQ domain context
+
+    Cannot find module '../server/tickets/faq-token' from 'test/bug-faq.tokens.contract.test.js'
+
+      30 |     let deriveFaqTokenKey;
+      31 |     jest.isolateModules(() => {
+    > 32 |       ({ deriveFaqTokenKey } = require(TOKEN_MODULE));
+         |                                ^
+      33 |     });
+      34 |
+      35 |     const key = await deriveFaqTokenKey(SESSION_A);
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at test/bug-faq.tokens.contract.test.js:32:32
+      at Object.<anonymous> (test/bug-faq.tokens.contract.test.js:31:10)
+
+  ● Bug FAQ session-bound authenticated-encryption tokens (T01/T02) › creates opaque ciphertext with a fresh nonce and decrypts across independent module instances in the same session
+
+    Cannot find module '../server/tickets/faq-token' from 'test/bug-faq.tokens.contract.test.js'
+
+      59 |     const createDecipheriv = jest.spyOn(crypto, 'createDecipheriv');
+      60 |     let sealFaqToken;
+    > 61 |     jest.isolateModules(() => { ({ sealFaqToken } = require(TOKEN_MODULE)); });
+         |                                                     ^
+      62 |     const payload = { ticketId: 'raw-ticket-identifier-42', boundaryReplyId: 'raw-reply-identifier-19' };
+      63 |     const context = tokenContext();
+      64 |     const first = await sealFaqToken(payload, context);
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at test/bug-faq.tokens.contract.test.js:61:53
+      at Object.<anonymous> (test/bug-faq.tokens.contract.test.js:61:10)
+
+  ● Bug FAQ session-bound authenticated-encryption tokens (T01/T02) › rejects another session, including the same Student after session rotation
+
+    Cannot find module '../server/tickets/faq-token' from 'test/bug-faq.tokens.contract.test.js'
+
+       8 |
+       9 | function loadCodec() {
+    > 10 |   return require(TOKEN_MODULE);
+         |          ^
+      11 | }
+      12 |
+      13 | function tokenContext(overrides = {}) {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at loadCodec (test/bug-faq.tokens.contract.test.js:10:10)
+      at Object.<anonymous> (test/bug-faq.tokens.contract.test.js:86:44)
+
+  ● Bug FAQ session-bound authenticated-encryption tokens (T01/T02) › binds token purpose and search query plus field
+
+    Cannot find module '../server/tickets/faq-token' from 'test/bug-faq.tokens.contract.test.js'
+
+       8 |
+       9 | function loadCodec() {
+    > 10 |   return require(TOKEN_MODULE);
+         |          ^
+      11 | }
+      12 |
+      13 | function tokenContext(overrides = {}) {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at loadCodec (test/bug-faq.tokens.contract.test.js:10:10)
+      at Object.<anonymous> (test/bug-faq.tokens.contract.test.js:95:44)
+
+  ● Bug FAQ session-bound authenticated-encryption tokens (T01/T02) › binds reply cursors to their FAQ reference and rejects tampering
+
+    Cannot find module '../server/tickets/faq-token' from 'test/bug-faq.tokens.contract.test.js'
+
+       8 |
+       9 | function loadCodec() {
+    > 10 |   return require(TOKEN_MODULE);
+         |          ^
+      11 | }
+      12 |
+      13 | function tokenContext(overrides = {}) {
+
+      at Resolver.resolveModule (node_modules/jest-resolve/build/resolver.js:324:11)
+      at loadCodec (test/bug-faq.tokens.contract.test.js:10:10)
+      at Object.<anonymous> (test/bug-faq.tokens.contract.test.js:107:44)
+
+FAIL test/bug-faq.store.contract.test.js
+  ● Bug FAQ Firestore store contract (T01) › queries only RESOLVED tickets in stable order with a 100-document bound and safe projections
+
+    TypeError: store.searchFaq is not a function
+
+      23 |     const store = createFirestoreTicketStore({ collection(name) { operations.push(['collection', name]); return query; } });
+      24 |
+    > 25 |     const result = await store.searchFaq({ idHash: 'a'.repeat(64), studentId: 'viewer-student', query: ' loop ', field: 'title' });
+         |                                ^
+      26 |
+      27 |     expect(operations[0]).toEqual(['collection', 'tickets']);
+      28 |     expect(operations).toContainEqual(['where', 'status', '==', 'RESOLVED']);
+
+      at Object.<anonymous> (test/bug-faq.store.contract.test.js:25:32)
+      at TestScheduler.scheduleTests (node_modules/@jest/core/build/TestScheduler.js:333:13)
+      at runJest (node_modules/@jest/core/build/runJest.js:404:19)
+      at _run10000 (node_modules/@jest/core/build/cli/index.js:320:7)
+      at runCLI (node_modules/@jest/core/build/cli/index.js:173:3)
+
+  ● Bug FAQ Firestore store contract (T01) › supports case-insensitive substring matching in tags and a cursor boundary at equal timestamps
+
+    TypeError: store.searchFaq is not a function
+
+      53 |     const createdAt = Timestamp.fromMillis(1_800_000_000_000);
+      54 |
+    > 55 |     const result = await store.searchFaq({ idHash: 'a'.repeat(64), studentId: 'viewer-student', query: ' list ', field: 'tags', cursor: { createdAt, ticketId: 'ticket-a' } });
+         |                                ^
+      56 |
+      57 |     expect(operations).toContainEqual(['where', 'status', '==', 'RESOLVED']);
+      58 |     expect(operations).toContainEqual(['startAfter', createdAt, 'ticket-a']);
+
+      at Object.<anonymous> (test/bug-faq.store.contract.test.js:55:32)
+      at TestScheduler.scheduleTests (node_modules/@jest/core/build/TestScheduler.js:333:13)
+      at runJest (node_modules/@jest/core/build/runJest.js:404:19)
+      at _run10000 (node_modules/@jest/core/build/cli/index.js:320:7)
+      at runCLI (node_modules/@jest/core/build/cli/index.js:173:3)
+
+  ● Bug FAQ Firestore store contract (T01) › stops at 20 matches and returns continuation information for the last examined document
+
+    TypeError: store.searchFaq is not a function
+
+      72 |     const store = createFirestoreTicketStore({ collection: () => query });
+      73 |
+    > 74 |     const result = await store.searchFaq({ idHash: 'a'.repeat(64), studentId: 'viewer-student', query: 'loop', field: 'title' });
+         |                                ^
+      75 |
+      76 |     expect(limit).toBe(100);
+      77 |     expect(result.tickets).toHaveLength(20);
+
+      at Object.<anonymous> (test/bug-faq.store.contract.test.js:74:32)
+      at TestScheduler.scheduleTests (node_modules/@jest/core/build/TestScheduler.js:333:13)
+      at runJest (node_modules/@jest/core/build/runJest.js:404:19)
+      at _run10000 (node_modules/@jest/core/build/cli/index.js:320:7)
+      at runCLI (node_modules/@jest/core/build/cli/index.js:173:3)
+
+Test Suites: 4 failed, 4 total
+Tests:       37 failed, 3 passed, 40 total
+Snapshots:   0 total
+Time:        17.64 s
+Ran all test suites within paths "test/bug-faq.tokens.contract.test.js", "test/bug-faq.store.contract.test.js", "test/bug-faq.api.contract.test.js", "test/StudentBugFaq.test.tsx".
+npm_exit_code=1

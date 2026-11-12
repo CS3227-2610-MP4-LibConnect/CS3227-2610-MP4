@@ -18,6 +18,7 @@ and the former application path `src/libconnect-mp4`.
 - [Student ticket creation](#student-ticket-creation)
 - [Student ticket activity](#student-ticket-activity)
 - [Student My Tickets](#student-my-tickets)
+- [Student Bug FAQ](#student-bug-faq)
 - [Student ticket help chat](#student-ticket-help-chat)
 - [TA ticket queue](#ta-ticket-queue)
 - [TA AI assist](#ta-ai-assist)
@@ -246,6 +247,41 @@ already loaded cards visible. The list query requires the composite index on
 `studentId`, `status`, `updatedAt`, and `ticketId` in
 `firestore.indexes.json`. Production index deployment is separate from
 application code and must precede production use of this query.
+
+## Student Bug FAQ
+
+`StudentBugFaq` is mounted below Ask for Help on `/student/dashboard`. It
+searches across ticket owners only when the stored status is `RESOLVED`.
+Students choose `title` or `tags`; the backend normalizes the query and scans
+at most 100 ordered ticket documents per request to return at most 20 matching
+summaries. A summary contains only title, concept tags, and a session-bound
+encrypted FAQ reference. The UI does not display the reference or any ticket
+or owner identifier.
+
+`GET /api/tickets/faq?q=...&field=title|tags&cursor=...` and
+`GET /api/tickets/faq/:faqRef?cursor=...` require an authenticated active
+Student. The server rechecks the account and resolved status on each request.
+The detail projection contains title, concept tags, fix note, and a page of up
+to 50 valid replies. Speaker labels are derived as `Student` or `TA` from
+trusted account records; message text is returned literally, so names typed in
+message bodies can remain visible. The detail view is read-only.
+
+FAQ references and search/reply cursors use bounded AES-256-GCM tokens derived
+from the trusted session hash, Student identity, purpose, and query/reference
+binding. Tokens are not persisted. The ordered search requires the composite
+index on `status` ascending, `createdAt` descending, and `__name__` ascending
+in `firestore.indexes.json`. The replies query also uses the configured
+`createdAt`/`replyId` ordering. Index configuration is present in the
+repository; production deployment and readiness have not been verified here.
+
+Synthetic store and HTTP contract checks in
+`test/bug-faq.store.contract.test.js` and
+`test/bug-faq.api.contract.test.js` cover all four ticket statuses, different
+owners, bounded sparse/dense search pages, cursor type preservation, detail
+projection, resolved-only rechecks, reply pagination, authorization and
+session binding. `test/StudentBugFaq.test.tsx` covers dashboard placement,
+search selection, result projection, stale requests, and detail pagination.
+These controlled tests do not connect to a live Firestore project.
 
 Focused My Tickets checks are in `test/StudentMyTickets.test.tsx`,
 `test/StudentTicketCard.test.tsx`, and

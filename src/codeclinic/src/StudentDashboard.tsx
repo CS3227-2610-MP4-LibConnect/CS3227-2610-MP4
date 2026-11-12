@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import DashboardLogout from './DashboardLogout';
 import StudentTicketCard from './tickets/StudentTicketCard';
+import StudentBugFaq from './tickets/StudentBugFaq';
 import './DashboardViews.css';
 
 type ActiveTicket = {
@@ -57,11 +58,6 @@ export function StudentDashboard({ onLogoutConfirmed, name }: { onLogoutConfirme
         <section className="dashboard-panel" aria-labelledby="student-dashboard-intro">
           <h2 id="student-dashboard-intro">Welcome back{name ? `, ${name}` : ''}</h2>
         </section>
-        <section className="dashboard-panel" aria-labelledby="student-ask-for-help">
-          <h2 id="student-ask-for-help">Ask for Help</h2>
-          <p>Need help with your work? Tell us what you’re working on.</p>
-          <a className="submit-button student-create-ticket" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} href="/student/tickets/new">Create Ticket</a>
-        </section>
         <section className="dashboard-panel student-active-tickets" aria-labelledby="student-active-tickets-heading" aria-busy={ticketsState === 'loading'}>
           <div className="student-active-tickets-heading">
             <h2 id="student-active-tickets-heading">Active Tickets</h2>
@@ -74,6 +70,12 @@ export function StudentDashboard({ onLogoutConfirmed, name }: { onLogoutConfirme
             {activeTickets.map((ticket) => <li key={ticket.ticketId}><StudentTicketCard ticket={ticket} /></li>)}
           </ul>}
         </section>
+        <section className="dashboard-panel" aria-labelledby="student-ask-for-help">
+          <h2 id="student-ask-for-help">Ask for Help</h2>
+          <p>Need help with your work? Tell us what you’re working on.</p>
+          <a className="submit-button student-create-ticket" style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} href="/student/tickets/new">Create Ticket</a>
+        </section>
+        <StudentBugFaq />
       </main>
     </DashboardLogout>
   );

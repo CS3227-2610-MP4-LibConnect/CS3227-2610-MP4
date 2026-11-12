@@ -7,8 +7,8 @@ suggestions do not act on tickets by themselves.
 
 The current build provides registration, sign-in, account updates, account
 support, a notifications inbox, Student ticket creation and activity, the full
-My Tickets list, Student ticket help chat, TA ticket workflows, and TA AI
-features. Ticket editing is not available yet;
+My Tickets list, the resolved-ticket Bug FAQ, Student ticket help chat, TA
+ticket workflows, and TA AI features. Ticket editing is not available yet;
 [Planned features](#planned-features) lists it.
 
 ## Accessing the app
@@ -260,6 +260,22 @@ The inbox infrastructure is ready. Ticket features will create notifications
 and supply related-ticket links when those features are integrated; they are
 not part of the current shared-work build.
 
+## Bug FAQ
+
+Below **Ask for Help** on the Student dashboard, **Bug FAQ** searches resolved
+tickets shared across the platform. Choose **Title** or **Tags**, enter a term,
+and select **Search**. Each result card shows only the ticket title and concept
+tags; select the card to read the fix note and continue through the conversation.
+Conversation speakers are labelled **Student** or **TA**; names typed in message
+bodies remain part of the text. The FAQ is read-only and does not expose ticket
+owner actions. Use **Search more** to scan another result batch and **Load more
+replies** to continue a long conversation. Empty searches, loading, and request
+failures are shown in the section, with Retry where available.
+
+The FAQ includes tickets whose current status is **Resolved**. Open, claimed,
+and closed tickets are not searchable. Search results contain no owner identity
+or ticket ID.
+
 ## Planned features
 
 These CodeClinic features are planned and **not available in the current build**:
@@ -267,7 +283,6 @@ These CodeClinic features are planned and **not available in the current build**
 | Role | Planned feature |
 | --- | --- |
 | Student | Edit a ticket after creation |
-| Student | Bug FAQ: search anonymised resolved tickets |
 | Optional | Live session requests and approvals |
 
 This guide will be updated as each feature is released.

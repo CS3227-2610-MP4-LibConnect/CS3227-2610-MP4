@@ -4,9 +4,18 @@ const { createFirestoreTicketStore } = require('../server/tickets/store');
 const { createFirestoreNotificationStore } = require('../server/notifications/route');
 
 const indexFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'firestore.indexes.json'), 'utf8'));
-// The TA queue's indexes are the `tickets` indexes that start with `status`;
-// the student activity indexes start with `studentId` or are on `replies`.
-const taQueueIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' && i.fields[0].fieldPath === 'status');
+// The TA queue's indexes are the status-leading ticket indexes with createdAt
+// ascending; the student activity indexes start with `studentId` or are on `replies`.
+const bugFaqIndexFields = [
+  { fieldPath: 'status', order: 'ASCENDING' },
+  { fieldPath: 'createdAt', order: 'DESCENDING' },
+  { fieldPath: '__name__', order: 'ASCENDING' },
+];
+const faqIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' &&
+  JSON.stringify(i.fields) === JSON.stringify(bugFaqIndexFields));
+const taQueueIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'tickets' &&
+  i.fields[0].fieldPath === 'status' && i.fields[i.fields.length - 1].fieldPath !== '__name__' &&
+  i.fields.some((field) => field.fieldPath === 'createdAt' && field.order === 'ASCENDING'));
 const notificationIndexes = indexFile.indexes.filter((i) => i.collectionGroup === 'notifications');
 
 /** Fake Firestore that records the where/orderBy calls a store method builds. */
@@ -62,9 +71,34 @@ describe('Firestore index file', () => {
   });
 
   test('contains exactly the student activity, TA queue and notification inbox indexes', () => {
-    expect(indexFile.indexes).toHaveLength(2 + taQueueIndexes.length + notificationIndexes.length);
+    expect(indexFile.indexes).toHaveLength(2 + taQueueIndexes.length + notificationIndexes.length + faqIndexes.length);
     expect(taQueueIndexes).toHaveLength(4);
     expect(notificationIndexes).toHaveLength(1);
+    expect(faqIndexes).toHaveLength(1);
+  });
+});
+
+describe('Bug FAQ Firestore index', () => {
+  test('matches the resolved-only descending timestamp and ascending document ID query exactly', async () => {
+    const wheres = [];
+    const orders = [];
+    const query = {
+      where(field, op, value) { wheres.push({ field, op, value }); return query; },
+      orderBy(field, dir) { orders.push({ field, dir }); return query; },
+      limit() { return query; },
+      async get() { return { docs: [] }; },
+    };
+    const store = createFirestoreTicketStore({ collection: () => query });
+    await store.searchFaq({ idHash: 'a'.repeat(64), studentId: 'student-1', query: 'loops', field: 'title' });
+
+    expect(wheres).toEqual([{ field: 'status', op: '==', value: 'RESOLVED' }]);
+    expect(orders).toEqual([
+      { field: 'createdAt', dir: 'desc' },
+      { field: '__name__', dir: 'asc' },
+    ]);
+    expect(faqIndexes).toHaveLength(1);
+    expect(faqIndexes[0].queryScope).toBe('COLLECTION');
+    expect(faqIndexes[0].fields).toEqual(bugFaqIndexFields);
   });
 });
 

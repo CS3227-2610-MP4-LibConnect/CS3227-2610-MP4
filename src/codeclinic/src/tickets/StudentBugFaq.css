@@ -1,0 +1,233 @@
+.student-bug-faq {
+  min-width: 0;
+}
+
+.student-bug-faq-description,
+.student-bug-faq-hint,
+.student-bug-faq-validation,
+.student-bug-faq-detail-tags {
+  margin: 0 0 var(--lc-space-4);
+  color: var(--lc-color-muted);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(120px, 0.5fr) auto;
+  align-items: end;
+  gap: var(--lc-space-3);
+}
+
+.student-bug-faq-search label {
+  grid-row: 1;
+  color: var(--lc-color-text);
+  font-weight: 600;
+}
+
+.student-bug-faq-search input,
+.student-bug-faq-search select {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--lc-size-button-height);
+  padding: 0 var(--lc-space-3);
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-text);
+  font: inherit;
+}
+
+.student-bug-faq-search input {
+  grid-column: 1;
+}
+
+.student-bug-faq-search label:nth-of-type(2) {
+  grid-column: 2;
+}
+
+.student-bug-faq-search select {
+  grid-column: 2;
+}
+
+.student-bug-faq-search button,
+.student-bug-faq-more,
+.student-bug-faq-back,
+.student-bug-faq-error button {
+  min-height: var(--lc-size-button-height);
+  padding: 0 var(--lc-space-5);
+  border: 0;
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-blue);
+  color: var(--lc-color-surface);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.student-bug-faq-search button {
+  grid-column: 3;
+}
+
+.student-bug-faq-search button:hover,
+.student-bug-faq-more:hover,
+.student-bug-faq-back:hover,
+.student-bug-faq-error button:hover {
+  background: var(--lc-color-blue-hover);
+}
+
+.student-bug-faq-search button:disabled,
+.student-bug-faq-more:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.student-bug-faq-search :focus-visible,
+.student-bug-faq-result:focus-visible,
+.student-bug-faq-more:focus-visible,
+.student-bug-faq-back:focus-visible,
+.student-bug-faq-error button:focus-visible {
+  outline: 3px solid var(--lc-color-focus);
+  outline-offset: 3px;
+}
+
+.student-bug-faq-results {
+  display: grid;
+  min-width: 0;
+  gap: var(--lc-space-3);
+  margin: var(--lc-space-4) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.student-bug-faq-results li {
+  min-width: 0;
+}
+
+.student-bug-faq-result {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: var(--lc-space-2);
+  padding: var(--lc-space-4);
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-surface);
+  background: var(--lc-color-surface);
+  color: var(--lc-color-text);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.student-bug-faq-result:hover {
+  border-color: var(--lc-color-blue-link);
+  box-shadow: var(--lc-shadow-surface);
+}
+
+.student-bug-faq-result-title {
+  color: var(--lc-color-navy);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-result-tags {
+  color: var(--lc-color-muted);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-more,
+.student-bug-faq-back {
+  margin-top: var(--lc-space-4);
+}
+
+.student-bug-faq-error {
+  padding: var(--lc-space-4);
+  border-left: 4px solid var(--lc-color-danger, #a3262a);
+  background: var(--lc-color-surface);
+}
+
+.student-bug-faq-error p {
+  margin-bottom: var(--lc-space-3);
+}
+
+.student-bug-faq-detail {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-detail h3 {
+  margin: var(--lc-space-5) 0 var(--lc-space-2);
+  font-size: 1.3rem;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-detail h4 {
+  margin: 0 0 var(--lc-space-3);
+  font-size: 1.05rem;
+}
+
+.student-bug-faq-fix,
+.student-bug-faq-conversation {
+  min-width: 0;
+  margin-top: var(--lc-space-5);
+  padding: var(--lc-space-4);
+  border: 1px solid var(--lc-color-border);
+  border-radius: var(--lc-radius-surface);
+  background: var(--lc-color-surface);
+}
+
+.student-bug-faq-fix p,
+.student-bug-faq-message {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.student-bug-faq-replies {
+  display: grid;
+  gap: var(--lc-space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.student-bug-faq-replies li {
+  min-width: 0;
+  padding: var(--lc-space-4);
+  border-radius: var(--lc-radius-control);
+  background: var(--lc-color-page);
+}
+
+.student-bug-faq-speaker {
+  margin: 0 0 var(--lc-space-2);
+  color: var(--lc-color-navy);
+  font-weight: 650;
+}
+
+@media (max-width: 520px) {
+  .student-bug-faq-search {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .student-bug-faq-search label,
+  .student-bug-faq-search input,
+  .student-bug-faq-search select,
+  .student-bug-faq-search button {
+    grid-column: 1;
+  }
+
+  .student-bug-faq-search label {
+    grid-row: auto;
+  }
+
+  .student-bug-faq-search label:nth-of-type(2) {
+    grid-column: 1;
+  }
+
+  .student-bug-faq-search > :nth-child(1) { grid-row: 1; }
+  .student-bug-faq-search > :nth-child(2) { grid-row: 2; }
+  .student-bug-faq-search > :nth-child(3) { grid-row: 3; }
+  .student-bug-faq-search > :nth-child(4) { grid-row: 4; }
+  .student-bug-faq-search > :nth-child(5) { grid-row: 5; }
+}
