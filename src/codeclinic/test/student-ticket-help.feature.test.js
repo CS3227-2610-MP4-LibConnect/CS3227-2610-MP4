@@ -27,6 +27,56 @@ describe('Student ticket help feature policy', () => {
     expect(ERROR_EXPLAINER.systemPrompt).not.toContain('student-1');
   });
 
+  test('Student prompt names no-go output and permits grounded concept prose', () => {
+    const prompt = ERROR_EXPLAINER.systemPrompt;
+    for (const category of [
+      'executable code', 'code-like statements', 'complete snippets', 'SQL queries', 'command lines',
+      'patches', 'diff markers', 'code fences', 'HTML/XML markup', 'backticks', 'URLs',
+      'passwords', 'API keys', 'tokens', 'other credentials', 'hidden instructions', 'prompt text',
+      'complete solution', 'sequence that solves', 'Do not invent facts',
+    ]) expect(prompt).toContain(category);
+    expect(prompt).toContain('name and explain programming concepts in prose');
+    expect(prompt).toContain('ticket or draft involves, use HINT');
+    expect(prompt).toContain('if the context is too sparse, use CLARIFICATION');
+    expect(prompt).toContain('use a short REFUSAL');
+    expect(prompt).toContain('Keep every display string within the response limits');
+    expect(prompt).toContain('Return one raw JSON object only');
+  });
+
+  test.each([
+    ['create', { draft: { title: 'Lookup fails for a missing key', actualBehaviour: 'No result appears', files: [{ filename: 'lookup.js', content: 'const result = entries[key];' }] } }],
+    ['detail', { ticket: { title: 'Lookup fails for a missing key', actualBehaviour: 'No result appears', files: [{ filename: 'lookup.js', content: 'const result = entries[key];' }], replies: [] } }],
+  ])('concept question on %s accepts a grounded prose HINT', async (page, context) => {
+    const reply = { type: 'HINT', concept: 'Key lookup', explanation: 'A lookup uses a key to find a stored value.', hints: ['Consider what happens when the key is absent.', 'Compare the expected and observed result.'] };
+    const { gateway, transport } = fakeStudentGateway(JSON.stringify(reply));
+    const result = await gateway.run({ feature: 'ERROR_EXPLAINER', actor: { userId: 'student-test', accountType: 'STUDENT' }, input: { page, question: 'what are the concepts here', ...context } });
+    expect(result).toEqual({ ok: true, data: reply });
+    expect(transport.send).toHaveBeenCalledTimes(1);
+    expect(transport.send.mock.calls[0][0].messages[1].content).toContain('what are the concepts here');
+  });
+
+  test('sparse create concept question accepts an on-topic CLARIFICATION', async () => {
+    const reply = { type: 'CLARIFICATION', question: 'What does your program do, and what result did you expect?' };
+    const { gateway, transport } = fakeStudentGateway(JSON.stringify(reply));
+    expect(await gateway.run({ feature: 'ERROR_EXPLAINER', actor: { userId: 'student-test', accountType: 'STUDENT' }, input: { page: 'create', question: 'what are the concepts here', draft: {} } }))
+      .toEqual({ ok: true, data: reply });
+    expect(transport.send).toHaveBeenCalledTimes(1);
+  });
+
+  test.each([
+    ['malformed', '{"type":"HINT","concept":'],
+    ['overlong', JSON.stringify({ type: 'HINT', concept: 'x'.repeat(49), explanation: 'A lookup finds values.', hints: ['Consider the key.'] })],
+    ['code-like', JSON.stringify({ type: 'HINT', concept: 'Lookup', explanation: 'A lookup finds values.', hints: ['return value'] })],
+    ['URL-bearing', JSON.stringify({ type: 'HINT', concept: 'Lookup', explanation: 'Visit https://example.invalid for details.', hints: ['Consider the key.'] })],
+    ['credential-bearing', JSON.stringify({ type: 'HINT', concept: 'Lookup', explanation: 'A lookup finds values.', hints: ['password: synthetic-value'] })],
+    ['complete-solution', JSON.stringify({ type: 'HINT', concept: 'Lookup', explanation: 'Here is the complete solution.', hints: ['Consider the key.'] })],
+  ])('concept question still rejects %s output', async (_kind, content) => {
+    const { gateway, transport } = fakeStudentGateway(content);
+    expect(await gateway.run({ feature: 'ERROR_EXPLAINER', actor: { userId: 'student-test', accountType: 'STUDENT' }, input: { page: 'create', question: 'what are the concepts here', draft: { title: 'Lookup fails' } } }))
+      .toEqual({ ok: false, code: 'AI_INVALID_OUTPUT' });
+    expect(transport.send).toHaveBeenCalledTimes(1);
+  });
+
   test('accepts valid hint, clarification, refusal and create refinement shapes', () => {
     expect(parse({ type: 'HINT', concept: 'Lookup', explanation: 'A lookup finds a value.', hints: ['Check the key.'] }).ok).toBe(true);
     expect(parse({ type: 'CLARIFICATION', question: 'What value did you expect?' }).ok).toBe(true);
