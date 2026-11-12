@@ -468,10 +468,13 @@ configuration or logs. In production, `apphosting.yaml` supplies
 as a plain value, at runtime only (see
 [Environments and deployment](#environments-and-deployment)).
 
-Calls reserve shared Firestore limits (5/user/minute, 50/user/day, and a global
-default of 40/minute, configurable up to 45), redact common secrets and email
-addresses, reject oversized input without truncation, and put fixed system
-instructions before delimited user data. The provider transport has a
+Calls first build, redact and size-check the user content. Oversized input is
+rejected without truncation, and common secrets and email addresses are
+redacted. Only a request that passes these checks reserves shared Firestore
+limits (5/user/minute, 50/user/day, and a global default of 40/minute,
+configurable up to 45), so a rejected request never uses up quota (spec R4
+and R5, v0.2). Prompts put fixed system instructions before delimited user
+data. The provider transport has a
 20-second attempt timeout, one bounded retry, a circuit breaker, redirect
 refusal, and a 1 MiB response cap. Output must pass JSON and feature-schema
 validation. Logs and `aiUsage` store metadata and numeric token counts only.
@@ -644,7 +647,7 @@ Implemented security controls:
 - Sessions use a `__Host-` cookie that is HttpOnly, Secure, and SameSite=Lax, store only a hash of the session ID, expire after 30 minutes idle or eight hours, and recheck the account on every protected request.
 - Logout requires a CSRF token.
 - Login and registration are rate limited, and failures use generic messages that do not reveal whether an account exists.
-- The browser never accesses Firestore directly.
+- The browser never accesses Firestore directly. `firestore.rules` denies every client read and write, and *Deploy production* deploys it; the server's Admin SDK is not subject to the rules.
 
 The shared AI gateway is created once at server startup, including when
 configuration is missing; a disabled gateway returns `AI_UNAVAILABLE` while
@@ -710,9 +713,10 @@ Automation:
      variables `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_DEPLOY_SERVICE_ACCOUNT`,
      `FIREBASE_PROJECT_ID` and `PRODUCTION_URL` hold identifiers, not
      secrets.
-   - It runs `firebase deploy --only firestore:indexes --non-interactive`,
-     which never deletes a production index missing from the file, then lists
-     the production indexes in the run log.
+   - It runs `firebase deploy --only firestore:rules,firestore:indexes
+     --non-interactive`, then lists the production indexes in the run log. It
+     deploys the deny-all `firestore.rules` and the indexes, and never deletes
+     a production index that is missing from the file.
    - A smoke check job then requires `GET /` and `GET /register` to return 200
      with HTML, and `GET /api/auth/session` to return 401. It never signs in or
      calls AI features. A failed check fails the run.
@@ -728,17 +732,19 @@ flowchart LR
     Merge -->|CI on main| CI{CI passes?}
     Merge -->|automatic rollout| AH[App Hosting deploys the app]
     CI -->|yes| Gate[Approve production environment]
-    Gate --> Idx[Deploy Firestore indexes]
+    Gate --> Idx[Deploy Firestore rules and indexes]
     Idx --> Smoke[Smoke check the live app]
 ```
 
-Known gaps against the spec:
+**Branch protection (R8 step 6):** a ruleset on `main` requires a pull request
+and three passing CI checks (`Test and build`, `Production dependency audit`
+and `Secret scan`) before a merge. Since App Hosting deploys only from `main`,
+the tests now gate every app release too.
 
-- R6 wants the app rollout inside *Deploy production*, with App Hosting's
-  automatic rollout turned off. Today App Hosting still deploys the app on
-  every push to `main`, without the approval gate.
-- R8 step 6: `main` is not protected, so a pull request can be merged without
-  a passing CI run.
+Known gap against the spec: R6 wants the app rollout inside *Deploy production*,
+with App Hosting's automatic rollout turned off. Today App Hosting still rolls
+out each merge to `main` without the `production` approval gate. A merge can
+only happen after CI passes.
 
 ## Multi-agent development workflow
 
@@ -787,7 +793,8 @@ The TA AI features call SoCLaaS through the shared gateway. Fixed system prompts
 | `src/workflow/validate-assignment.mjs` | Checks batch manifest structure and evidence paths; does not grant approval or verify test truth |
 | `.github/workflows/ci.yml` | CI: tests and build, production dependency audit, and Gitleaks secret scan (see [Environments and deployment](#environments-and-deployment)) |
 | `.gitleaksignore` | Exact fingerprints of reviewed Gitleaks false positives, each with its reason |
-| `.github/workflows/deploy-prod.yml` | Approved production deployment of Firestore indexes, with smoke checks |
+| `.github/workflows/deploy-prod.yml` | Approved production deployment of Firestore rules and indexes, with smoke checks |
+| `src/codeclinic/firestore.rules` | Firestore security rules that deny all client access |
 | `workflow/tasks/environments-and-deployment/deploy-prod-setup.md` | One-time human setup for the deploy workflow: Workload Identity Federation, the `production` environment and repository variables |
 | `workflow/tasks/<task-id>/execution_logs/` | Legacy location for factual logs from earlier tasks |
 | `logs/tasks/<task-id>/` | Factual execution logs: commands, results, and agent run notes |
