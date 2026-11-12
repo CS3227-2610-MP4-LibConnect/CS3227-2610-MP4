@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 2,
+  "taskId": "ai-error-explainer",
+  "batch": 8,
+  "items": ["T11", "T12"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/ai-error-explainer.md", "version": "0.6" },
+    "checklist": { "path": "workflow/tasks/ai-error-explainer/tasks.md", "version": "0.7" },
+    "handoff": { "path": "workflow/tasks/ai-error-explainer/handoff.md", "version": "0.7" }
+  },
+  "approvalEvidence": "workflow/tasks/ai-error-explainer/batch-8-no-go-prompt-plan.md",
+  "implementer": {
+    "agentId": "/root/no_go_prompt_implementer",
+    "worktree": "shared workspace",
+    "allowedFiles": [
+      "src/codeclinic/server/ai/student-ticket-help.js",
+      "src/codeclinic/test/student-ticket-help.feature.test.js",
+      "workflow/tasks/ai-error-explainer/implementation-T11.md",
+      "workflow/tasks/ai-error-explainer/implementation-T12.md",
+      "logs/tasks/ai-error-explainer/implementation-T11.md",
+      "logs/tasks/ai-error-explainer/implementation-T11-test.txt",
+      "logs/tasks/ai-error-explainer/implementation-T12.md",
+      "logs/tasks/ai-error-explainer/implementation-T12-test.txt",
+      "logs/tasks/ai-error-explainer/implementation-T12-build.txt"
+    ]
+  },
+  "reviewer": {
+    "agentId": "/root/no_go_prompt_reviewer",
+    "worktree": "shared workspace",
+    "separationException": "Repository .git is read-only in the supplied workspace. A different reviewer will inspect the exact Batch 8 Student-only diff, independently run focused checks, and retain separate evidence before checklist reconciliation.",
+    "reviewOnlyFiles": [
+      "workflow/tasks/ai-error-explainer/review-T11-T12.md",
+      "logs/tasks/ai-error-explainer/review-T11-T12.md",
+      "logs/tasks/ai-error-explainer/review-T11-T12-test.txt",
+      "logs/tasks/ai-error-explainer/review-T11-T12-build.txt"
+    ]
+  },
+  "itemEvidence": {
+    "T11": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T11.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T11.md",
+      "checks": [
+        { "command": "node -e prompt-category and concept-path check", "result": "pass" },
+        { "command": "npm test -- --watch=false --runInBand --forceExit --runTestsByPath test/student-ticket-help.feature.test.js", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T11-T12.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T11-T12.md",
+      "reviewVerdict": "pass"
+    },
+    "T12": {
+      "implementationReport": "workflow/tasks/ai-error-explainer/implementation-T12.md",
+      "implementationLog": "logs/tasks/ai-error-explainer/implementation-T12.md",
+      "checks": [
+        { "command": "npm test -- --watch=false --runInBand --forceExit --runTestsByPath test/student-ticket-help.feature.test.js test/ai-gateway.test.js test/student-help-chat.api.test.js", "result": "pass" },
+        { "command": "npm run build", "result": "pass" },
+        { "command": "git diff --check -- src/codeclinic/server/ai/student-ticket-help.js src/codeclinic/test/student-ticket-help.feature.test.js", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/ai-error-explainer/review-T11-T12.md",
+      "reviewLog": "logs/tasks/ai-error-explainer/review-T11-T12.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

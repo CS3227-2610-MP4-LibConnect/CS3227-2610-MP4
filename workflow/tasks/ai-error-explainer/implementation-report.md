@@ -1,10 +1,10 @@
 # Student ticket help chatbot: implementation handoff
 
-Date: 2026-11-12. Task: `ai-error-explainer`. Canonical specification, checklist, and handoff: v0.6. Batch plan: v0.4. Human merge decision: **pending**.
+Date: 2026-11-12. Task: `ai-error-explainer`. Canonical specification: v0.6; checklist and handoff: v0.7 after the approved no-go correction. Human merge decision: **pending**.
 
 ## Scope and status
 
-All checklist items T01–T10 are checked after independent review. The active Student can use a page-local Ticket help bot on Create Ticket and an owned ticket detail page. The chat opens from a small lower-right control into a compact messaging-style popup with a stable header, left bot/right Student bubbles, a scrollable conversation, and a bottom composer. The Create Ticket chat can suggest wording in chat without changing form fields. Both APIs enforce Student authorization and use the shared fail-closed AI boundary. No TA-facing chat or AI-triggered ticket write was added.
+All checklist items T01–T12 are checked after independent review. The active Student can use a page-local Ticket help bot on Create Ticket and an owned ticket detail page. The chat opens from a small lower-right control into a compact messaging-style popup with a stable header, left bot/right Student bubbles, a scrollable conversation, and a bottom composer. The Create Ticket chat can suggest wording in chat without changing form fields. Both APIs enforce Student authorization and use the shared fail-closed AI boundary. No TA-facing chat or AI-triggered ticket write was added.
 
 | Batch | Items | Implementation and independent review | Reconciled result |
 | --- | --- | --- | --- |
@@ -15,6 +15,9 @@ All checklist items T01–T10 are checked after independent review. The active S
 | 5 | T09 | `implementation-T09.md`; `review-T09.md`; `assignment-batch-5.json` | Pass with follow-up; side popup. |
 | 6 | T10 | `implementation-T10.md`; `review-T10.md`; `assignment-batch-6.json` | Pass with follow-up; messaging layout. |
 | 7 | T08 | `implementation-T08.md`; `review-T08.md`, `security-review-T08.md`; `assignment-batch-7.json` | Pass with follow-up; A1–A9 combined evidence. |
+| 8 | T11–T12 | `implementation-T11.md`, `implementation-T12.md`; `review-T11-T12.md`; `assignment-batch-8.json` | Pass with follow-up; Student-only no-go prompt clarification and fake-provider concept-question regressions. |
+
+Batch 8 changed only `src/codeclinic/server/ai/student-ticket-help.js` and `src/codeclinic/test/student-ticket-help.feature.test.js`. Its implementer and independent reviewer each passed the focused Student feature/gateway/route suites and production build. The assignment manifest passed `complete` validation before T11/T12 were checked. The prompt now names existing prohibited-output categories and explicitly allows grounded concept explanations in prose. Neither the output parser/filter nor shared prompt changed. The deployed model's actual response and the cause of the reported concept-question 503 remain unknown; the separate provider check and manual adversarial review remain open.
 
 The separately human-approved Create Ticket “improve ticket wording” prompt correction changed `src/codeclinic/server/ai/student-ticket-help.js` and its feature tests. `implementation-wording-reply-correction.md` and `review-wording-reply-correction.md` record its independent pass with follow-up; the actual deployed provider response behind the reported 503 remains unknown.
 

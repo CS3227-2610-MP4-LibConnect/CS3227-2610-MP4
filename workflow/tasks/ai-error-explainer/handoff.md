@@ -1,9 +1,16 @@
 # Analyst handoff: Student ticket help chatbot
 
-Version: 0.6 (2026-11-12)
-Handoff version: 0.6
+Version: 0.7 (2026-11-12)
+Handoff version: 0.7
 Task ID: `ai-error-explainer`
-Approval state: **APPROVED FOR v0.6**. The human explicitly approved the messaging-style popup handoff scope in this conversation after separately approving specification and checklist v0.6. Earlier v0.5 approval and T01–T07/T09 evidence remain valid for their original scope. Batch plan, implementation dispatch, provider access, and merge require separate approval.
+Approval state: **APPROVED FOR v0.7**. The human explicitly approved the messaging-style popup handoff scope in this conversation after separately approving specification and checklist v0.6. The human also separately approved the Student-only no-go correction scope, correction checklist C01/C02 v0.1, correction handoff v0.1, canonical checklist v0.7, this canonical handoff v0.7, Batch 8 plan, and implementation dispatch. T11/T12 have independent pass-with-follow-up review. Earlier approvals and completed-item evidence remain valid for their original scope. Provider access, commit message, push, and merge require separate approval.
+
+## Proposed T11/T12 correction mapping
+
+- `workflow/tasks/ai-error-explainer/no-go-prompt-correction-proposal.md`, `no-go-prompt-correction-checklist.md` v0.1, and `no-go-prompt-correction-handoff.md` v0.1 hold the human-approved correction scope. Canonical checklist v0.7 maps C01 to T11 and C02 to T12 so `src/workflow/validate-assignment.mjs` can validate a new batch. Canonical specification `workflow/specs/ai-error-explainer.md` remains v0.6 and unchanged.
+- Exact implementation source/test allowlist: `src/codeclinic/server/ai/student-ticket-help.js` and `src/codeclinic/test/student-ticket-help.feature.test.js`. One implementer completes T11 before T12 and records separate evidence. A different reviewer independently verifies each and their combined result. The orchestrator owns checklist updates and assignment evidence.
+- Keep the shared preamble, parser, output filter, request shape, authorization, UI, rate limits, and gateway unchanged. Use fake-provider tests only. No live provider, credentials, dependency, CI/deployment, push, or merge action is authorized. The actual deployed `AI_INVALID_OUTPUT` cause remains unknown; do not claim the prompt-only correction resolves it without separate provider evidence.
+- Selected implementation skill remains `openspec-apply-change` through the repository specdocs path adapter. After approval of this canonical handoff amendment, prepare the T11/T12 Batch 8 manifest and request a separate human batch/dispatch decision.
 
 ## Contract and approval evidence
 
