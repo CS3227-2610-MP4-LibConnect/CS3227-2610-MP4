@@ -4,6 +4,7 @@ const { createSessionAuthenticator, hashSubmittedCsrf } = require('../auth/login
 const { validateTicketInput, validateReplyInput, validateTicketId, decodeReplyCursor, encodeReplyCursor, validateTicketListQuery } = require('./validation');
 const { decodeListCursor, encodeListCursor } = require('./list-cursor');
 const { Timestamp } = require('@google-cloud/firestore');
+const { createStudentHelpChatRouter } = require('./student-help-chat');
 
 const MAX_BODY_BYTES = 128 * 1024;
 const RETRY_MESSAGE = 'Ticket service is temporarily unavailable. Please try again.';
@@ -52,6 +53,7 @@ function createTicketsRouter({ repository, authStore, store, now = Date.now } = 
   }
   const authenticateRequest = createSessionAuthenticator(repository, authStore, now);
   const router = express.Router();
+  router.use(createStudentHelpChatRouter({ authenticateRequest, repository, store, csrfMatches }));
 
   router.get('/', async (req, res) => {
     res.set('Cache-Control', 'no-store');

@@ -1,5 +1,6 @@
 import React, { FormEvent, useRef, useState } from 'react';
 import './TicketCreatePage.css';
+import StudentHelpChat from './StudentHelpChat';
 
 type TicketFile = { filename: string; content: string };
 type Errors = Record<string, string>;
@@ -132,6 +133,17 @@ export default function TicketCreatePage() {
   };
 
   const fieldError = (name: string) => errors[name] ? <p className="ticket-field-error" id={`ticket-${name}-error`} role="alert">{errors[name]}</p> : null;
+  const buildHelpRequest = (question: string, history: { role: 'STUDENT' | 'BOT'; text: string }[]) => ({
+    question,
+    ...(history.length ? { history } : {}),
+    draft: {
+      title, language, expectedBehaviour, actualBehaviour, attempted, errorOutput,
+      conceptTags: tags,
+      files: files.map((file) => ({ filename: file.filename, content: file.content })),
+      repoUrl,
+      repoFilePaths: repoPaths,
+    },
+  });
   return <main className="ticket-create-page">
     <section className="ticket-create-card" aria-labelledby="ticket-create-title">
       <a className="ticket-back-link" href="/student/dashboard">Back to dashboard</a>
@@ -172,5 +184,6 @@ export default function TicketCreatePage() {
         {pending && <p role="status" aria-live="polite">Submitting your ticket…</p>}
       </form>
     </section>
+    <StudentHelpChat endpoint="/api/tickets/help-chat" introduction="What help do you need?" buildRequestBody={buildHelpRequest} />
   </main>;
 }

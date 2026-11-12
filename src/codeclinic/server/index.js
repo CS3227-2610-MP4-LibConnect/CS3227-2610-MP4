@@ -9,6 +9,7 @@ const { resolveFirestoreTarget, connectFirestoreTarget } = require('./firestore-
 const { configureNotify } = require('./notifications/notify');
 const { createNotificationsRouter, createFirestoreNotificationStore } = require('./notifications/route');
 const { createAiGateway } = require('./ai/gateway');
+const { registerStudentTicketHelp } = require('./ai/student-ticket-help');
 const { registerTaAiFeatures } = require('./tickets/ta-ai-draft-route');
 const { createFirestoreAccountStore } = require('./account/store');
 const { createAccountRouter } = require('./account/routes');
@@ -103,6 +104,7 @@ async function startServer() {
   const app = createServerApp(db, buildDirectory);
   app.locals.aiGateway = createAiGateway({ env: process.env, db });
   registerTaAiFeatures(app.locals.aiGateway);
+  registerStudentTicketHelp(app.locals.aiGateway);
   return app.listen(port, () => {
     console.info(`CodeClinic server listening on port ${port}.`);
   });

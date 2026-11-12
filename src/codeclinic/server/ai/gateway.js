@@ -73,7 +73,7 @@ function createAiGateway({
         return UNAVAILABLE;
       }
       providerUsage = reply.usage;
-      const parsed = parseModelOutput(reply.response, definition.parse);
+      const parsed = parseModelOutput(reply.response, definition.parse, request.input);
       outcome = parsed.ok ? 'SUCCESS' : 'INVALID_OUTPUT';
       return parsed;
     } catch {
