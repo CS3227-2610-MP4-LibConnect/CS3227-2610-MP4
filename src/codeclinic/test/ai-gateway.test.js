@@ -104,6 +104,18 @@ test('oversize input is rejected after redaction without truncation', async () =
   expect(h.records[0].outcome).toBe('INPUT_TOO_LARGE');
 });
 
+test.each([
+  ['oversize', { text: 'x'.repeat(501) }, 'AI_INPUT_TOO_LARGE'],
+  ['empty', { text: '' }, 'AI_UNAVAILABLE'],
+  ['blank', { text: '   ' }, 'AI_UNAVAILABLE'],
+])('%s content is rejected before any rate-limit capacity is reserved', async (_label, input, code) => {
+  // A request that can never reach the provider must not use up the user's or the shared global quota.
+  const h = harness();
+  expect(await call(h.gateway, input)).toEqual({ ok: false, code });
+  expect(h.rateLimiter.reserve).not.toHaveBeenCalled();
+  expect(h.fetch).not.toHaveBeenCalled();
+});
+
 test.each(['', '   ', null])('empty or non-string content fails safely', async text => {
   const h = harness();
   expect(await call(h.gateway, { text })).toEqual({ ok: false, code: 'AI_UNAVAILABLE' });

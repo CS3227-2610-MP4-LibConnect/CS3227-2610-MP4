@@ -30,8 +30,8 @@ gcloud iam service-accounts create github-deploy \
   --project "$PROJECT_ID" --display-name "GitHub production deploy"
 SA="github-deploy@$PROJECT_ID.iam.gserviceaccount.com"
 
-# Least privilege for deploying Firestore indexes.
-for role in roles/datastore.indexAdmin roles/serviceusage.serviceUsageConsumer roles/firebase.viewer; do
+# Least privilege for deploying Firestore rules and indexes.
+for role in roles/datastore.indexAdmin roles/firebaserules.admin roles/serviceusage.serviceUsageConsumer roles/firebase.viewer; do
   gcloud projects add-iam-policy-binding "$PROJECT_ID" --member "serviceAccount:$SA" --role "$role" --condition None
 done
 
@@ -45,6 +45,15 @@ echo "GCP_DEPLOY_SERVICE_ACCOUNT=$SA"
 ```
 
 The two `echo` lines print the values for step 3. They are identifiers, not secrets.
+
+If you set the account up before the rules were added (2026-11-12), grant the
+one extra role it needs to deploy rules:
+
+```bash
+gcloud projects add-iam-policy-binding libconnect-mp4 \
+  --member "serviceAccount:github-deploy@libconnect-mp4.iam.gserviceaccount.com" \
+  --role roles/firebaserules.admin --condition None
+```
 
 ## 2. GitHub: the `production` environment
 
@@ -72,7 +81,7 @@ The workflow only runs once `deploy-prod.yml` is on `main`. GitHub runs `workflo
 2. **Automatic path:** this needs `ci.yml` on `main` (PR #12). After CI succeeds on the merge commit, *Deploy production* starts and waits at **Review deployments**. Approve it.
 3. **Manual path:** in **Actions → Deploy production → Run workflow**, choose `main`, then approve it.
 4. Check the run:
-   - **Deploy Firestore indexes** succeeds;
+   - **Deploy Firestore rules and indexes** succeeds;
    - **List production indexes** shows the `notifications` index (`recipientUserId` ascending, `createdAt` descending);
    - **Smoke check production** shows `GET / -> 200`, `GET /register -> 200` and `GET /api/auth/session -> 401`.
 5. Confirm that the Notifications page loads its list in the live app. A new index takes a few minutes to build.
