@@ -404,6 +404,14 @@ full email or credentials. Production bootstrap is a human administrator's
 operation; agents do not run this script against a cloud project. Never reuse
 production credentials for local development.
 
+A shared test Coordinator, `test-coordinator@codeclinic.test`, exists in
+production for examiners and peer testers. It was bootstrapped with
+`--allow-additional`. Its sign-in details and usage rules are in the User Guide
+under [Testing the TA role](UserGuide.md#testing-the-ta-role). If the account
+stops working, for example because someone changed its password, deactivate it
+from another Coordinator account and bootstrap a replacement with the command
+above, using `--project libconnect-mp4`.
+
 ## Notifications
 
 `server/notifications/notify.js` is the sole shared notification writer. Ticket
