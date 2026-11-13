@@ -168,6 +168,41 @@ does not contain production credentials.
 
 ## Verification
 
+### Student browser tests
+
+Install Node 24.12 or later, npm dependencies, the Firebase CLI, and the
+Playwright Chromium browser (`npx playwright install chromium`). Start a
+disposable local Firestore emulator in another terminal:
+
+```sh
+firebase emulators:start --only firestore --project demo-codeclinic
+```
+
+Set the three local target variables shown in **Run locally**, then run:
+
+```sh
+npm run test:e2e
+```
+
+The command builds the frontend, starts its own Express server on
+`127.0.0.1:3100`, and runs headless Chromium. Stop any process already using
+port 3100. The runner refuses missing or inconsistent emulator variables;
+Express also checks that the emulator is reachable before it listens. Browser
+traces, screenshots, and video are disabled to avoid retaining test passwords
+or sessions. The suite uses synthetic accounts and leaves data only in the
+disposable emulator.
+
+For Windows PowerShell, set the variables before the command:
+
+```powershell
+$env:CODECLINIC_FIRESTORE_MODE = 'local-emulator'
+$env:CODECLINIC_FIRESTORE_PROJECT_ID = 'demo-codeclinic'
+$env:FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080'
+npm run test:e2e
+```
+
+### Existing checks
+
 ```sh
 CI=true npm test -- --watchAll=false
 npm run build

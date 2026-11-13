@@ -1,0 +1,55 @@
+(node:17624) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+!  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection.
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-codeclinic", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+i  firestore: Firestore Emulator logging to firestore-debug.log
++  firestore: Firestore Emulator was started in standard edition.
++  firestore: Firestore Emulator UI websocket is running on 9150.
+i  Running script: npm run test:e2e
+
+> codeclinic@0.1.0 test:e2e
+> npm run build && playwright test
+
+
+> codeclinic@0.1.0 build
+> react-scripts build
+
+(node:28812) [DEP0176] DeprecationWarning: fs.F_OK is deprecated, use fs.constants.F_OK instead
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Creating an optimized production build...
+Compiled successfully.
+
+File sizes after gzip:
+
+  93.65 kB  build\static\js\main.1af974f9.js
+  7.47 kB   build\static\css\main.62154aa7.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+
+Running 2 tests using 1 worker
+
+(node:7444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 test\e2e\student-workflows.spec.ts:99:1 › Student can register, create and close a ticket, then sign out (7.5s)
+  ✓  2 test\e2e\student-workflows.spec.ts:131:1 › another Student cannot list or directly open the owner’s ticket (4.7s)
+
+  2 passed (18.0s)
++  Script exited successfully (code 0)
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+!  Firestore Emulator has exited upon receiving signal: SIGINT
+i  hub: Stopping emulator hub
+i  logging: Stopping Logging Emulator
