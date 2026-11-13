@@ -792,6 +792,8 @@ The TA AI features call SoCLaaS through the shared gateway. Fixed system prompts
 | `workflow/tasks/ai-gateway/design.md` | SoC LLM adapter design reused from MP3: provider contract, five-layer reliability pipeline, error handling, and the 90 requests/minute provider limit |
 | `workflow/tasks/<task-id>/assignment-batch-*.json` | Orchestrator dispatch records for a task's batches |
 | `src/workflow/validate-assignment.mjs` | Checks batch manifest structure and evidence paths; does not grant approval or verify test truth |
+| `workflow/validate-assignment.test.mjs` | Tests for the batch manifest validator |
+| `workflow/test-fixtures/` | Fixture task artifacts (spec, checklist, handoff, evidence) used by the validator tests |
 | `.github/workflows/ci.yml` | CI: tests and build, production dependency audit, and Gitleaks secret scan (see [Environments and deployment](#environments-and-deployment)) |
 | `.gitleaksignore` | Exact fingerprints of reviewed Gitleaks false positives, each with its reason |
 | `.github/workflows/deploy-prod.yml` | Approved production deployment of Firestore rules and indexes, with smoke checks |
