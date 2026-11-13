@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-playwright-e2e",
+  "batch": 2,
+  "items": ["T03"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-playwright-e2e.md", "version": "0.1" },
+    "checklist": { "path": "workflow/tasks/student-playwright-e2e/tasks.md", "version": "0.1" },
+    "handoff": { "path": "workflow/tasks/student-playwright-e2e/handoff.md", "version": "0.1" }
+  },
+  "approvalEvidence": "workflow/tasks/student-playwright-e2e/approval-batch-2.md",
+  "implementer": {
+    "agentId": "implement_batch2",
+    "worktree": "shared workspace; prepared test file and task artifacts are uncommitted",
+    "allowedFiles": [
+      "src/codeclinic/test/e2e/student-workflows.spec.ts",
+      "src/codeclinic/README.md",
+      "workflow/tasks/student-playwright-e2e/implementation-T03.md",
+      "logs/tasks/student-playwright-e2e/implementation-T03.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "review_batch2",
+    "worktree": "shared workspace; separate reviewer with full-diff compensating controls",
+    "separationException": "Uncommitted task files and read-only repository Git metadata make a separate exact checkout impractical; reviewer must inspect the complete diff and new files independently.",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T03": {
+      "implementationReport": "workflow/tasks/student-playwright-e2e/implementation-T03.md",
+      "implementationLog": "logs/tasks/student-playwright-e2e/implementation-T03.md",
+      "checks": [
+        { "command": "npm run test:e2e with disposable demo-codeclinic emulator", "result": "pass" },
+        { "command": "npm test -- --watchAll=false --runInBand --runTestsByPath test/registration.api.test.js test/login.session.test.js test/student-tickets.api.test.js test/student-my-tickets.contract.test.js test/student-ticket-activity.contract.test.js test/StudentTickets.test.tsx test/StudentMyTickets.test.tsx test/StudentTicketActivity.test.tsx", "result": "pass" },
+        { "command": "npm run build", "result": "pass" },
+        { "command": "npm ci --offline --no-audit --no-fund", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-playwright-e2e/review-T03.md",
+      "reviewLog": "logs/tasks/student-playwright-e2e/review-batch-2.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}

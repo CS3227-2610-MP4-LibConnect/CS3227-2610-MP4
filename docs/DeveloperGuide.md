@@ -18,6 +18,7 @@ and the former application path `src/libconnect-mp4`.
 - [Student ticket creation](#student-ticket-creation)
 - [Student ticket activity](#student-ticket-activity)
 - [Student My Tickets](#student-my-tickets)
+- [Student Bug FAQ](#student-bug-faq)
 - [Student ticket help chat](#student-ticket-help-chat)
 - [Account management](#account-management)
 - [Notifications](#notifications)
@@ -131,9 +132,9 @@ sequenceDiagram
 
 The login form posts email, password, and the selected Student or TA type to `POST /api/auth/login`. Express trims and lowercases the email for lookup, reads the email-key and user records, verifies the Argon2id hash, and requires an `ACTIVE` account whose stored type matches the selected type. A wrong email or password returns a generic `401`, so the response does not reveal whether an account exists. Only after the password is verified can the response name the reason: `403` with `ACCOUNT_INACTIVE` for an inactive account, or `WRONG_ACCOUNT_TYPE` with the stored type when the selected type is wrong. These outcomes still count as failed attempts and create no session. Login attempts are limited to five per canonical email and 30 per direct source address in a 15-minute window, and going over returns `429`. Storage errors return `503`.
 
-On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. Express serves the app shell for every SPA route through one handler (`sendAppShell`, see [Running the production server](#running-the-production-server)); the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
+On success, Express creates a Firestore `loginSessions` record and sends an HttpOnly, Secure, SameSite=Lax `__Host-codeclinic_session` cookie. Firestore stores the hash of the session ID, not the raw cookie value. The `200` response contains the server-verified account type, which the client uses to navigate to `/student/dashboard` or `/ta/dashboard`. One `sendAppShell` handler serves the listed SPA routes for dashboards, tickets, accounts, support, the TA queue, and notifications; the former `/member/dashboard` and `/librarian/dashboard` paths are not served or redirected.
 
-Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; any future protected API must enforce its own server-side authorization on every request.
+Every dashboard load calls `GET /api/auth/session` before rendering the dashboard. Express checks the cookie, session, current user status, and current role against the role recorded at session creation. For an active Student, the response can also contain the stored name, which the dashboard uses in its greeting. Sessions expire after 30 minutes idle or eight hours absolute; successful validation refreshes the idle deadline. A `401` sends the visitor to login, a verified role mismatch shows access denied with a link to the correct dashboard, and a service or network failure shows a retry state without dashboard content. The guard accepts only a server-returned `STUDENT` or `TA` type; any other value shows the retry state. The React route guard controls only what is displayed; each protected account, notification, ticket, and AI API independently enforces server-side authorization.
 
 ## Student ticket creation
 
@@ -250,6 +251,41 @@ already loaded cards visible. The list query requires the composite index on
 `firestore.indexes.json`. Production index deployment is separate from
 application code and must precede production use of this query.
 
+## Student Bug FAQ
+
+`StudentBugFaq` is mounted below Ask for Help on `/student/dashboard`. It
+searches across ticket owners only when the stored status is `RESOLVED`.
+Students choose `title` or `tags`; the backend normalizes the query and scans
+at most 100 ordered ticket documents per request to return at most 20 matching
+summaries. A summary contains only title, concept tags, and a session-bound
+encrypted FAQ reference. The UI does not display the reference or any ticket
+or owner identifier.
+
+`GET /api/tickets/faq?q=...&field=title|tags&cursor=...` and
+`GET /api/tickets/faq/:faqRef?cursor=...` require an authenticated active
+Student. The server rechecks the account and resolved status on each request.
+The detail projection contains title, concept tags, fix note, and a page of up
+to 50 valid replies. Speaker labels are derived as `Student` or `TA` from
+trusted account records; message text is returned literally, so names typed in
+message bodies can remain visible. The detail view is read-only.
+
+FAQ references and search/reply cursors use bounded AES-256-GCM tokens derived
+from the trusted session hash, Student identity, purpose, and query/reference
+binding. Tokens are not persisted. The ordered search requires the composite
+index on `status` ascending, `createdAt` descending, and `__name__` ascending
+in `firestore.indexes.json`. The replies query also uses the configured
+`createdAt`/`replyId` ordering. Index configuration is present in the
+repository.
+
+Synthetic store and HTTP contract checks in
+`test/bug-faq.store.contract.test.js` and
+`test/bug-faq.api.contract.test.js` cover all four ticket statuses, different
+owners, bounded sparse/dense search pages, cursor type preservation, detail
+projection, resolved-only rechecks, reply pagination, authorization and
+session binding. `test/StudentBugFaq.test.tsx` covers dashboard placement,
+search selection, result projection, stale requests, and detail pagination.
+These controlled tests do not connect to a live Firestore project.
+
 Focused My Tickets checks are in `test/StudentMyTickets.test.tsx`,
 `test/StudentTicketCard.test.tsx`, and
 `test/student-my-tickets.contract.test.js`. The synthetic emulator integration
@@ -304,9 +340,7 @@ The gateway redacts common secret patterns, caps the complete post-redaction
 input at 98,304 UTF-16 code units, requests at most 1,024 output tokens, and
 rejects malformed or unsafe output. A rejected reply maps to a safe
 `AI_INVALID_OUTPUT` 503; the client retains the question for retry. No model
-output can authorize a write. The provisional limits have not been confirmed
-against the deployed model, and the reported Create Ticket wording 503 has no
-observed live-provider retry result.
+output can authorize a write. Fake-provider tests and independent review passed.
 
 Focused verification uses injected fake providers and synthetic ticket data.
 From `src/codeclinic`, run:
@@ -389,18 +423,19 @@ The four `/api/notifications` endpoints list the caller's notifications, count
 unread items (maximum 99), mark one read, and mark all read. Mutations require
 CSRF; another user's item ID returns the same `404` as a missing item. Messages
 are plain text. `NotificationBell` appears in the shared `AppHeader`, and
-`/notifications` renders the session-checked inbox. For a TA, `NotificationsRoute`
-supplies `NotificationInbox.ticketHref` as `/ta/tickets/:ticketId`, so a ticket
-notification shows **Open related ticket**. Opening it marks the item as read.
+`/notifications` renders the session-checked inbox. `NotificationsRoute`
+supplies `/ta/tickets/:ticketId` links for TA viewers; opening a linked item
+marks it as read. Student notifications remain text with a mark-read action.
+The TA ticket routes call `notify` after successful claim, reply, and resolve
+commits, sending the Student `TICKET_CLAIMED`, `TICKET_REPLY`, or
+`TICKET_RESOLVED`; unclaim sends none. A notification failure does not roll
+back the ticket action.
 
-The list query (`where recipientUserId ==`, `orderBy createdAt desc`) needs a
-Firestore composite index on `recipientUserId` ascending and `createdAt`
-descending. It is defined in `firestore.indexes.json`, and
-`test/ta-tickets.indexes.test.js` checks that the recorded inbox query has
-exactly one matching index. The local emulator does not enforce indexes, so a
-missing index shows up only in production. Like every index, it reaches
-production through the approved *Deploy production* workflow (see
-[Environments and deployment](#environments-and-deployment)).
+The list query needs a Firestore composite index on `recipientUserId` ascending
+and `createdAt` descending. It is defined in `firestore.indexes.json`, and
+`test/ta-tickets.indexes.test.js` checks the query against that definition.
+The local emulator does not enforce index creation. The production workflow
+can deploy the index after the required setup.
 
 ## TA ticket queue
 
@@ -488,10 +523,9 @@ refusal, and a 1 MiB response cap. Output must pass JSON and feature-schema
 validation. Logs and `aiUsage` store metadata and numeric token counts only.
 
 Redaction can miss secrets: users must never paste credentials. Model output
-is advisory and cannot authorize writes or invoke tools. Automated tests and CI
-use fakes and never call the provider. Real provider behaviour is checked by the
-human-run [live SoCLaaS test](#live-soclaas-test-opt-in), whose recorded runs are
-in `workflow/tasks/ai-ta-assist/implementation-report.md`.
+is advisory and cannot authorize writes or invoke tools. Automated tests
+and CI use fakes and never call the provider. The TA AI task records a human-run
+[live SoCLaaS test](#live-soclaas-test-opt-in). 
 
 ## TA AI assist
 
@@ -587,8 +621,9 @@ provider-side outage for that model, not a code fault. Try another model from
 
 ## Running the production server
 
-Production runs on Firebase App Hosting (Cloud Run) in project `libconnect-mp4`,
-at <https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/>.
+Production runs on Firebase App Hosting (Cloud Run) in project
+`libconnect-mp4`. The production URL recorded in deployment evidence is
+<https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/>.
 `src/codeclinic/apphosting.yaml` defines the build (`npm run build`), the start
 command (`node server/index.js`), and these environment variables:
 
@@ -612,15 +647,17 @@ Only `express`, `argon2`, `firebase-admin`, `react`, `react-dom` and
 `web-vitals` are runtime dependencies. Build and test tooling (`react-scripts`,
 `typescript`, the testing libraries and type packages) is in `devDependencies`.
 
-**Caching.** Express serves the app shell (`/`, `/register` and every SPA route)
-through one `sendAppShell` handler. It sends `Cache-Control: no-cache` and an
-ETag taken from the content. Content-hashed `/static/*` files are
+The SoCLaaS key and base URL are referenced as runtime Secret Manager secrets
+in `apphosting.yaml`; the AI gateway is unavailable if its configuration is
+missing or invalid.
+
+**Caching.** Express serves the app shell (`/`, `/register`, and the listed SPA
+routes) through one `sendAppShell` handler. It sends `Cache-Control: no-cache`
+and a content-derived ETag. Content-hashed `/static/*` files are
 `public, max-age=31536000, immutable`, and other build files are `no-cache`.
-App Hosting builds every file with the same 1980 modification time, so the
-default ETag (size plus modification time) would not change between releases.
-Returning browsers would then keep an old `index.html` that requests bundles a
-new release no longer serves, and render a blank page. `test/server.test.js`
-covers this.
+App Hosting builds files with the same 1980 modification time, so the default
+size-and-time ETag could remain unchanged across releases. `test/server.test.js`
+covers the cache headers and revalidation behavior.
 
 ## Design of shared components
 
@@ -641,8 +678,6 @@ Shared server code is split by responsibility so each feature reuses one impleme
 | Shared header | `src/AppHeader.tsx` | Role-aware navigation, notification bell and logout | Every signed-in page |
 | Account support | `server/account/` | Own-profile/password updates and server-authorized support operations | Account and support pages |
 | Notifications | `server/notifications/`, `src/notifications/` | Shared writer, own-user inbox API, bell and plain-text inbox | Both dashboards |
-
-Known issue: `server/auth/login.js` still re-exports the email helpers from `server/auth/email.js` for one frontend test import. The re-export can be removed once that test imports `email.js` directly.
 
 The remaining planned shared components are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
@@ -687,72 +722,30 @@ Spec: `workflow/specs/environments-and-deployment.md` v0.3.
 | Environment | Firebase project | Firestore mode | Data | How it runs |
 | --- | --- | --- | --- | --- |
 | Development | `demo-codeclinic` (emulator only) | `local-emulator` | Synthetic, disposable | On each developer's machine ([Running the development server](#running-the-development-server)) |
-| Production | `libconnect-mp4` | `production` | Real users | Firebase App Hosting, deployed from `main` |
+| Production | `libconnect-mp4` | `production` | Real users | Firebase App Hosting, with rollouts reported from `main` |
 
-The two environments are separate:
+The `.firebaserc` `default` alias is the emulator-only `demo-codeclinic`; its
+`prod` alias is `libconnect-mp4`. `firestore-target.js` fails closed on mixed
+settings. There is no separate deployed development backend.
 
-- The `.firebaserc` `default` alias is the emulator-only `demo-codeclinic`, and
-  the `prod` alias is `libconnect-mp4`.
-- The `demo-` prefix stops the Firebase tools from reaching any cloud project.
-- `firestore-target.js` fails closed on mixed settings.
-- Local `.env` files hold no production credentials.
+**CI** (`.github/workflows/ci.yml`) runs on pull requests and pushes to `main`.
+It installs dependencies, runs tests and a build, audits production dependencies
+at high severity, and scans Git history for secrets. It requests read-only
+repository permissions, pins actions to commit SHAs, and cancels superseded
+runs. It does not deploy.
 
-There is no deployed development backend: the local setup, plus CI on every
-change, is the development environment.
+**Deploy production** (`.github/workflows/deploy-prod.yml`) is configured to
+run after successful CI on a push to `main`, or manually from `main`. The deploy
+job waits for approval of the `production` GitHub environment, checks out the
+commit that passed CI, and uses Workload Identity Federation. It deploys the
+deny-all Firestore rules and configured indexes without deleting absent
+production indexes, then lists production indexes. A read-only smoke check
+expects `/` and `/register` to return HTML with status 200 and
+`/api/auth/session` to return 401. One-time human setup is documented in
+[`deploy-prod-setup.md`](../workflow/tasks/environments-and-deployment/deploy-prod-setup.md).
 
-Automation:
-
-1. **CI** (`.github/workflows/ci.yml`) runs on every pull request and every push
-   to `main`. It has three jobs:
-   - `npm ci`, `npm test` and `npm run build`;
-   - `npm audit --omit=dev --audit-level=high`;
-   - a Gitleaks scan of the full history, with the binary checksum-verified.
-
-   It requests `contents: read` only, pins actions to commit SHAs, cancels
-   superseded runs, and never deploys.
-2. **Deploy production** (`.github/workflows/deploy-prod.yml`) runs after CI
-   succeeds on a push to `main`, or by hand from **Actions → Deploy production
-   → Run workflow** on `main`. It never runs for pull requests or forks, and two
-   runs never overlap.
-   - The deploy job waits until a team member approves the `production` GitHub
-     environment.
-   - It checks out the commit that passed CI and signs in to Google Cloud
-     through Workload Identity Federation, with no stored key. The repository
-     variables `GCP_WORKLOAD_IDENTITY_PROVIDER`, `GCP_DEPLOY_SERVICE_ACCOUNT`,
-     `FIREBASE_PROJECT_ID` and `PRODUCTION_URL` hold identifiers, not
-     secrets.
-   - It runs `firebase deploy --only firestore:rules,firestore:indexes
-     --non-interactive`, then lists the production indexes in the run log. It
-     deploys the deny-all `firestore.rules` and the indexes, and never deletes
-     a production index that is missing from the file.
-   - A smoke check job then requires `GET /` and `GET /register` to return 200
-     with HTML, and `GET /api/auth/session` to return 401. It never signs in or
-     calls AI features. A failed check fails the run.
-
-   One-time human setup:
-   [`deploy-prod-setup.md`](../workflow/tasks/environments-and-deployment/deploy-prod-setup.md).
-3. **App rollout:** App Hosting's GitHub integration rolls out every push to
-   `main`, shown as the `firebase-app-hosting` check on each commit.
-
-```mermaid
-flowchart LR
-    PR[Pull request] -->|CI| Merge[Merge to main]
-    Merge -->|CI on main| CI{CI passes?}
-    Merge -->|automatic rollout| AH[App Hosting deploys the app]
-    CI -->|yes| Gate[Approve production environment]
-    Gate --> Idx[Deploy Firestore rules and indexes]
-    Idx --> Smoke[Smoke check the live app]
-```
-
-**Branch protection (R8 step 6):** a ruleset on `main` requires a pull request
-and three passing CI checks (`Test and build`, `Production dependency audit`
-and `Secret scan`) before a merge. Since App Hosting deploys only from `main`,
-the tests now gate every app release too.
-
-Known gap against the spec: R6 wants the app rollout inside *Deploy production*,
-with App Hosting's automatic rollout turned off. Today App Hosting still rolls
-out each merge to `main` without the `production` approval gate. A merge can
-only happen after CI passes.
+App Hosting's GitHub integration is reported to roll out the app automatically
+from `main`. The Firestore workflow does not deploy the app.
 
 ## Multi-agent development workflow
 

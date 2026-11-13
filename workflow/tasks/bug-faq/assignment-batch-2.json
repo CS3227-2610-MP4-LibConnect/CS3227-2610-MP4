@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 2,
+  "taskId": "bug-faq",
+  "batch": 2,
+  "items": [
+    "T03",
+    "T04"
+  ],
+  "artifacts": {
+    "spec": {
+      "path": "workflow/specs/bug-faq.md",
+      "version": "0.4"
+    },
+    "checklist": {
+      "path": "workflow/tasks/bug-faq/tasks.md",
+      "version": "0.4"
+    },
+    "handoff": {
+      "path": "workflow/tasks/bug-faq/handoff.md",
+      "version": "0.4"
+    }
+  },
+  "approvalEvidence": "workflow/tasks/bug-faq/batch-plan.md",
+  "implementer": {
+    "agentId": "bug-faq-implementer-v04",
+    "worktree": "implementation-shared-workspace",
+    "allowedFiles": [
+      "src/codeclinic/src/StudentDashboard.tsx",
+      "src/codeclinic/src/DashboardViews.css",
+      "src/codeclinic/src/tickets/StudentBugFaq.tsx",
+      "src/codeclinic/src/tickets/StudentBugFaq.css",
+      "src/codeclinic/test/StudentBugFaq.test.tsx",
+      "src/codeclinic/test/bug-faq.store.contract.test.js",
+      "src/codeclinic/test/bug-faq.api.contract.test.js",
+      "src/codeclinic/test/ta-tickets.indexes.test.js",
+      "src/codeclinic/firestore.indexes.json",
+      "docs/UserGuide.md",
+      "docs/DeveloperGuide.md",
+      "workflow/tasks/bug-faq/implementation-T03-v0.4.md",
+      "workflow/tasks/bug-faq/implementation-T04-v0.4.md",
+      "logs/tasks/bug-faq/implementation-T03-v0.4-2026-11-12.md",
+      "logs/tasks/bug-faq/implementation-T04-v0.4-2026-11-12.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "bug-faq-independent-reviewer-v04",
+    "worktree": "clean-HEAD-snapshot-with-Batch-2-overlay",
+    "reviewOnlyFiles": []
+  },
+  "humanDispatchApproval": "Approved in conversation on 2026-11-12",
+  "itemEvidence": {
+    "T03": {
+      "implementationReport": "workflow/tasks/bug-faq/implementation-T03-v0.4-correction2.md",
+      "implementationLog": "logs/tasks/bug-faq/implementation-T03-v0.4-correction2-2026-11-13.md",
+      "checks": [
+        {
+          "command": "cd src/codeclinic; CI=true npm test -- --runInBand --watchAll=false StudentBugFaq.test.tsx",
+          "result": "pass"
+        },
+        {
+          "command": "Playwright CSS geometry diagnostic at 320 and 1440 CSS px, plus full suite, build, and diff check",
+          "result": "pass"
+        }
+      ],
+      "reviewReport": "workflow/tasks/bug-faq/review-T03-v0.4-correction2.md",
+      "reviewLog": "logs/tasks/bug-faq/review-T03-v0.4-correction2-2026-11-13.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "priorReview": {
+        "report": "workflow/tasks/bug-faq/review-T03-v0.4.md",
+        "log": "logs/tasks/bug-faq/review-T03-v0.4-2026-11-12.md",
+        "verdict": "changes-required"
+      },
+      "priorCorrectionReview": {
+        "implementationReport": "workflow/tasks/bug-faq/implementation-T03-v0.4-correction.md",
+        "implementationLog": "logs/tasks/bug-faq/implementation-T03-v0.4-correction-2026-11-13.md",
+        "reviewReport": "workflow/tasks/bug-faq/review-T03-v0.4-correction.md",
+        "reviewLog": "logs/tasks/bug-faq/review-T03-v0.4-correction-2026-11-13.md",
+        "verdict": "pass-with-follow-up"
+      },
+      "findings": [
+        "Revision 2 synthetic CSS geometry aligns the Search field label and selector at 320 CSS px; post-revision human rendered-route check remains pending."
+      ],
+      "reviewerChecks": [
+        {
+          "command": "CI=true npm test -- --runInBand --watchAll=false StudentBugFaq.test.tsx",
+          "summary": "1 suite, 6 tests",
+          "result": "pass"
+        },
+        {
+          "command": "CI=true npm test -- --runInBand --watchAll=false",
+          "summary": "86 suites, 1661 tests passed; 6 suites/10 tests skipped",
+          "result": "pass"
+        },
+        {
+          "command": "npm run build",
+          "summary": "production build compiled",
+          "result": "pass"
+        },
+        {
+          "command": "Playwright synthetic CSS geometry at 320 and 1440 CSS px",
+          "summary": "no overlap or overflow; mobile label and selector aligned; 3px keyboard focus outline",
+          "result": "pass"
+        }
+      ],
+      "reconciliationStatus": "Revision 2 independently reviewed pass-with-follow-up; human reported the requested 320 CSS px rendered-route check works on 2026-11-13; T03 ready to close."
+    },
+    "T04": {
+      "implementationReport": "workflow/tasks/bug-faq/implementation-T04-v0.4-correction.md",
+      "implementationLog": "logs/tasks/bug-faq/implementation-T04-v0.4-correction-2026-11-13.md",
+      "checks": [
+        {
+          "command": "cd src/codeclinic; CI=true npm test -- --runInBand --watchAll=false",
+          "result": "pass"
+        },
+        {
+          "command": "cd src/codeclinic; npm run build",
+          "result": "pass"
+        },
+        {
+          "command": "git diff --check",
+          "result": "pass"
+        }
+      ],
+      "reviewReport": "workflow/tasks/bug-faq/review-T04-v0.4-correction2.md",
+      "reviewLog": "logs/tasks/bug-faq/review-T04-v0.4-correction2-2026-11-13.md",
+      "reviewVerdict": "pass-with-follow-up",
+      "priorReview": {
+        "report": "workflow/tasks/bug-faq/review-T04-v0.4.md",
+        "log": "logs/tasks/bug-faq/review-T04-v0.4-2026-11-12.md",
+        "verdict": "changes-required"
+      },
+      "priorCorrectionReview": {
+        "reviewReport": "workflow/tasks/bug-faq/review-T04-v0.4-correction.md",
+        "reviewLog": "logs/tasks/bug-faq/review-T04-v0.4-correction-2026-11-13.md",
+        "verdict": "pass-with-follow-up"
+      },
+      "findings": [
+        "User Guide mismatch corrected. Human reported the requested rendered-route and keyboard check works on 2026-11-13; live Firestore/index readiness unverified."
+      ],
+      "reviewerChecks": [
+        {
+          "command": "CI=true npm test -- --runInBand --watchAll=false",
+          "summary": "86 suites, 1661 tests passed; 6 suites/10 tests skipped",
+          "result": "pass"
+        },
+        {
+          "command": "npm run build",
+          "summary": "production build compiled",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "correctionDispatchHistory": [
+    {
+      "revision": 1,
+      "items": ["T03", "T04"],
+      "humanApproval": "Approved in conversation on 2026-11-13",
+      "finding": "T03 mobile label overlap and UTF-16 input limit; T04 User Guide action-label mismatch.",
+      "scope": ["src/codeclinic/src/tickets/StudentBugFaq.css", "src/codeclinic/src/tickets/StudentBugFaq.tsx", "src/codeclinic/test/StudentBugFaq.test.tsx", "docs/UserGuide.md"],
+      "proposal": "workflow/tasks/bug-faq/batch-2-correction-proposal.md",
+      "implementationReports": ["workflow/tasks/bug-faq/implementation-T03-v0.4-correction.md", "workflow/tasks/bug-faq/implementation-T04-v0.4-correction.md"],
+      "reviewReports": ["workflow/tasks/bug-faq/review-T03-v0.4-correction.md", "workflow/tasks/bug-faq/review-T04-v0.4-correction.md"],
+      "reviewerVerdict": "pass-with-follow-up",
+      "followUp": "Human screenshot confirmed Search field label misalignment; T03 reopened."
+    }
+  ],
+  "correctionDispatch": {
+    "revision": 2,
+    "items": [
+      "T03"
+    ],
+    "humanApproval": "Approved in conversation on 2026-11-13",
+    "finding": "Human-confirmed Search field label misalignment at 320 CSS px after correction revision 1.",
+    "scope": [
+      "src/codeclinic/src/tickets/StudentBugFaq.css"
+    ],
+    "evidence": [
+      "workflow/tasks/bug-faq/review-T03-v0.4-correction.md",
+      "workflow/tasks/bug-faq/human-visual-verification.md",
+      "workflow/tasks/bug-faq/batch-2-correction2-proposal.md"
+    ],
+    "implementer": "bug-faq-implementer-v04",
+    "reviewer": "bug-faq-independent-reviewer-v04",
+    "t03OutputReport": "workflow/tasks/bug-faq/implementation-T03-v0.4-correction2.md",
+    "t03OutputLog": "logs/tasks/bug-faq/implementation-T03-v0.4-correction2-2026-11-13.md",
+    "t03ReviewerReport": "workflow/tasks/bug-faq/review-T03-v0.4-correction2.md",
+    "t03ReviewerLog": "logs/tasks/bug-faq/review-T03-v0.4-correction2-2026-11-13.md",
+    "status": "independently-reviewed-human-rendered-route-verified-awaiting-merge-decision",
+    "reviewerVerdict": "pass-with-follow-up",
+    "humanVisualResult": "Human reported 'verified it works' on 2026-11-13 in response to the requested 320 CSS px dashboard verification; see human-visual-verification.md."
+  }
+}

@@ -1,0 +1,44 @@
+# Independent review: Batch 1 (T01, T02)
+
+Specification, checklist, and handoff: v0.1. Batch plan: v0.1. The human approved Batch 1 and the Playwright dependency/Chromium download in conversation; `approval-batch-1.md` records the decision. I did not implement either item. Verdict: **changes required** for both items before Batch 2.
+
+## Reviewed scope and method
+
+I inspected the complete task implementation diff in `src/codeclinic/.gitignore`, `README.md`, `package.json`, and `package-lock.json`, plus the new `playwright.config.ts` and prepared `test/e2e/student-workflows.spec.ts`. I checked the related startup boundary in `server/index.js` and `server/firestore-target.js`, the installed Playwright runner teardown code, the T01/T02 reports and logs, and the approved artifacts. The existing user changes in `docs/DeveloperGuide.md` and `docs/UserGuide.md` are unrelated and were not reviewed as Batch 1 changes. The assignment manifest passes its plan validator.
+
+A separate clean checkout was impractical for this uncommitted batch: the new config, tests, and task artifacts are untracked, while the repository Git metadata is read-only in this workspace. As compensating controls, I examined the complete tracked diff and the full contents of both new files, compared the task allowlist, and ran bounded read-only runner checks. I made no implementation or review-only test changes.
+
+## Item verdicts and traceability
+
+| Item | Criteria and evidence | Verdict and unverified criteria |
+| --- | --- | --- |
+| T01 (R1, R4; scenarios 3–4) | Dependency/script/config, ignored artifacts, and local instructions are present. The config pins `demo-codeclinic`, local mode, emulator host, and loopback app URL; the server probes the emulator before listening. Two tests list successfully with the pinned variables; missing variables fail at config load. Chromium installation and build passed in implementer evidence. | **Changes required.** The `test:e2e` command cannot finish unattended on this Windows host because its Playwright webServer leaves Express listening. A fresh-checkout run and a complete E2E command remain unverified. |
+| T02 (R2, R4; scenario 1) | The prepared test uses browser UI to register, sign in, create, list, open, reply, close, inspect the Closed view, sign out, and check protected-route denial. Synthetic credentials are generated at runtime. Implementer evidence shows Chromium reached all assertions and reported one pass on three runs. | **Changes required.** The first run was interrupted; the later runs exited 0 only after manually stopping the Express child. A repeatable unattended item check remains unverified. |
+
+The two items work together through the configured loopback server and emulator target, and browser assertions were observed to pass. The runner lifecycle prevents a complete, repeatable combined result. T03's second-Student test exists but was not in this batch and has not run; it cannot be credited as an ownership pass.
+
+## Findings
+
+1. **High — unattended runner teardown fails.** `src/codeclinic/playwright.config.ts` uses Playwright `webServer.command: 'node server/index.js'`. T02 logs show a passing test followed by a hang until manual termination of that server, including after adding `gracefulShutdown`. Installed Playwright 1.65.0 runner code explicitly throws `Graceful shutdown is not supported on Windows` before it considers that option. This fails R1's repeatable local command and T02's complete verification. The implementer should fix and demonstrate deterministic server teardown, then rerun the core case with an ordinary exit and no manual process action. The approved config file may be used for an in-scope remedy if one is demonstrated; the present `gracefulShutdown` setting alone is not such a remedy. A separate lifecycle helper at `test/e2e/playwright-server.cjs` is outside the approved allowlist and needs the orchestrator to seek a specific scope approval before dispatch.
+2. **Low — lockfile contains incidental removals.** `src/codeclinic/package-lock.json` adds the three Playwright packages but also removes optional peer entries for `@firebase/app`, `@firebase/app-compat`, and a nested Tailwind `yaml`. This appears to be npm dependency-tree normalization, not an additional direct dependency or product change; the build passed. Keep the diff visible and confirm fresh `npm ci`/build behavior during final verification rather than treating the removals as a security fix.
+
+No server authorization or state-machine production code changed. The browser tests rely on server-owned sessions and ticket authorization, use separate contexts for the future ownership case, and disable trace, screenshot, and video. No hard-coded password or credential logging was found. The T02 case does not itself test cross-user access, malformed input, forged roles, replay, or concurrency; the approved scope assigns the browser ownership boundary to T03 and leaves detailed authorization contracts to existing API/emulator tests. No production or external service was accessed in this review.
+
+## Required handoff and gates
+
+Return **T01** for the failed repeatable-runner criterion and **T02** for its incomplete unattended browser verification. Do not mark either complete or begin T03 on the current evidence. If the fix needs a new helper file, obtain a specifically approved allowlist extension first. The reviewer grants no implementation, commit, or merge approval. Exact review commands and results are in [the Batch 1 review log](../../../logs/tasks/student-playwright-e2e/review-batch-1.md).
+
+## Approved correction review (2026-11-13)
+
+The preceding verdict records the original failure and is retained as historical evidence. The human subsequently approved `batch-1-correction-proposal.md` v0.1 and the one-file allowlist extension in `approval-batch-1-correction.md`. I independently reviewed the corrected `playwright.config.ts`, new `test/e2e/playwright-server.cjs`, updated T01/T02 reports, correction report/log, and the unchanged prepared core test. The updated manifest passes its plan validation. I made no implementation edits or review-only tests.
+
+| Item | Final correction verdict | Remaining verification limit |
+| --- | --- | --- |
+| T01 | **Pass with follow-up.** The config rejects a non-demo target before test actions. The helper probes the pinned local emulator before spawning Express, refuses occupied port 3100, starts a direct child with the pinned environment, waits for loopback readiness, and stops and waits for that exact child on success or startup failure. The implementer's corrected `npm run test:e2e -- --grep 'Student can register'` exited 0 unattended and left port 3100 closed. My bounded review independently confirmed two-test discovery and absent-emulator refusal before app startup. | I did not independently rerun the full browser command because the disposable emulator was down and Firebase CLI had previously attempted an external MOTD/config fetch. Fresh `npm ci` remains unverified. |
+| T02 | **Pass with follow-up.** The prepared core browser test still covers the R2 UI journey. The corrected implementation log records one Chromium pass, a Playwright summary, and unattended exit 0, resolving the original teardown blocker. | Browser assertions and unattended teardown were observed by the implementer, not independently rerun in this correction review. T03's ownership case is outside this review and remains unrun. |
+
+The correction is within the specifically approved config/helper allowlist. No production code, package dependencies, CI, or DG/UG content changed in this correction. The direct child and process-specific stop avoid signaling an unrelated process; the helper also stops the child in its readiness-error path. Trace, screenshot, and video remain off. The app URL remains loopback-only and the server's own Firestore target validation remains in force. I found no new credential or session artifact. The original lockfile normalization finding remains low severity and can be checked with fresh-install verification later.
+
+**Low documentation finding:** `implementation-T01.md` still says the absent emulator was rejected at “webServer startup” and its changed-file list omits the approved helper. That describes the original check, while the correction log accurately shows `globalSetup` rejecting the absent emulator before Express startup. Update the report wording and file list when reconciling evidence; no code change is needed.
+
+Final Batch 1 conclusion: **pass with follow-up** for T01 and T02. The correction resolves the prior changes-required finding on the available evidence. This reviewer does not grant approval for T03 dispatch, checklist advancement, commit, or merge. Exact correction-review commands and results are in [the correction review log](../../../logs/tasks/student-playwright-e2e/review-batch-1-correction.md).
