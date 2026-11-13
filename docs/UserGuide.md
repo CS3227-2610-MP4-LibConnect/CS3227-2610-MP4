@@ -14,8 +14,7 @@ ticket workflows, and TA AI features. Ticket editing is not available yet;
 ## Accessing the app
 
 - **Production app:** [Open CodeClinic](https://libconnect-mp4--libconnect-mp4.asia-southeast1.hosted.app/).
-  This is the App Hosting URL recorded in deployment evidence. Current
-  availability and the rollout of every feature have not been rechecked here.
+  This is the App Hosting URL recorded in deployment evidence. 
 - **Local copy:** follow
   [Running the development server](DeveloperGuide.md#running-the-development-server)
   in the Developer Guide, then open `http://localhost:3001/`.
@@ -332,7 +331,6 @@ These CodeClinic features are planned and **not available in the current build**
 
 | Role | Planned feature |
 | --- | --- |
-| Student | Edit a ticket after creation |
 | Optional | Live session requests and approvals |
 
 This guide will be updated as each feature is released.

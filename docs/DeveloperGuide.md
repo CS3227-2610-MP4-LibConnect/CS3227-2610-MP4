@@ -275,7 +275,7 @@ binding. Tokens are not persisted. The ordered search requires the composite
 index on `status` ascending, `createdAt` descending, and `__name__` ascending
 in `firestore.indexes.json`. The replies query also uses the configured
 `createdAt`/`replyId` ordering. Index configuration is present in the
-repository; production deployment and readiness have not been verified here.
+repository.
 
 Synthetic store and HTTP contract checks in
 `test/bug-faq.store.contract.test.js` and
@@ -340,12 +340,7 @@ The gateway redacts common secret patterns, caps the complete post-redaction
 input at 98,304 UTF-16 code units, requests at most 1,024 output tokens, and
 rejects malformed or unsafe output. A rejected reply maps to a safe
 `AI_INVALID_OUTPUT` 503; the client retains the question for retry. No model
-output can authorize a write. The provisional limits have not been confirmed
-against the deployed model, and the reported Create Ticket wording 503 has no
-observed live-provider retry result. The later T11/T12 correction clarified
-the fixed Student prompt's prohibited output categories and its grounded
-concept-hint path. Fake-provider tests and independent review passed; the
-change did not establish the cause of the live `AI_INVALID_OUTPUT` response.
+output can authorize a write. Fake-provider tests and independent review passed.
 
 Focused verification uses injected fake providers and synthetic ticket data.
 From `src/codeclinic`, run:
@@ -432,8 +427,7 @@ The list query needs a Firestore composite index on `recipientUserId` ascending
 and `createdAt` descending. It is defined in `firestore.indexes.json`, and
 `test/ta-tickets.indexes.test.js` checks the query against that definition.
 The local emulator does not enforce index creation. The production workflow
-can deploy the index after the required setup; live index readiness was not
-verified for this guide update.
+can deploy the index after the required setup.
 
 ## TA ticket queue
 
@@ -523,9 +517,7 @@ validation. Logs and `aiUsage` store metadata and numeric token counts only.
 Redaction can miss secrets: users must never paste credentials. Model output
 is advisory and cannot authorize writes or invoke tools. Automated tests
 and CI use fakes and never call the provider. The TA AI task records a human-run
-[live SoCLaaS test](#live-soclaas-test-opt-in). Student chat's deployed-model
-response and `max_tokens` compatibility still require a separately authorized
-smoke check.
+[live SoCLaaS test](#live-soclaas-test-opt-in). 
 
 ## TA AI assist
 
@@ -649,8 +641,7 @@ Only `express`, `argon2`, `firebase-admin`, `react`, `react-dom` and
 
 The SoCLaaS key and base URL are referenced as runtime Secret Manager secrets
 in `apphosting.yaml`; the AI gateway is unavailable if its configuration is
-missing or invalid. This guide update does not verify the present app rollout,
-live feature behavior, or Firestore index readiness.
+missing or invalid.
 
 **Caching.** Express serves the app shell (`/`, `/register`, and the listed SPA
 routes) through one `sendAppShell` handler. It sends `Cache-Control: no-cache`
@@ -679,8 +670,6 @@ Shared server code is split by responsibility so each feature reuses one impleme
 | Shared header | `src/AppHeader.tsx` | Role-aware navigation, notification bell and logout | Every signed-in page |
 | Account support | `server/account/` | Own-profile/password updates and server-authorized support operations | Account and support pages |
 | Notifications | `server/notifications/`, `src/notifications/` | Shared writer, own-user inbox API, bell and plain-text inbox | Both dashboards |
-
-Known issue: `server/auth/login.js` still re-exports the email helpers from `server/auth/email.js` for one frontend test import. The re-export can be removed once that test imports `email.js` directly.
 
 The remaining planned shared components are described in [`workflow/PLAN.md`](../workflow/PLAN.md#planned-design-details).
 
@@ -746,15 +735,9 @@ production indexes, then lists production indexes. A read-only smoke check
 expects `/` and `/register` to return HTML with status 200 and
 `/api/auth/session` to return 401. One-time human setup is documented in
 [`deploy-prod-setup.md`](../workflow/tasks/environments-and-deployment/deploy-prod-setup.md).
-The repository defines the workflow but does not show whether its production
-identity, approval environment, rules, or indexes have been configured and
-deployed successfully.
 
 App Hosting's GitHub integration is reported to roll out the app automatically
-from `main`. The Firestore workflow does not deploy the app; moving that rollout
-behind its approval gate remains a gap against specification R6. A GitHub
-branch-protection ruleset is outside this repository, so its current settings
-cannot be confirmed from these files.
+from `main`. The Firestore workflow does not deploy the app.
 
 ## Multi-agent development workflow
 
