@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 2,
+  "taskId": "student-playwright-e2e",
+  "batch": 1,
+  "items": ["T01", "T02"],
+  "artifacts": {
+    "spec": { "path": "workflow/specs/student-playwright-e2e.md", "version": "0.1" },
+    "checklist": { "path": "workflow/tasks/student-playwright-e2e/tasks.md", "version": "0.1" },
+    "handoff": { "path": "workflow/tasks/student-playwright-e2e/handoff.md", "version": "0.1" }
+  },
+  "approvalEvidence": "workflow/tasks/student-playwright-e2e/approval-batch-1-correction.md",
+  "implementer": {
+    "agentId": "student_e2e_implement_batch1",
+    "worktree": "shared workspace; preserves user DG/UG edits and prepared tests",
+    "allowedFiles": [
+      "src/codeclinic/package.json",
+      "src/codeclinic/package-lock.json",
+      "src/codeclinic/playwright.config.ts",
+      "src/codeclinic/.gitignore",
+      "src/codeclinic/README.md",
+      "src/codeclinic/test/e2e/student-workflows.spec.ts",
+      "src/codeclinic/test/e2e/playwright-server.cjs",
+      "workflow/tasks/student-playwright-e2e/implementation-T01.md",
+      "workflow/tasks/student-playwright-e2e/implementation-T02.md",
+      "logs/tasks/student-playwright-e2e/implementation-T01.md",
+      "logs/tasks/student-playwright-e2e/implementation-T02.md",
+      "workflow/tasks/student-playwright-e2e/implementation-batch-1-correction.md",
+      "logs/tasks/student-playwright-e2e/implementation-batch-1-correction.md"
+    ]
+  },
+  "reviewer": {
+    "agentId": "student_e2e_review_batch1",
+    "worktree": "separate clean local checkout with exact Batch 1 files overlaid",
+    "reviewOnlyFiles": []
+  },
+  "itemEvidence": {
+    "T01": {
+      "implementationReport": "workflow/tasks/student-playwright-e2e/implementation-T01.md",
+      "implementationLog": "logs/tasks/student-playwright-e2e/implementation-T01.md",
+      "checks": [
+        { "command": "npx playwright test --list with pinned local target", "result": "pass" },
+        { "command": "npx playwright test --grep 'Student can register' without emulator", "result": "pass" },
+        { "command": "npx playwright test --grep 'Student can register' with local emulator, original webServer teardown", "result": "fail" },
+        { "command": "npm run test:e2e -- --grep 'Student can register' with local emulator and corrected globalSetup", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-playwright-e2e/review-report.md",
+      "reviewLog": "logs/tasks/student-playwright-e2e/review-batch-1-correction.md",
+      "reviewVerdict": "pass-with-follow-up"
+    },
+    "T02": {
+      "implementationReport": "workflow/tasks/student-playwright-e2e/implementation-T02.md",
+      "implementationLog": "logs/tasks/student-playwright-e2e/implementation-T02.md",
+      "checks": [
+        { "command": "npx playwright test --grep 'Student can register' with local emulator, original webServer teardown", "result": "fail" },
+        { "command": "npm run test:e2e -- --grep 'Student can register' with local emulator and corrected globalSetup", "result": "pass" }
+      ],
+      "reviewReport": "workflow/tasks/student-playwright-e2e/review-report.md",
+      "reviewLog": "logs/tasks/student-playwright-e2e/review-batch-1-correction.md",
+      "reviewVerdict": "pass-with-follow-up"
+    }
+  }
+}
